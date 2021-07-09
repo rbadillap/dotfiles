@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#
+# re-source continuously the .zshrc file
+alias reload='source ~/.zshrc'
+
+# get my ip address
+alias myip='curl -s https://ipinfo.io/ip'
+
+# mute
+alias mute="osascript -e 'set volume output muted true'"
+
+# lock the screen
+alias afk="osascript -e 'tell application \"System Events\" to sleep'"
+
+# get a more informative list of PATH
+alias path='printf "%b\n" "${PATH//:/\\n}"'
+
+# neovim is gold
+alias vim=nvim
+
+# bat is gold
+alias cat=bat
+alias txt='bat --style=plain'
+
+# z is gold
+alias cd=z
+alias cdi=zi
+
+# kubectl is just too long
+alias k=kubectl
+

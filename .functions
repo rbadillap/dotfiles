@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+#
+# close an application (yup I know too lazy)
+close() {
+  # list the apps
+  local app
+  app="$(find /Applications -maxdepth 1 -type d | sed 's/\/Applications\///' | sed 's/\.app//' | sed -n '1d' | fzy)"
+  osascript <<EOF
+    quit app "${app}"
+EOF
+}
+
+# count the items of the current directory
+count() {
+  # by default: count files but we can count directories too
+  local search="f"
+  case $1 in
+    "--dirs")
+      search="d"
+      ;;
+    "--files")
+      search="f"
+      ;;
+    *)
+      search="f"
+      ;;
+  esac
+
+  find . -type ${search} | wc -l
+}
+
+# clear Terragrunt cache
+cache_terragrunt() {
+  find "$PWD" -type d -name ".terragrunt-cache" -prune -exec rm -rf {} \;
+}
+
+# search in the current directory
+search() {
+  grep -rnw . -e "${1}"
+}
+
+# find and replace
+find_and_replace() {
+  sed -i "" "s/${1}/${2}/g" "${3}"
+}
+
+# get the ssid I'm currently connected to
+wifi() {
+  /System/Library/PrivateFrameworks/Apple80211.framework/Resources/airport -I | awk -F' SSID: ' '/ SSID: / { print $2 }'
+}

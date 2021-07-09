@@ -1,0 +1,8 @@
+#!/usr/bin/env  bash
+#
+# make neovim the default editor
+export EDITOR="nvim"
+
+# english and utf-8
+export LANG="en_US"
+export LC_ALL="en_US.UTF-8"

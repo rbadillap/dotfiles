@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# set some default config
+git config --global user.name "$1"
+git config --global user.email "$2"
+git config --global init.defaultbranch 'main'
+
+# alias
+git config --global alias.status 'status -sb'
+git config --global alias.undo 'reset --hard HEAD~'
+git config --global alias.log 'log --all --decorate --oneline --graph'
+# shellcheck disable=SC2016
+git config --global alias.whoami '!f() { printf "%s <%s>\n" "$(git config user.name)" "$(git config user.email)"; }; f'
+
+# branch
+git config --global branch.sort -committerdate
+
+# ui
+git config --global ui.color auto
+
+# merge
+git config --global merge.log true
+
+# commit
+git config --global commit.gpgsign true

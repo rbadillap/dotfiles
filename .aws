@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#
+# assumed git and aws cli are installed through brew (jq is required by tostring method within the aliases)
+
+# install aws alias
+mkdir -p ~/.aws/cli
+git clone --depth 1 git@github.com:awslabs/awscli-aliases.git /tmp/awscli-aliases
+mv /tmp/awscli-aliases/alias ~/.aws/cli/alias

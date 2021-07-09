@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# close any open System Preferences panes, to prevent them from overriding
+# settings we’re about to change
+osascript -e 'tell application "System Preferences" to quit'
+
+# ask for the administrator password upfront
+sudo -v
+
+# keep-alive: update existing `sudo` time stamp until `.macos` has finished
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+# set clock format
+defaults write com.apple.menuextra.clock DateFormat "EEE MMM d  j:mm a"
+defaults write com.apple.menuextra.clock FlashDateSeparators -bool false
+defaults write com.apple.menuextra.clock IsAnalog -bool false
+
+# simplify the visualization of the battery in the top menu
+defaults write com.apple.menuextra.battery ShowPercent "YES"
+
+# some dock configuration (I'm the kind of person who doesn't use the dock often)
+defaults write com.apple.dock autohide -bool true         # auto hide the dock
+defaults write com.apple.dock magnification -bool false   # disable dock magnification
+defaults write com.apple.dock tilesize -int 53            # small icons
+defaults write com.apple.dock persistent-apps -array      # empty persistent dock icons
+
+killall Dock
+
+# dark mode
+defaults write NSGlobalDomain AppleInterfaceStyle Dark
+
+# fast key repeat useful in terminal
+defaults write NSGlobalDomain InitialKeyRepeat -int 12
+defaults write NSGlobalDomain KeyRepeat -int 2
+defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
+
+# disable substitutions & spelling grammars
+defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false      # disable automatic capitalization.
+defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false  # disable peroid substitution.
+defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false   # disable smart quotes.
+defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false    # disable smart dashes.
+defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false      # disable automatic capitalization.
+defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false  # disable auto-correct.
+defaults write NSGlobalDomain NSAutomaticTextCompletionEnabled -bool false      # disable text-completion.
+
+# view styles in finder
+defaults write com.apple.finder FXPreferredViewStyle "clmv" # column view
+defaults write com.apple.finder FXPreferredGroupBy "Kind"
+
+# clear cache and restart finder
+rm -rf ~/.DS_Store && killall Finder
+
