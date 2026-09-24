@@ -15,5 +15,6 @@ Topics:
 | [shell.md](shell.md)             | zsh, Starship, and how `~/.zshrc` is shared with tools  |
 | [editor.md](editor.md)           | default editor and Zed settings                         |
 | [runtimes.md](runtimes.md)       | Node, pnpm, Bun and other versions with mise            |
+| [secrets.md](secrets.md)         | API keys and other app secrets: 1Password and Varlock   |
 | [windows.md](windows.md)         | window tiling with Rectangle                            |
 | [auth/](auth/README.md)          | logging in to account-based CLIs, one guide per platform |

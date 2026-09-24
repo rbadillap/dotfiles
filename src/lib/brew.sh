@@ -14,7 +14,8 @@ brewpkg() {
     DOT_BREW_LIST="$DOT_BREW_LIST
 "
   fi
-  case $DOT_BREW_LIST in *"$1 $2
+  # brew list shows a tap's formulae by their short name (dmno-dev/tap/varlock → varlock).
+  case $DOT_BREW_LIST in *"$1 ${2##*/}
 "*) return 0 ;; esac
 
   if [ "$DOT_MODE" = apply ]; then
@@ -28,4 +29,16 @@ brewpkg() {
     DOT_CHANGED=1
   fi
   changed "brew $1 $2" "not installed" "installed"
+}
+
+# brewtap <owner/repo>: a third-party Homebrew tap is added, so its formulae
+# and casks can be installed. Tapping means trusting that repository's code.
+brewtap() {
+  brew=$(brew_bin) || { fail "Homebrew isn't installed; run install.sh first"; return; }
+  "$brew" tap 2>/dev/null | grep -qx "$1" && return 0
+  if [ "$DOT_MODE" = apply ]; then
+    out=$(HOMEBREW_NO_ENV_HINTS=1 "$brew" tap "$1" 2>&1 </dev/null) || { fail "brew tap $1 failed: $(printf %s "$out" | tail -1)"; return; }
+    DOT_CHANGED=1
+  fi
+  changed "brew tap $1" "not tapped" "tapped"
 }

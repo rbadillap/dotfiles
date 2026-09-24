@@ -4,8 +4,8 @@
 # Group: additional
 #
 # Checks what dot itself needs, not your settings (that's dot check): the
-# Command Line Tools, Homebrew, 1Password and its CLI, dot.conf, and the
-# shell setup. Never asks for a password or Touch ID. Each problem comes
+# Command Line Tools, Homebrew, 1Password and its CLI, Varlock, dot.conf, and
+# the shell setup. Never asks for a password or Touch ID. Each problem comes
 # with how to fix it.
 #
 # EXIT CODES
@@ -28,6 +28,7 @@ has op && ok "1Password CLI (op)" || bad "1Password CLI (op)" "dot apply package
 [ -S "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock" ] && ok "1Password SSH agent" ||
   bad "1Password SSH agent" "1Password → Settings → Developer → Use the SSH agent"
 has gh && ok "GitHub CLI (gh)" || bad "GitHub CLI (gh)" "dot apply packages"
+has varlock && ok "Varlock" || bad "Varlock" "dot apply packages"
 
 conf=$DOT_ROOT/dot.conf
 if [ -f "$conf" ]; then

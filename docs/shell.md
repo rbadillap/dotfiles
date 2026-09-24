@@ -36,6 +36,7 @@ added and can move it into `config/shell/` or leave it:
 | `config/shell/mise.zsh`     | mise: the right tool versions per folder, and a uv project's .venv ([runtimes.md](runtimes.md)) |
 | `config/shell/op.zsh`       | 1Password shell plugins: `gh` gets its token from 1Password |
 | `config/shell/prompt.zsh`   | Starship                                              |
+| `config/shell/varlock.zsh`  | Varlock completion ([secrets.md](secrets.md))         |
 
 To add something to your shell, create `config/shell/<topic>.zsh`.
 

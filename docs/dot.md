@@ -96,9 +96,9 @@ See [1password.md](1password.md#backup-of-dotconf).
 ## doctor, update and auth
 
 - **`dot doctor`** checks what `dot` itself needs: Command Line Tools,
-  Homebrew, 1Password and its CLI and SSH agent, `gh`, `dot.conf` (including
-  values missing from it), and the shell setup. Each problem comes with its
-  fix. No Touch ID.
+  Homebrew, 1Password and its CLI and SSH agent, `gh`, Varlock, `dot.conf`
+  (including values missing from it), and the shell setup. Each problem comes
+  with its fix. No Touch ID.
 - **`dot update`** fast-forwards the repo from GitHub, then runs `dot check`
   to show what the new version would change. It never applies.
 - **`dot auth status`** checks each login this setup uses: the 1Password CLI,
