@@ -56,19 +56,27 @@ starting with `#` are comments. `dot` won't run without this file.
 
 ## 3. Check, then apply
 
+From the repo:
+
     ./dot check    # what differs from config/; changes nothing
     ./dot apply    # fix only what differs
 
-See [dot.md](dot.md) for the output, narrower runs and exit codes, and
+See [dot.md](dot.md) for the output and exit codes, and
 [settings.md](settings.md) for everything that gets configured.
 
-## 4. 1Password and GitHub
+## 4. Open a new terminal
+
+Ghostty (from `config/apps.conf`) with zsh and Starship: [shell.md](shell.md).
+From now on `dot` works from any folder, with completion ([dot.md](dot.md)),
+and your editor is set ([editor.md](editor.md)).
+
+## 5. 1Password and GitHub
 
 Sign in to 1Password, turn on its SSH agent, create an SSH key, log in to
 GitHub, and turn on signed commits: [1password.md](1password.md), then
 [auth/github.md](auth/github.md).
 
-## 5. Manual steps
+## 6. Manual steps
 
 macOS doesn't let scripts do these:
 
@@ -81,9 +89,3 @@ macOS doesn't let scripts do these:
       ([windows.md](windows.md)).
 - [ ] **1Password:** sign in and turn on the developer features
       ([1password.md](1password.md)).
-
-## 6. Open a new terminal
-
-Ghostty (from `config/apps.conf`) with zsh and Starship: [shell.md](shell.md).
-Your editor is set too: [editor.md](editor.md). `dot` now works from any
-folder, with completion: [dot.md](dot.md).
