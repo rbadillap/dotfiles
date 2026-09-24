@@ -71,8 +71,8 @@ just pick an expiration and generate:
 It asks three things:
 
 1. **Credential:** choose *Import into 1Password*, paste the token, and save
-   it in the **Personal** vault. On a later Mac, choose the item that
-   already exists instead.
+   it in your built-in personal vault (Personal, or Private on business
+   accounts). On a later Mac, choose the item that already exists instead.
 2. **Scope:** choose *Use as global default on my system*, so `gh` uses this
    token everywhere.
 3. It finishes by printing a command to run, like this one:
@@ -96,6 +96,10 @@ With this repo's shell setup ([shell.md](../shell.md)) the command isn't
 needed: `shell/op.zsh` already loads `plugins.sh`. Running it anyway is
 harmless; `./dot check shell` then lists that line as a note, and you can
 delete it from `~/.zshrc`.
+
+Then add the `dotfiles` tag, keeping the one `op` added:
+
+    op item edit "GitHub Personal Access Token" --tags "1Password Shell Plugins,dotfiles"
 
 ## 4. Check it
 

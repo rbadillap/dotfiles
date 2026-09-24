@@ -1,8 +1,11 @@
 # 1Password: SSH keys, signing and identities
 
 1Password holds every secret this setup needs: SSH keys and API tokens. The
-private key never leaves 1Password; it's used after Touch ID. One SSH key
-does two jobs:
+private key never leaves 1Password; it's used after Touch ID. Every item this
+setup creates or uses (not your logins) is tagged `dotfiles`, so
+`op item list --tags dotfiles` shows them all.
+
+One SSH key does two jobs:
 
 - **Authentication:** `git push` and `git pull` to GitHub.
 - **Commit signing:** GitHub shows your commits as *Verified*.
@@ -32,15 +35,20 @@ The second command must print the path: that file is the agent's socket.
 
 ## 3. Create an SSH key
 
-An **Ed25519** key, in the **Personal** vault: by default the agent only
-offers keys from Personal (or Private). One key per Mac is fine; GitHub
-accepts several.
+An **Ed25519** key, in your **built-in personal vault**: "Personal" on
+individual and family accounts, "Private" on business ones. By default the SSH
+agent only offers keys from that vault, and `op` uses it when no `--vault` is
+given. Tag the key `dotfiles`, like every item this setup uses. One key per
+Mac is fine; GitHub accepts several.
 
 - **In the app:** *+ New Item → SSH Key → Add Private Key → Generate a New
-  Key → Ed25519*. Title it `GitHub`.
+  Key → Ed25519*. Title it `GitHub` and add the tag `dotfiles`.
 - **In the terminal:**
 
-      op item create --vault Personal --category "SSH Key" --title "GitHub" --ssh-generate-key ed25519
+      op item create --category "SSH Key" --title "GitHub" --tags dotfiles --ssh-generate-key ed25519
+
+  The CLI can't edit SSH keys yet, so to tag an existing key, edit it in the
+  app.
 
 ## 4. Use the key
 
@@ -101,7 +109,7 @@ Signing uses the same key; the extra email joins `allowed_signers`. For
 ## Backup of dot.conf
 
 `dot.conf` isn't in git, so it's kept in 1Password as the Document
-"dotfiles: dot.conf", in your personal vault:
+"dotfiles: dot.conf", tagged `dotfiles`, in your built-in personal vault:
 
     backup dot-conf 1password    # config/backup.sh
 
@@ -110,6 +118,11 @@ Signing uses the same key; the extra email joins `allowed_signers`. For
 `./dot check` tells you when `dot.conf` changed since the last backup,
 without Touch ID: it compares the file with a record of the last upload,
 kept in `~/.local/state/dotfiles/`.
+
+`apply` replaces the backup with your current `dot.conf`, but a Mac that
+hasn't restored or backed up yet never overwrites an existing backup: its
+`dot.conf` could be the wizard's defaults. It stops and asks you to restore
+first (or to delete the item, if you really mean to replace it).
 
 On a new Mac, the installer's **restore** option downloads it. To restore by
 hand:

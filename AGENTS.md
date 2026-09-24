@@ -16,6 +16,9 @@ point) and docs/ (index: docs/README.md).
 - Files under `home/` are linked into `~`, and apps edit them in place (e.g.
   Zed's settings). Treat unexpected diffs there as the user's changes: never
   revert them without asking.
+- 1Password items this repo creates or uses (not logins) are tagged
+  `dotfiles`. Don't pass `--vault`: `op` defaults to the built-in personal
+  vault, whatever its name (Personal, Private or Employee).
 - Never read or print private keys or tokens. Public keys come from
   1Password's agent (`ssh_pubkey`); tokens reach CLIs only through 1Password
   shell plugins.
@@ -98,8 +101,9 @@ op, file, link, keys), is the only code that reads or changes the system.
   - `gh_ssh_key` in gh.sh (check reads GitHub's public key lists with curl, no
     token; apply adds keys via `gh` through 1Password, which may ask for
     Touch ID)
-  - `op_document` in op.sh (backs a file up to 1Password; check compares it
-    with a local record of the last upload, so it needs no Touch ID)
+  - `op_document` in op.sh (backs a file up to 1Password, tagged `dotfiles`;
+    check compares it with a local record of the last upload, so it needs no
+    Touch ID; a Mac without that record never overwrites an existing backup)
   - `link` in link.sh (symlinks a `home/` file into `~`; backs up an existing
     file instead of overwriting it)
   - `default_shortcut` in defaults.sh (a `{keyCode, modifierFlags}` shortcut, as

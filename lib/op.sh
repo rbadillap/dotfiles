@@ -4,7 +4,7 @@
 DOT_STATE=${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles
 
 # op_document <title> <file>: <file> is backed up to 1Password as the Document
-# <title>, in the account's personal vault.
+# <title>, in the account's built-in personal vault, tagged "dotfiles".
 # check compares <file> with a local record of the last upload, so it never
 # needs Touch ID; apply uploads (Touch ID) and updates that record.
 op_document() {
@@ -16,9 +16,15 @@ op_document() {
 
   if [ "$DOT_MODE" = apply ]; then
     if op document get "$1" >/dev/null 2>&1; then
-      op document edit "$1" "$2" >/dev/null || { fail "op document edit '$1' failed"; return; }
+      # A Mac that never backed up or restored must not overwrite an existing
+      # backup: its file may be wizard defaults.
+      if [ -z "$have" ]; then
+        fail "backup: 1Password already has \"$1\", and this Mac hasn't restored it. Restore it first (op document get \"$1\" --out-file <file>), or delete that item to back up this file instead."
+        return
+      fi
+      op document edit "$1" "$2" --tags dotfiles >/dev/null || { fail "op document edit '$1' failed"; return; }
     else
-      op document create "$2" --title "$1" >/dev/null || { fail "op document create '$1' failed"; return; }
+      op document create "$2" --title "$1" --tags dotfiles >/dev/null || { fail "op document create '$1' failed"; return; }
     fi
     mkdir -p "$DOT_STATE"
     printf '%s\n' "$want" > "$record"
