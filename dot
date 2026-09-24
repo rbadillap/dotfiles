@@ -1,0 +1,104 @@
+#!/bin/sh
+# dot: check or apply the desired state declared in config/.
+#
+#   dot check|apply                          every file in config/
+#   dot check|apply <topic>                  config/<topic>.sh
+#   dot check|apply <topic> <setting> <value> a single setting
+#
+# check never changes anything and exits 1 if something differs.
+# apply changes only what differs; steps that need sudo say so and prompt.
+set -eu
+
+DOT_ROOT=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
+export DOT_ROOT
+
+usage() {
+  sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'
+  exit 2
+}
+
+[ $# -ge 1 ] || usage
+case $1 in
+  check|apply) DOT_MODE=$1 ;;
+  *) usage ;;
+esac
+shift
+
+DOT_DRIFT=$(mktemp)
+DOT_EFFECTS=$(mktemp)
+DOT_RESTARTS=$(mktemp)
+trap 'rm -f "$DOT_DRIFT" "$DOT_EFFECTS" "$DOT_RESTARTS"' EXIT
+export DOT_MODE DOT_DRIFT DOT_EFFECTS DOT_RESTARTS
+
+for f in "$DOT_ROOT"/lib/*.sh; do . "$f"; done
+for f in "$DOT_ROOT"/catalog/*.sh; do . "$f"; done
+
+# Run one declared setting: "<topic> <setting> <value>".
+setting() {
+  topic=$1 name=$2
+  shift 2
+  fn="${topic}_$(printf %s "$name" | tr - _)"
+  if ! command -v "$fn" >/dev/null 2>&1; then
+    fail "unknown setting: $topic $name"
+    return
+  fi
+  # Resolve $name references from dot.conf, keeping the argument list intact.
+  n=$#
+  while [ "$n" -gt 0 ]; do
+    word=$(resolve "$1") || return 0
+    shift
+    set -- "$@" "$word"
+    n=$((n - 1))
+  done
+  begin_setting "$topic $name $*"
+  "$fn" "$@"
+  end_setting
+}
+
+# Values from dot.conf. Names are checked before use, so eval only ever sees
+# a plain identifier.
+if [ ! -f "$DOT_ROOT/dot.conf" ]; then
+  echo "dot.conf not found. Create it from the example and edit it:" >&2
+  echo "  cp \"$DOT_ROOT/dot.conf.example\" \"$DOT_ROOT/dot.conf\"" >&2
+  exit 2
+fi
+while IFS== read -r key value || [ -n "$key" ]; do
+  case $key in ''|'#'*) continue ;; esac
+  case $key in
+    *[!a-z0-9_]*) echo "dot.conf: invalid name '$key'" >&2; exit 2 ;;
+  esac
+  eval "DOTVAR_$key=\$value"
+done < "$DOT_ROOT/dot.conf"
+
+# resolve <word>: $name becomes its value from dot.conf; other words pass through.
+resolve() {
+  case $1 in
+    \$*) name=${1#\$}
+      case $name in *[!a-z0-9_]*|'') fail "invalid variable: $1"; return 1 ;; esac
+      eval "set -- \"\${DOTVAR_$name-\$1}\""
+      case $1 in \$*) fail "$1 is not defined in dot.conf"; return 1 ;; esac ;;
+  esac
+  printf %s "$1"
+}
+
+# Config files are data, not code: each line is "<topic> <setting> <value>".
+run_file() {
+  while read -r topic name value || [ -n "$topic" ]; do
+    case $topic in ''|'#'*) continue ;; esac
+    set -f
+    setting "$topic" "$name" $value
+    set +f
+  done < "$1"
+}
+
+if [ $# -eq 0 ]; then
+  for f in "$DOT_ROOT"/config/*.sh; do run_file "$f"; done
+elif [ $# -eq 1 ]; then
+  file="$DOT_ROOT/config/$1.sh"
+  [ -f "$file" ] || { echo "no such config: config/$1.sh" >&2; exit 2; }
+  run_file "$file"
+else
+  setting "$@"
+fi
+
+report
