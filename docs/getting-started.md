@@ -55,6 +55,8 @@ protected by the system.
 The installer clones the repo over HTTPS, since a clean Mac has no SSH key
 yet. If the repo is already there, it runs `git pull` instead.
 
+> Not yet verified end to end: the repo isn't published on GitHub yet.
+
 Repos live at `~/code/<owner>/<repo>`, mirroring GitHub, with no exceptions.
 This one goes in `~/code/rbadillap/dotfiles`. A fork can use its own with
 `DOTFILES_REPO=<owner>/<repo>`.
@@ -173,12 +175,13 @@ Each setting passes through three layers:
 - **catalog/** has one function per setting. It validates the value and
   expands it into what macOS actually needs. For example, tap-to-click is
   three keys: built-in trackpad, Bluetooth trackpad and a per-host global.
-- **lib/** has one file per macOS tool (`defaults`, `scutil`). It is the only
+- **lib/** has one file per tool (`defaults`, `scutil`, `git`). It is the only
   code that reads or changes the system, and it's where check vs. apply
   happens.
-- **dot** is the CLI that ties them together. Everything is POSIX shell plus
-  tools that ship with macOS, so it runs on a clean machine before anything
-  else is installed.
+- **dot** is the CLI that ties them together. It only accepts settings
+  defined in catalog/. Everything is POSIX shell plus tools that ship with
+  macOS (and git, from the Command Line Tools), so it runs right after the
+  installer, before anything else is installed.
 
 To add a setting, write a function in `catalog/<topic>.sh`, then add its line
 to `config/<topic>.sh`. New files are picked up automatically. AGENTS.md has

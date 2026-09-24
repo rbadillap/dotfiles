@@ -24,7 +24,7 @@ point) and docs/getting-started.md (the full guide).
 | Change a preference               | `config/<topic>.sh`                        |
 | Add a setting                     | function in `catalog/<topic>.sh`, line in `config/<topic>.sh`, row in the "What gets configured" table of docs/getting-started.md |
 | Add a personal value (names, …)   | `dot.conf` (real) and `dot.conf.example` (placeholder) |
-| Support a new macOS tool          | new `lib/<tool>.sh`                        |
+| Support a new tool (defaults, git…) | new `lib/<tool>.sh`                      |
 | Document a clean-machine step     | `docs/getting-started.md`                  |
 | Change what happens before the repo exists | `install.sh` |
 
@@ -35,12 +35,15 @@ New files in `config/`, `catalog/` and `lib/` are picked up automatically.
 **config/<topic>.sh** holds data and is never executed.
 - One `<topic> <setting> <value>` per line, with no verbs. Lines starting
   with `#` are comments.
-- Values are split on spaces.
-- A whole word `$name` is replaced by `name` from `dot.conf`. Personal values
-  always go through `dot.conf`, never literally in config/ or catalog/.
+- Values are split on spaces, except that a whole word `$name` is replaced
+  by `name` from `dot.conf` as a single value, even if it contains spaces.
+- Personal values always go through `dot.conf`, never literally in config/ or
+  catalog/.
 
 **catalog/<topic>.sh** holds one function per setting, named
 `<topic>_<setting>()` (hyphens become underscores).
+- Only functions defined in catalog/ are settings: `dot` refuses anything
+  else, so lib/ functions can't be called directly from the CLI.
 - A comment above each function gives its syntax and accepted values.
 - Validate input and call `fail "<message>"; return` on bad values.
 - Call lib functions; never touch the system directly.
@@ -49,7 +52,8 @@ New files in `config/`, `catalog/` and `lib/` are picked up automatically.
   - `effect "<step>"` is reported to the user (e.g. log out).
   - Both are no-ops unless the setting actually changed something.
 
-**lib/<tool>.sh** is the only code that reads or changes the system.
+**lib/<tool>.sh**, one file per tool (defaults, scutil, git), is the only code
+that reads or changes the system.
 - Each function reads the current value and returns 0 if it matches.
 - Otherwise, in apply mode it changes it and sets `DOT_CHANGED=1`. In both
   modes it calls `changed "<what>" "<from>" "<to>" [note]`.

@@ -7,7 +7,7 @@ My macOS setup as code. Settings are declared in plain text:
     system hostname $hostname
 
 `./dot check` shows what differs from the Mac, and `./dot apply` fixes only
-that. It uses only POSIX shell and tools that ship with macOS. It's
+that. It uses only POSIX shell, tools that ship with macOS, and git. It's
 agent-friendly: agents check freely and ask before applying (see
 [AGENTS.md](AGENTS.md)).
 
