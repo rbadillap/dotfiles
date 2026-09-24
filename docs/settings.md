@@ -29,6 +29,7 @@ there, or delete a line to leave that setting alone. A file can mix topics
 | `shell`     | `init`              | `zsh`: the managed block in `~/.zshrc`           |
 | `ssh`       | `agent`             | `1password`                                      |
 | `system`    | `hostname`          | letters, digits, hyphens; sets all three macOS names (sudo) |
+| `varlock`   | `telemetry`         | `enable`, `disable`: Varlock's usage analytics; from `$varlock_telemetry` |
 | `trackpad`  | `speed`             | `0.0`–`3.0`                                      |
 | `trackpad`  | `tap-to-click`      | `true`, `false`                                  |
 | `trackpad`  | `three-finger-drag` | `true`, `false`; moves three-finger swipes to four fingers |

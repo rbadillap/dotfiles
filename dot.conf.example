@@ -17,3 +17,5 @@ site_git_name=Your Name
 site_git_email=you@example.org
 # Your editor: zed, code, cursor, nvim, vim or nano.
 editor=zed
+# Varlock's anonymous usage analytics: enable or disable.
+varlock_telemetry=disable

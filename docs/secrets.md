@@ -43,8 +43,13 @@ Local overrides (`.env.local`, `.env.*.local`) belong in each project's
 
 ## Telemetry
 
-Varlock sends anonymous usage analytics by default. `varlock telemetry
-disable` turns it off for this Mac, and `DO_NOT_TRACK=1` for a single run.
+Varlock sends anonymous usage analytics unless they're turned off. Here that's a
+personal value in `dot.conf`:
+
+    varlock_telemetry=disable    # or enable
+
+`config/varlock.conf` applies it (`varlock telemetry $varlock_telemetry`).
+`DO_NOT_TRACK=1` also turns it off for a single run.
 
 ## Where each secret lives
 

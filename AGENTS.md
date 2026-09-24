@@ -160,6 +160,8 @@ commands run by a setting keep the real stdin.
     it with a local record of the last upload, so a full `dot check` reports
     it without Touch ID; a Mac without that record never overwrites an
     existing backup unless `DOT_FORCE=1`)
+  - `varlock_telemetry_state` in varlock.sh (Varlock's analytics, read from
+    ~/.config/varlock/config.json)
   - `link` in link.sh (symlinks a `config/home/` file into `~`; backs up an
     existing file instead of overwriting it)
   - Helpers that aren't checks: `ssh_pubkey` in ssh.sh (a public key from

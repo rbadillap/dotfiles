@@ -32,8 +32,8 @@
   the value and expands it into what the system needs. Tap-to-click, for
   example, is three keys.
 - **src/lib/** is the only code that reads or changes the system (`defaults`,
-  `scutil`, `git`, `brew`, `ssh`, `gh`, `op`, `link`, `file`, `keys`), and it's
-  where `check` and `apply` differ.
+  `scutil`, `git`, `brew`, `ssh`, `gh`, `op`, `varlock`, `link`, `file`,
+  `keys`), and it's where `check` and `apply` differ.
 
 The engine is POSIX shell plus tools that ship with macOS and git from the
 Command Line Tools, so it runs right after the installer.
