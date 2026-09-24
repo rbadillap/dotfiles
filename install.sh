@@ -28,13 +28,13 @@ Usage: install.sh [options]
 Sets up $DOTFILES_REPO on this Mac:
   1. Homebrew, which also installs the Xcode Command Line Tools (git, compilers)
   2. The repo, cloned into ~/code/$DOTFILES_REPO
-  3. dot.conf with your personal values (restore from 1Password, wizard, or by hand)
-  4. ./dot check, then ./dot apply if you confirm
+  3. dot.toml with your personal values (restore from 1Password, wizard, or by hand)
+  4. bin/dot check, then bin/dot apply if you confirm
 
 Options:
   -n, --dry-run   show the plan and exit without changing anything
   -y, --yes       don't ask: skip the wizard and apply without confirming
-      --no-apply  stop after ./dot check; apply later with ./dot apply
+      --no-apply  stop after bin/dot check; apply later with bin/dot apply
   -h, --help      show this help
 
 Environment:
@@ -44,7 +44,7 @@ Environment:
   NO_COLOR        disable colors
 
 For agents and CI (no terminal): run with --yes, plus --no-apply to review
-./dot check before applying. Installing Homebrew needs sudo; without a
+bin/dot check before applying. Installing Homebrew needs sudo; without a
 terminal that only works if sudo needs no password, otherwise it stops early
 and says so. Exit codes: 0 done, 1 failed or stopped, 2 bad usage.
 EOF
@@ -160,14 +160,14 @@ detect() {
   have_brew=0; [ -x "$BREW" ] && have_brew=1
   if [ -d "$DOTFILES_DIR/.git" ]; then
     repo_state=git
-  elif [ -x "$DOTFILES_DIR/dot" ]; then
+  elif [ -x "$DOTFILES_DIR/bin/dot" ]; then
     repo_state=local   # repo files present but not a git clone
   elif [ -e "$DOTFILES_DIR" ]; then
     abort "$(tildify "$DOTFILES_DIR") exists but isn't this repo. Move it aside and rerun."
   else
     repo_state=missing
   fi
-  have_conf=0; [ -f "$DOTFILES_DIR/dot.conf" ] && have_conf=1
+  have_conf=0; [ -f "$DOTFILES_DIR/dot.toml" ] && have_conf=1
   return 0
 }
 
@@ -189,11 +189,11 @@ plan() {
     local)   item 1 "Get the repo" ;;
     missing) item 0 "Clone the repo" "into $(tildify "$DOTFILES_DIR"), where all repos live" ;;
   esac
-  item "$have_conf" "dot.conf" "your personal values: restore from 1Password, wizard, or by hand"
+  item "$have_conf" "dot.toml" "your personal values: restore from 1Password, wizard, or by hand"
   if [ "$no_apply" = 1 ]; then then_apply="then stop (--no-apply)"
   elif [ "$interactive" = 1 ]; then then_apply="then ask before applying"
   else then_apply="then apply without asking (--yes)"; fi
-  item 0 "./dot check" "show what would change on this Mac, $then_apply"
+  item 0 "bin/dot check" "show what would change on this Mac, $then_apply"
   if [ "$have_brew" = 0 ]; then
     echo
     info "You'll be asked for your password once: Homebrew needs admin rights"
@@ -248,15 +248,15 @@ get_repo() {
   esac
 }
 
-# personal_values: make sure dot.conf exists; fails if the user will create it by hand.
+# personal_values: make sure dot.toml exists; fails if the user will create it by hand.
 personal_values() {
   step "Personal values"
-  if [ -f "$DOTFILES_DIR/dot.conf" ]; then
-    info "dot.conf already exists; leaving it as is."
+  if [ -f "$DOTFILES_DIR/dot.toml" ]; then
+    info "dot.toml already exists; leaving it as is."
     return 0
   fi
   if [ "$interactive" = 1 ]; then
-    info "dot.conf holds your personal values (hostname, git identity, …)."
+    info "dot.toml holds your personal values (hostname, git identity, …)."
     case $(choose "    [r] restore from 1Password  [w] wizard  [m] I'll create it myself" r w m) in
       r) if restore_conf; then return 0; fi
          info "Continuing with the wizard instead."
@@ -264,46 +264,55 @@ personal_values() {
       w) wizard; return 0 ;;
     esac
   fi
-  info "dot.conf holds your personal values. Create it from the template and edit it:"
+  info "dot.toml holds your personal values. Create it from the template and edit it:"
   echo
   info "  cd $(tildify "$DOTFILES_DIR")"
-  info "  cp dot.conf.example dot.conf"
+  info "  cp dot.toml.example dot.toml"
   echo
-  info "Then run ./dot check to see what would change, and ./dot apply to apply it."
+  info "Then run bin/dot check to see what would change, and bin/dot apply to apply it."
   return 1
 }
 
-# restore_conf: download the dot.conf backup from 1Password (the Document
-# "dotfiles: dot.conf", saved by `dot conf backup`). Installs 1Password and
+# restore_conf: download the dot.toml backup from 1Password (the Document
+# "dotfiles: dot.toml", saved by `dot conf backup`). Installs 1Password and
 # its CLI first, and waits while you sign in. Fails if you give up.
 restore_conf() {
-  step "Restoring dot.conf from 1Password"
+  step "Restoring dot.toml from 1Password"
   run brew install --quiet --cask --adopt 1password 1password-cli
   open -a 1Password
   info "In 1Password: sign in, then turn on Settings → Developer →"
   info "Integrate with 1Password CLI. Then come back here."
   while ask "    Ready to restore?" y; do
-    if op document get "dotfiles: dot.conf" --out-file "$DOTFILES_DIR/dot.conf" --force >/dev/null 2>&1; then
+    if op document get "dotfiles: dot.toml" --out-file "$DOTFILES_DIR/dot.toml" --force >/dev/null 2>&1; then
       # Same record `dot conf backup` keeps (src/lib/op.sh), so check sees it as backed up.
       state=${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles
       mkdir -p "$state"
-      shasum -a 256 "$DOTFILES_DIR/dot.conf" | cut -d' ' -f1 > "$state/dotfiles-dot-conf.sha256"
-      info "Restored $(tildify "$DOTFILES_DIR/dot.conf")."
+      shasum -a 256 "$DOTFILES_DIR/dot.toml" | cut -d' ' -f1 > "$state/dotfiles-dot-toml.sha256"
+      info "Restored $(tildify "$DOTFILES_DIR/dot.toml")."
       return 0
     fi
-    warn "Couldn't read \"dotfiles: dot.conf\" from 1Password: not signed in yet, CLI integration off, or no backup."
+    warn "Couldn't read \"dotfiles: dot.toml\" from 1Password: not signed in yet, CLI integration off, or no backup."
   done
   return 1
 }
 
-# wizard: ask for each value in dot.conf.example, defaulting to the example's.
+# wizard: ask for each value in dot.toml.example, defaulting to the example's.
+# The rest of the example (comments, commented-out tables) is kept.
 wizard() {
-  conf=$DOTFILES_DIR/dot.conf
-  printf '# Personal values, created by install.sh. See dot.conf.example.\n\n' > "$conf.tmp"
-  while IFS== read -r key value || [ -n "$key" ]; do
-    case $key in ''|'#'*) continue ;; esac
-    printf '%s=%s\n' "$key" "$(prompt "$key" "$value")" >> "$conf.tmp"
-  done < "$DOTFILES_DIR/dot.conf.example"
+  conf=$DOTFILES_DIR/dot.toml
+  table=
+  printf '# Created by install.sh from dot.toml.example.\n' > "$conf.tmp"
+  while IFS= read -r line || [ -n "$line" ]; do
+    case $line in
+      '['*) table=$(printf %s "$line" | sed 's/^\[//; s/\].*//; s/[[:space:]]//g') ;;
+      [A-Za-z0-9_-]*=*'"'*)
+        key=$(printf %s "$line" | sed 's/[[:space:]]*=.*//')
+        value=$(printf %s "$line" | sed 's/^[^"]*"//; s/"[^"]*$//')
+        answer=$(prompt "${table:+$table.}$key" "$value" | sed 's/[\\"]/\\&/g')
+        line="$key = \"$answer\"" ;;
+    esac
+    printf '%s\n' "$line" >> "$conf.tmp"
+  done < "$DOTFILES_DIR/dot.toml.example"
   mv "$conf.tmp" "$conf"
   info "Saved $(tildify "$conf")."
 }
@@ -311,27 +320,27 @@ wizard() {
 hand_over() {
   cd "$DOTFILES_DIR"
   step "Checking this Mac against config/"
-  if ./dot check; then
+  if bin/dot check; then
     info "Nothing to change."
     return 0
   fi
   if [ "$no_apply" = 1 ]; then
-    info "Stopped before applying (--no-apply). Review the above, then run ./dot apply."
+    info "Stopped before applying (--no-apply). Review the above, then run bin/dot apply."
     return 0
   fi
   if [ "$interactive" = 1 ] && ! ask "    Apply these changes now?" n; then
-    info "Skipped. Apply them later with ./dot apply."
+    info "Skipped. Apply them later with bin/dot apply."
     return 0
   fi
   step "Applying"
-  ./dot apply
+  bin/dot apply
 }
 
 next_steps() {
   step "Done"
   info "Repo:  $(tildify "$DOTFILES_DIR")"
   info "Open a new terminal so Homebrew is on your PATH."
-  info "Rerun anytime: cd $(tildify "$DOTFILES_DIR") && ./dot check"
+  info "Rerun anytime: cd $(tildify "$DOTFILES_DIR") && bin/dot check"
 }
 
 cleanup() {
@@ -355,7 +364,7 @@ main() {
   fi
   if [ "$interactive" = 1 ]; then
     ( : < /dev/tty ) 2>/dev/null ||
-      abort "No terminal to ask questions on. Rerun with --yes --no-apply to install and review ./dot check, or --yes to also apply."
+      abort "No terminal to ask questions on. Rerun with --yes --no-apply to install and review bin/dot check, or --yes to also apply."
     echo
     ask "Continue?" y || { info "Cancelled; nothing was changed."; exit 0; }
   fi

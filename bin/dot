@@ -3,7 +3,7 @@
 # dot-<command>, or dot-<group>-<subcommand>. This only finds and runs it.
 set -eu
 
-DOT_ROOT=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
+DOT_ROOT=$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)
 export DOT_ROOT
 commands=$DOT_ROOT/src/commands
 

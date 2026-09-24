@@ -4,7 +4,7 @@
 # Group: additional
 #
 # Checks what dot itself needs, not your settings (that's dot check): the
-# Command Line Tools, Homebrew, 1Password and its CLI, Varlock, dot.conf, and
+# Command Line Tools, Homebrew, 1Password and its CLI, Varlock, dot.toml, and
 # the shell setup. Never asks for a password or Touch ID. Each problem comes
 # with how to fix it.
 #
@@ -30,16 +30,20 @@ has op && ok "1Password CLI (op)" || bad "1Password CLI (op)" "dot apply package
 has gh && ok "GitHub CLI (gh)" || bad "GitHub CLI (gh)" "dot apply packages"
 has varlock && ok "Varlock" || bad "Varlock" "dot apply packages"
 
-conf=$DOT_ROOT/dot.conf
-if [ -f "$conf" ]; then
-  missing=$(sed -n 's/^\([a-z0-9_]*\)=.*/\1/p' "$DOT_ROOT/dot.conf.example" | while read -r key; do
-    grep -q "^$key=" "$conf" || printf '%s ' "$key"
-  done)
-  [ -z "$missing" ] && ok "dot.conf" || bad "dot.conf is missing values: $missing" "dot conf edit (see dot.conf.example)"
+. "$DOT_ROOT/src/lib/conf.sh"
+conf=$DOT_ROOT/dot.toml
+if [ ! -f "$conf" ]; then
+  bad "dot.toml" "dot conf restore, or: cp dot.toml.example dot.toml"
+elif ! keys=$(conf_parse "$conf" 2>&1); then
+  bad "dot.toml: $(printf '%s\n' "$keys" | tail -1 | sed 's/^dot: //')" "dot conf edit"
 else
-  bad "dot.conf" "dot conf restore, or: cp dot.conf.example dot.conf"
+  keys=$(printf '%s\n' "$keys" | cut -d= -f1)
+  missing=$(conf_parse "$DOT_ROOT/dot.toml.example" | cut -d= -f1 | while read -r key; do
+    printf '%s\n' "$keys" | grep -qxF "$key" || printf '%s ' "$key"
+  done)
+  [ -z "$missing" ] && ok "dot.toml" || bad "dot.toml is missing values: $missing" "dot conf edit (see dot.toml.example)"
 fi
-grep -qF "$DOT_ROOT/dot\" init zsh" "$HOME/.zshrc" 2>/dev/null && ok "Shell setup in ~/.zshrc" ||
+grep -qF "$DOT_ROOT/bin/dot\" init zsh" "$HOME/.zshrc" 2>/dev/null && ok "Shell setup in ~/.zshrc" ||
   bad "Shell setup in ~/.zshrc" "dot apply shell, then open a new terminal"
 
 echo

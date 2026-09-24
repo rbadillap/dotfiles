@@ -44,11 +44,12 @@ Local overrides (`.env.local`, `.env.*.local`) belong in each project's
 ## Telemetry
 
 Varlock sends anonymous usage analytics unless they're turned off. Here that's a
-personal value in `dot.conf`:
+personal value in `dot.toml`:
 
-    varlock_telemetry=disable    # or enable
+    [varlock]
+    telemetry = "disable"    # or "enable"
 
-`config/varlock.conf` applies it (`varlock telemetry $varlock_telemetry`).
+`config/varlock.conf` applies it (`varlock telemetry $varlock.telemetry`).
 `DO_NOT_TRACK=1` also turns it off for a single run.
 
 ## Where each secret lives
@@ -58,4 +59,4 @@ personal value in `dot.conf`:
 | App secrets (API keys, DB URLs)     | 1Password  | Varlock, per process                 |
 | GitHub token for `gh`               | 1Password  | the `gh` shell plugin, per command ([auth/github.md](auth/github.md)) |
 | SSH key                             | 1Password  | the SSH agent ([1password.md](1password.md)) |
-| `dot.conf` backup                   | 1Password  | `dot conf restore`                   |
+| `dot.toml` backup                   | 1Password  | `dot conf restore`                   |

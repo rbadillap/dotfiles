@@ -2,9 +2,9 @@
 
 ## Default editor
 
-Which editor you use is a personal value, in `dot.conf`:
+Which editor you use is a personal value, in `dot.toml`:
 
-    editor=zed    # zed, code, cursor, nvim, vim or nano
+    editor = "zed"    # zed, code, cursor, nvim, vim or nano
 
 `dot apply editor` sets git's `core.editor` (`zed --wait`: GUI editors wait
 until you close the file). `config/shell/editor.zsh` exports the same command as

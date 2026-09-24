@@ -12,4 +12,4 @@ echo "dot update: pulling $(git -C "$DOT_ROOT" remote get-url origin 2>/dev/null
 git -C "$DOT_ROOT" pull --ff-only >&2 ||
   { echo "dot update: couldn't fast-forward. Commit or stash your changes (git -C $DOT_ROOT status), then retry." >&2; exit 1; }
 echo >&2
-exec "$DOT_ROOT/dot" check
+exec "$DOT_ROOT/bin/dot" check

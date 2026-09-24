@@ -22,8 +22,8 @@ or `n`, and Enter keeps the default. Then it:
 3. **Clones this repo** over HTTPS into `~/code/rbadillap/dotfiles`. Repos live
    at `~/code/<owner>/<repo>`, mirroring GitHub. A fork sets
    `DOTFILES_REPO=<owner>/<repo>`.
-4. **Creates `dot.conf`** (step 2), then runs `./dot check` and asks before
-   `./dot apply` (step 3).
+4. **Creates `dot.toml`** (step 2), then runs `bin/dot check` and asks before
+   `bin/dot apply` (step 3).
 
 Every step is skipped when already done, so rerunning is safe; after a
 failure, it says which step failed and a rerun continues from there. If
@@ -33,7 +33,7 @@ something seems off later, `dot doctor` says what's missing and how to fix it.
 |---------------|--------------------------------------------------------|
 | `--dry-run`   | shows the plan and exits                               |
 | `--yes`       | no questions (also with `NONINTERACTIVE` or `CI`)      |
-| `--no-apply`  | stops after `./dot check`                              |
+| `--no-apply`  | stops after `bin/dot check`                            |
 | `--help`      | usage                                                  |
 
 Pass options after `--`: `sh -c "$(curl …)" -- --dry-run`. An agent runs
@@ -42,30 +42,32 @@ Only Apple Silicon Macs are supported, as with current Homebrew.
 
 ## 2. Personal values
 
-Everything personal (hostname, git identity, editor…) lives in `dot.conf`,
+Everything personal (hostname, git identity, editor…) lives in `dot.toml`,
 which git ignores. The installer offers three ways to create it:
 
 - **`r` restore from 1Password:** installs 1Password, waits while you sign in
   and turn on *Settings → Developer → Integrate with 1Password CLI*, then
-  downloads your backup ([1password.md](1password.md#backup-of-dotconf)).
-- **`w` wizard:** asks for each value in `dot.conf.example`; Enter keeps the
+  downloads your backup ([1password.md](1password.md#backup-of-dottoml)).
+- **`w` wizard:** asks for each value in `dot.toml.example`; Enter keeps the
   default.
-- **`m` by hand:** `cp dot.conf.example dot.conf`, then edit it.
+- **`m` by hand:** `cp dot.toml.example dot.toml`, then edit it.
 
-Later, `dot conf restore` gets the backup and `dot conf edit` opens the file
-([dot.md](dot.md#conf)).
-One `name=value` per line, without quotes; values may contain spaces. Lines
-starting with `#` are comments. `dot` won't run without this file.
+Later, `dot conf edit` opens the file and `dot conf restore` gets the backup
+([dot.md](dot.md#conf)). The example's commented-out tables, such as extra
+git identities, are there to copy when you need them. The format and how
+`config/` uses it: [how-it-works.md](how-it-works.md#personal-values). `dot`
+won't run without this file.
 
 ## 3. Check, then apply
 
 From the repo:
 
-    ./dot check    # what differs from config/; changes nothing
-    ./dot apply    # fix only what differs
+    bin/dot check    # what differs from config/; changes nothing
+    bin/dot apply    # fix only what differs
 
 See [dot.md](dot.md) for the output and exit codes, and
-[settings.md](settings.md) for everything that gets configured.
+[settings.md](settings.md) for everything that gets configured; `dot explain`
+describes any setting or line.
 
 ## 4. Open a new terminal
 

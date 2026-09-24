@@ -3,7 +3,7 @@
 macOS setup as code. `config/*.conf` declares settings; `dot check` compares
 them with the Mac and `dot apply` fixes the differences. `dot` is the single
 entry point for everything. Human docs: README.md and docs/ (index:
-docs/README.md). Run `./dot --help` from the repo root; in scripts, call `dot`
+docs/README.md). Run `bin/dot --help` from the repo root; in scripts, call `dot`
 by its path, since the shell function only exists in interactive zsh.
 
 ## Rules
@@ -12,7 +12,7 @@ by its path, since the shell function only exists in interactive zsh.
   or a password either; keep it that way when adding settings.
 - Ask before `dot apply`, before anything that uses sudo, and before any other
   command that changes the machine (including `dot clone` and `dot fork`).
-- Never commit `dot.conf`, secrets, or machine-specific values.
+- Never commit `dot.toml`, secrets, or machine-specific values.
 - Never rewrite shared files such as `~/.zshrc`: only the marked
   `# >>> dotfiles` block belongs to the repo. Tools may append to the rest.
 - Files under `config/home/` are linked into `~`, and apps edit them in place
@@ -41,9 +41,9 @@ by its path, since the shell function only exists in interactive zsh.
 
 | Path                     | Holds                                                   |
 |--------------------------|---------------------------------------------------------|
-| `dot`                    | the dispatcher: finds and runs `src/commands/dot-<cmd>` |
+| `bin/dot`                | the dispatcher: finds and runs `src/commands/dot-<cmd>` |
 | `install.sh`             | clean-Mac installer (self-contained)                    |
-| `dot.conf`               | personal values, ignored by git; `dot.conf.example` is the template |
+| `dot.toml`               | personal values, ignored by git; `dot.toml.example` is the template |
 | `src/commands/`          | one file per command                                    |
 | `src/settings/<topic>.sh`| one function per setting                                |
 | `src/lib/`               | shared code; the only code that changes the system      |
@@ -51,7 +51,10 @@ by its path, since the shell function only exists in interactive zsh.
 | `config/home/`           | files linked into `~`, mirroring their path             |
 | `config/shell/`          | the owner's zsh files, loaded by `dot init zsh`         |
 
-`src/` is the engine; `config/` and `dot.conf` are what a fork changes.
+`src/` is the engine. `config/` is what the owner wants on the Mac and holds
+nothing personal; `dot.toml` holds who they are (names, identities,
+organizations). A fork edits `config/` only to make different choices, and
+always writes its own `dot.toml`.
 
 ## Where things go
 
@@ -67,7 +70,9 @@ by its path, since the shell function only exists in interactive zsh.
 | Put an app's config file in `~`    | `config/home/<path>`, plus a setting that calls `link` |
 | Change a language or tool version | `config/home/.config/mise/config.toml` (global); docs/runtimes.md |
 | Add something to the shell         | `config/shell/<topic>.zsh`                            |
-| Add a personal value (names, …)    | `dot.conf` (real) and `dot.conf.example` (placeholder) |
+| Add a personal value (names, …)    | `dot.toml` (real) and `dot.toml.example` (placeholder) |
+| Add a personal collection (identities, organizations…) | one table each in `dot.toml`, commented out in `dot.toml.example`, and a setting that takes `$<path>.*` |
+| Show what a line refers to in `dot explain` | `explain_<topic>_<setting>` in `src/lib/<tool>.sh` |
 | Support a new system tool          | `src/lib/<tool>.sh`                                   |
 | Document a clean-machine step      | docs/getting-started.md, details in the topic doc     |
 | Document a topic (shell, editor…)  | `docs/<topic>.md`, listed in docs/README.md           |
@@ -111,17 +116,31 @@ come from it:
 commands run by a setting keep the real stdin.
 - One `<topic> <setting> <value>` per line, with no verbs. Lines starting with
   `#` are comments. A file may mix topics.
-- Values are split on spaces, except that a whole word `$name` is replaced by
-  `name` from `dot.conf` as a single value, even if it contains spaces.
-- Personal values always go through `dot.conf`, never literally in config/ or
+- Values are split on spaces, except that a whole word `$<path>` is replaced
+  by that value from `dot.toml` (`$hostname`, `$git.name` for `name` under
+  `[git]`) as a single value, even if it contains spaces.
+- `$<path>.*` passes the table path itself, for a setting that reads every
+  table under it (`git identities $git.identity.*`). Such a setting lists
+  them with `conf_tables`, reads keys with `conf_get`, and adds a note when
+  there are none.
+- Personal values always go through `dot.toml`, never literally in config/ or
   src/.
+
+**dot.toml** is a strict subset of TOML, read by `src/lib/conf.sh`: `[table]`
+headers, quoted strings and comments. Anything else (numbers, booleans,
+arrays, inline tables, dotted keys) is an error naming the file and line, so
+the file is always valid TOML; keep values as strings. In
+`dot.toml.example`, every uncommented key is one the installer's wizard asks
+for and `dot doctor` requires; optional collections are commented-out
+tables.
 
 **src/settings/<topic>.sh** holds one function per setting, named
 `<topic>_<setting>()` (hyphens become underscores).
 - Only these functions are settings: `dot` refuses anything else, so lib
-  functions can't be called from the command line.
+  functions can't be called from the command line. Every function in a
+  settings file is a setting; helpers belong in `src/lib/`.
 - The comment block above each function is its documentation, shown by
-  `dot settings`. The first line is the syntax, then three spaces and a short
+  `dot explain`. The first line is the syntax, then three spaces and a short
   description: `# dock visibility <always|autohide|hidden>   what it does`.
   Values written as `<a|b|c>` become completion candidates.
 - Validate input and call `fail "<message>"; return` on bad values.
@@ -149,7 +168,7 @@ commands run by a setting keep the real stdin.
     file such as an identity under ~/.config/git/identities/)
   - `brewpkg` and `brewtap` in brew.sh (install only; never uninstall; adopt
     apps installed by hand; tap names are owner/repo, tapped formulae
-    owner/tap/name)
+    owner/tap/name), and `brew_name` to validate a package name
   - `file_block` in file.sh (appends a block if missing) and
     `file_managed_block` (keeps a `# >>> name` … `# <<< name` block, replacing
     it when it changes); neither touches the rest of the file
@@ -165,8 +184,14 @@ commands run by a setting keep the real stdin.
   - `link` in link.sh (symlinks a `config/home/` file into `~`; backs up an
     existing file instead of overwriting it)
   - Helpers that aren't checks: `ssh_pubkey` in ssh.sh (a public key from
-    1Password's agent by item title, no Touch ID) and `key_combo` in keys.sh
-    (`cmd+opt+left` to a key code and modifier flags)
+    1Password's agent by item title, no Touch ID), `key_combo` in keys.sh
+    (`cmd+opt+left` to a key code and modifier flags), and `conf_parse`,
+    `conf_get` and `conf_tables` in conf.sh (dot.toml; `run.sh` keeps the
+    parsed values in `DOT_CONF`)
+- `explain_<topic>_<setting> <value>...` is optional: `dot explain` prints
+  what it returns under a whole line, such as a package's description and
+  version (`explain_brew_formula`, `explain_brew_cask`). It only reads,
+  never needs Touch ID, and prints nothing when it has nothing to say.
 
 **config/home/** mirrors `~`. Keep app settings in the format the app writes
 back (Zed: plain JSON, no comments).
@@ -182,12 +207,15 @@ back (Zed: plain JSON, no comments).
 - All code lives in functions, and `main "$@"` stays the last line, so a
   truncated download never runs.
 - Agents run it without a terminal: `sh install.sh --yes --no-apply` installs
-  and stops after `./dot check`, so the human can review before applying.
+  and stops after `bin/dot check`, so the human can review before applying.
   With no flags and no terminal it stops before changing anything. Installing
   Homebrew needs sudo; if sudo needs a password, it stops and asks the human
   to run it.
-- Restoring dot.conf writes the same record as `op_document`
-  (`~/.local/state/dotfiles/dotfiles-dot-conf.sha256`); keep the two in sync.
+- Restoring dot.toml writes the same record as `op_document`
+  (`~/.local/state/dotfiles/dotfiles-dot-toml.sha256`); keep the two in sync.
+- The wizard copies `dot.toml.example`, asking for each uncommented
+  `key = "value"`; it can't use `src/lib/conf.sh`, so keep the example
+  simple (one quoted value per line).
 - Test it with `sh install.sh --dry-run`, and `HOME=$(mktemp -d)` to simulate
   a clean machine.
 
@@ -196,14 +224,15 @@ back (Zed: plain JSON, no comments).
 - `sh -n` for every changed script (POSIX sh: `dot`, `install.sh`,
   `src/**`), `zsh -n` for `config/shell/`, and `/usr/bin/jq .` for JSON under
   `config/home/`.
-- `./dot check [<file>]` exits 0 when the Mac matches, 1 on differences or
-  errors, and 2 on bad usage or a missing `dot.conf`.
-- `./dot doctor` must pass; `./dot auth status` (Touch ID) checks logins.
-- `./dot --help` and `./dot <cmd> --help` must render; `./dot __complete …`
-  must list what completion should offer.
+- `bin/dot check [<file>]` exits 0 when the Mac matches, 1 on differences or
+  errors, and 2 on bad usage or a missing or invalid `dot.toml`.
+- `bin/dot doctor` must pass; `bin/dot auth status` (Touch ID) checks logins.
+- `bin/dot --help` and `bin/dot <cmd> --help` must render; `bin/dot __complete …`
+  must list what completion should offer; `bin/dot explain <topic>` must show
+  a new setting's documentation.
 - To test an apply path without touching real settings, source the libs in a
   subshell with `DOT_MODE=apply` against a throwaway defaults domain, then
   `defaults delete` it.
 - Test `dot clone` and `dot fork` against a throwaway `CODE_DIR=$(mktemp -d)`,
   never ~/code.
-- After an approved apply, `./dot check <file>` must be all ✓.
+- After an approved apply, `bin/dot check <file>` must be all ✓.

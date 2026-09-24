@@ -7,7 +7,7 @@ shell_init() {
   [ "$1" = zsh ] || { fail "shell init: only 'zsh' is supported, got '$1'"; return; }
   rc=$HOME/.zshrc
   file_managed_block "$rc" 644 "# >>> dotfiles: managed by dot apply shell
-eval \"\$(\"$DOT_ROOT/dot\" init zsh)\"
+eval \"\$(\"$DOT_ROOT/bin/dot\" init zsh)\"
 # <<< dotfiles"
   [ -f "$rc" ] || return 0
   foreign=$(awk '/^# >>> dotfiles/ { skip = 1 } !skip && NF && !/^[[:space:]]*#/ { print } /^# <<< dotfiles/ { skip = 0 }' "$rc")

@@ -6,7 +6,7 @@
 # dot init zsh already includes it, so with this repo's shell setup there's
 # nothing to do. Otherwise, add this to ~/.zshrc:
 #
-#   eval "$(/path/to/dotfiles/dot completion zsh)"
+#   eval "$(/path/to/dotfiles/bin/dot completion zsh)"
 #
 # Completion covers commands, config files, topics, settings and their values.
 set -eu
@@ -15,7 +15,7 @@ set -eu
 cat <<EOF
 _dot() {
   local -a candidates
-  candidates=("\${(@f)\$("$DOT_ROOT/dot" __complete "\${(@)words[2,CURRENT-1]}" 2>/dev/null)}")
+  candidates=("\${(@f)\$("$DOT_ROOT/bin/dot" __complete "\${(@)words[2,CURRENT-1]}" 2>/dev/null)}")
   _describe 'dot' candidates
 }
 compdef _dot dot

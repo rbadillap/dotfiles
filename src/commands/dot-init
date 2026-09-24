@@ -8,7 +8,7 @@
 # loads your files in config/shell/. `dot apply shell` adds the line that
 # evaluates it to ~/.zshrc:
 #
-#   eval "$(/path/to/dotfiles/dot init zsh)"
+#   eval "$(/path/to/dotfiles/bin/dot init zsh)"
 set -eu
 [ "${1:-}" = zsh ] && [ $# -eq 1 ] || { echo "dot init: expected 'zsh'" >&2; echo "Run 'dot init --help' for usage." >&2; exit 2; }
 
@@ -22,11 +22,11 @@ export DOT_ROOT="$DOT_ROOT"
 dot() {
   case "\$1" in
     clone|fork|cd)
-      case " \$* " in *" -h "*|*" --help "*) "\$DOT_ROOT/dot" "\$@"; return ;; esac
+      case " \$* " in *" -h "*|*" --help "*) "\$DOT_ROOT/bin/dot" "\$@"; return ;; esac
       local dir
-      dir=\$("\$DOT_ROOT/dot" "\$@") || return
+      dir=\$("\$DOT_ROOT/bin/dot" "\$@") || return
       [[ -d \$dir ]] && cd "\$dir" ;;
-    *) "\$DOT_ROOT/dot" "\$@" ;;
+    *) "\$DOT_ROOT/bin/dot" "\$@" ;;
   esac
 }
 

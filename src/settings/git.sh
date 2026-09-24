@@ -1,4 +1,4 @@
-# Git settings. Identity comes from dot.conf; see config/git.conf.
+# Git settings. Identity comes from dot.toml; see config/git.conf.
 
 # git name <name>   author name on commits; may contain spaces
 git_name() {
@@ -45,4 +45,17 @@ git_identity() {
   gitconfig "includeIf.gitdir:$dir.path" "$file"
   key=$(git config --global --get user.signingkey 2>/dev/null) || return 0
   file_block "$HOME/.config/git/allowed_signers" 644 "$3 $key"
+}
+
+# git identities <table>   one `git identity` per table under <table> in
+# dot.toml, each with dir, name and email: $git.identity.* reads
+# [git.identity.<label>] tables. None is fine.
+git_identities() {
+  [ $# -eq 1 ] || { fail "git identities: expected a table, such as \$git.identity.*"; return; }
+  [ -n "$(conf_tables "$1")" ] || { note "no [$1.*] tables in dot.toml"; return 0; }
+  for id in $(conf_tables "$1"); do
+    dir=$(conf_get "$1.$id.dir") && name=$(conf_get "$1.$id.name") && email=$(conf_get "$1.$id.email") ||
+      { fail "git identities: [$1.$id] needs dir, name and email"; continue; }
+    git_identity "$dir" "$name" "$email"
+  done
 }

@@ -5,6 +5,17 @@ brew_bin() {
   command -v brew 2>/dev/null || { [ -x /opt/homebrew/bin/brew ] && echo /opt/homebrew/bin/brew; }
 }
 
+# brew_name <name>: true for a package name, optionally from a tap
+# (owner/tap/name).
+brew_name() {
+  case $1 in
+    ''|/*|*/|*//*|*[!a-z0-9@._+/-]*) return 1 ;;
+    .*|-*|*/.*|*/-*) return 1 ;;   # no path segments like .. or flags
+    */*/*/*) return 1 ;;
+    */*) case $1 in */*/*) return 0 ;; *) return 1 ;; esac ;;
+  esac
+}
+
 # brewpkg <formula|cask> <name>: installed, or installed on apply.
 # Installed packages are listed once per run and cached.
 brewpkg() {
@@ -41,4 +52,18 @@ brewtap() {
     DOT_CHANGED=1
   fi
   changed "brew tap $1" "not tapped" "tapped"
+}
+
+# explain_brew_formula <name>, explain_brew_cask <name>: what the package is,
+# for dot explain. Reads Homebrew's local metadata; changes nothing.
+explain_brew_formula() { brew_explain formula "$1"; }
+explain_brew_cask() { brew_explain cask "$1"; }
+brew_explain() {
+  brew=$(brew_bin) || return 0
+  [ -x /usr/bin/jq ] || return 0
+  HOMEBREW_NO_AUTO_UPDATE=1 "$brew" info --json=v2 "--$1" "$2" 2>/dev/null | /usr/bin/jq -r '
+    (.formulae[0] // empty | [.name, .desc, .homepage, .versions.stable, ([.installed[].version] | first)]),
+    (.casks[0] // empty | [.token, .desc, .homepage, .version, .installed])
+    | "\(.[0]): \(.[1] // "no description")", "\(.[2])",
+      "version \(.[3])" + (if .[4] then ", installed \(.[4])" else ", not installed" end)'
 }

@@ -8,7 +8,7 @@
 set -eu
 
 commands=$DOT_ROOT/src/commands
-settings() { "$commands/dot-settings" --index; }
+settings() { "$commands/dot-explain" --index; }
 tab=$(printf '\t')
 
 # First word: commands, with their summaries.
@@ -32,16 +32,15 @@ if [ $# -eq 0 ] && ls "$commands/dot-$cmd"-* >/dev/null 2>&1; then
   exit 0
 fi
 case $cmd in
-  check|apply)
+  check|apply|explain)
     case $# in
-      0) # a config file, or a topic for a single setting
-         { ls "$DOT_ROOT/config" | sed -n 's/\.conf$//p'; settings | cut -f1; } | sort -u ;;
+      0) # a topic; check and apply also take a config file
+         { [ "$cmd" = explain ] || ls "$DOT_ROOT/config" | sed -n 's/\.conf$//p'; settings | cut -f1; } | sort -u ;;
       1) settings | awk -F "$tab" -v t="$1" '$1 == t { print $2 }' ;;
       2) # values listed as <a|b|c> in the setting's syntax
          settings | awk -F "$tab" -v t="$1" -v s="$2" '$1 == t && $2 == s { print $3 }' |
            sed -n 's/.*<\([^>]*|[^>]*\)>.*/\1/p' | tr '|' '\n' ;;
     esac ;;
-  settings) [ $# -eq 0 ] && settings | cut -f1 | sort -u ;;
   help) [ $# -eq 0 ] && ls "$commands" | sed -n 's/^dot-\([a-z][a-z]*\)$/\1/p' ;;
   completion|init) [ $# -eq 0 ] && echo zsh ;;
 esac

@@ -1,0 +1,105 @@
+#!/bin/sh
+# Summary: Explain the settings you can use in config/
+# Usage: dot explain [<topic> [<setting> [<value>...]]]
+# Group: core
+#
+# Explains what you can write in config/, in more detail the more you give:
+# every setting, one topic, or one setting, each with its values, what it
+# does and where config/ uses it. Given a whole line, it also shows that line
+# in config/ with the comment above it, and what it refers to on this Mac
+# (for a package: its description, version, and whether it's installed).
+# Settings are defined in src/settings/<topic>.sh; the comment above each
+# function is its documentation. Changes nothing.
+#
+# EXAMPLES
+#   $ dot explain
+#   $ dot explain trackpad
+#   $ dot explain dock visibility
+#   $ dot explain brew formula awscli
+set -eu
+
+# index: one line per setting, tab-separated: topic, setting, syntax, description.
+index() {
+  awk '
+    FNR == 1 { block = "" }
+    /^#/ { sub(/^# ?/, ""); block = block (block == "" ? "" : "\n") $0; next }
+    /^[a-z]+_[a-z_]+\(\) \{/ {
+      n = split(block, line, "\n")
+      split(line[1], w, " ")
+      syntax = line[1]; desc = ""
+      if (match(line[1], /   +/)) { syntax = substr(line[1], 1, RSTART - 1); desc = substr(line[1], RSTART + RLENGTH) }
+      for (i = 2; i <= n; i++) desc = desc (desc == "" ? "" : " ") line[i]
+      printf "%s\t%s\t%s\t%s\n", w[1], w[2], syntax, desc
+    }
+    { block = "" }
+  ' "$DOT_ROOT"/src/settings/*.sh
+}
+
+case ${1:-} in
+  --index) index; exit 0 ;;   # machine-readable; used by completion
+  -*) echo "dot explain: unknown flag '$1'" >&2; exit 2 ;;
+esac
+
+topics() { cd "$DOT_ROOT/src/settings" && ls *.sh | sed 's/\.sh$//' | tr '\n' ' '; }
+if [ $# -ge 1 ] && [ ! -f "$DOT_ROOT/src/settings/$1.sh" ]; then
+  echo "dot explain: no topic '$1'. Topics: $(topics)" >&2
+  exit 2
+fi
+if [ $# -ge 2 ] && ! index | awk -F '\t' -v t="$1" -v s="$2" '$1 == t && $2 == s { f = 1 } END { exit !f }'; then
+  echo "dot explain: no setting '$1 $2'. Run 'dot explain $1' for its settings." >&2
+  exit 2
+fi
+
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then bold=$(printf '\033[1m') dim=$(printf '\033[2m') off=$(printf '\033[0m'); else bold= dim= off=; fi
+tab=$(printf '\t')
+
+# One setting: its syntax and description.
+describe() {
+  printf '%s%s%s\n' "$bold" "$3" "$off"
+  [ -z "$4" ] || printf '%s\n' "$4" | fold -s -w 74 | sed 's/^/    /'
+}
+
+if [ $# -le 2 ]; then
+  index | while IFS=$tab read -r topic setting syntax desc; do
+    [ $# -eq 0 ] || [ "$topic" = "$1" ] || continue
+    [ $# -le 1 ] || [ "$setting" = "$2" ] || continue
+    describe "$topic" "$setting" "$syntax" "$desc"
+    grep -H "^$topic $setting " "$DOT_ROOT"/config/*.conf 2>/dev/null |
+      sed "s#^$DOT_ROOT/##; s#^\([^:]*\):#    ${dim}in \1:${off} #" || true
+    echo
+  done
+  exit 0
+fi
+
+# A whole line: the setting, the line in config/ with its comment, and what
+# it refers to (explain_<topic>_<setting> in src/lib/, when there is one).
+line="$*"
+index | awk -F '\t' -v t="$1" -v s="$2" '$1 == t && $2 == s' | {
+  IFS=$tab read -r topic setting syntax desc
+  describe "$topic" "$setting" "$syntax" "$desc"
+}
+found=0
+for f in "$DOT_ROOT"/config/*.conf; do
+  # Each matching line, preceded by the comment lines right above it.
+  out=$(awk -v want="$line" '
+    /^#/ { c = c $0 "\n"; next }
+    { l = $0; gsub(/[ \t]+/, " ", l); sub(/^ /, "", l); sub(/ $/, "", l) }
+    l == want { printf "%s%s\n", c, $0 }
+    { c = "" }
+  ' "$f")
+  [ -n "$out" ] || continue
+  found=1
+  printf '\n    %sin %s:%s\n' "$dim" "${f#"$DOT_ROOT"/}" "$off"
+  printf '%s\n' "$out" | sed 's/^/      /'
+done
+[ "$found" = 1 ] || printf '\n    %snot in config/: to keep it, add this line to a file there%s\n' "$dim" "$off"
+
+hook=explain_$1_$(printf %s "$2" | tr - _)
+for f in "$DOT_ROOT"/src/lib/*.sh; do
+  case $f in */run.sh) ;; *) . "$f" ;; esac
+done
+if command -v "$hook" >/dev/null 2>&1; then
+  shift 2
+  about=$("$hook" "$@") || about=
+  [ -z "$about" ] || { echo; printf '%s\n' "$about" | sed '1s/^/    /; 2,$s/^/      /'; }
+fi

@@ -1,6 +1,6 @@
 # Settings
 
-Every setting `dot` knows; `dot settings` prints the same list from the code,
+Every setting `dot` knows; `dot explain` prints the same list from the code,
 with what `config/` sets. Your values live in `config/*.conf`: change them
 there, or delete a line to leave that setting alone. A file can mix topics
 (`config/windows.conf` holds `rectangle …` and `windows …` lines).
@@ -12,11 +12,12 @@ there, or delete a line to leave that setting alone. A file can mix topics
 | `brew`      | `tap`               | `owner/repo`: a third-party package source, trusted explicitly |
 | `dock`      | `visibility`        | `always`, `autohide`, `hidden`                   |
 | `editor`    | `default`           | `zed`, `code`, `cursor`, `nvim`, `vim`, `nano`; from `$editor` |
-| `git`       | `name`              | any text; from `$git_name`                       |
-| `git`       | `email`             | an email address; from `$git_email`              |
+| `git`       | `name`              | any text; from `$git.name`                       |
+| `git`       | `email`             | an email address; from `$git.email`              |
 | `git`       | `signing-key`       | title of an SSH key in 1Password; from `$ssh_key` |
-| `git`       | `identity`          | `<dir> <name> <email>`: identity for repos under `<dir>` |
-| `github`    | `ssh-key`           | `<user> <title>`: an SSH key in 1Password, added to your account for authentication and signing; from `$github_user $ssh_key` |
+| `git`       | `identity`          | `<dir> <name> <email>`: name and email for repos under `<dir>` |
+| `git`       | `identities`        | one `git identity` per table; from `$git.identity.*` ([1password.md](1password.md#identities-per-folder)) |
+| `github`    | `ssh-key`           | `<user> <title>`: an SSH key in 1Password, added to your account for authentication and signing; from `$github.user $ssh_key` |
 | `keyboard`  | `repeat-rate`       | integer; lower is faster (System Settings stops at 2) |
 | `keyboard`  | `repeat-delay`      | integer; lower is shorter (System Settings stops at 15) |
 | `mise`      | `config`            | `linked`: symlink to `config/home/.config/mise/config.toml` |
@@ -29,14 +30,14 @@ there, or delete a line to leave that setting alone. A file can mix topics
 | `shell`     | `init`              | `zsh`: the managed block in `~/.zshrc`           |
 | `ssh`       | `agent`             | `1password`                                      |
 | `system`    | `hostname`          | letters, digits, hyphens; sets all three macOS names (sudo) |
-| `varlock`   | `telemetry`         | `enable`, `disable`: Varlock's usage analytics; from `$varlock_telemetry` |
+| `varlock`   | `telemetry`         | `enable`, `disable`: Varlock's usage analytics; from `$varlock.telemetry` |
 | `trackpad`  | `speed`             | `0.0`–`3.0`                                      |
 | `trackpad`  | `tap-to-click`      | `true`, `false`                                  |
 | `trackpad`  | `three-finger-drag` | `true`, `false`; moves three-finger swipes to four fingers |
 | `windows`   | `native-tiling`     | `true`, `false`: macOS's own edge tiling         |
 | `zed`       | `settings`          | `linked`: symlink to `config/home/.config/zed/settings.json` |
 
-`$name` values come from `dot.conf`.
+`$…` values come from `dot.toml` ([how-it-works.md](how-it-works.md#personal-values)).
 
 ## Apps, fonts and command-line tools
 
@@ -54,3 +55,6 @@ To add one, find its exact name with `brew search <name>` and add
 (command-line tools) to the right file. Removing a line doesn't uninstall
 anything. An app already installed by hand is adopted, as long as it's the
 same version; adopting may ask for your password.
+
+`dot explain brew cask <name>` shows what a package is, its version, and
+whether it's installed.

@@ -1,0 +1,29 @@
+# The values that make this setup yours. Copy this file to dot.toml (ignored
+# by git) and edit it:
+#   cp dot.toml.example dot.toml
+# config/ refers to a value by its path: hostname is $hostname, name under
+# [git] is $git.name. A subset of TOML: tables and quoted strings.
+
+hostname = "my-mac"
+# Your editor: zed, code, cursor, nvim, vim or nano.
+editor = "zed"
+# Title of your SSH key item in 1Password (in your built-in personal vault).
+ssh_key = "GitHub"
+
+[git]
+name = "Your Name"
+email = "you@example.com"
+
+[github]
+user = "your-username"
+
+[varlock]
+# Varlock's anonymous usage analytics: enable or disable.
+telemetry = "disable"
+
+# Another name and email for the repos under a folder, one table per identity
+# ([git.identity.<label>]).
+# [git.identity.work]
+# dir = "~/code/your-company"
+# name = "Your Name"
+# email = "you@your-company.com"

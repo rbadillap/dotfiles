@@ -2,14 +2,14 @@
 
 ## Layout
 
-    dot                  the CLI
+    bin/dot              the CLI, `dot`
     install.sh           sets up a clean Mac
-    dot.conf             your personal values (ignored by git); template: dot.conf.example
+    dot.toml             your personal values (ignored by git); template: dot.toml.example
     src/                 the engine; you don't edit it to use the repo
       commands/          one file per command: dot-check, dot-clone…
       settings/          one file per topic: what each setting means
       lib/               shared code, including everything that changes the system
-    config/              your setup; a fork edits this and dot.conf
+    config/              what you want on the Mac; nothing personal (that is dot.toml)
       *.conf             what you want: `dock visibility hidden`
       home/              files linked into ~ (Zed's settings, mise's global versions)
       shell/             your zsh setup, one file per topic
@@ -26,9 +26,9 @@
 - **config/*.conf** is data and is never executed: one
   `<topic> <setting> <value>` per line; `#` starts a comment. Files group lines
   however you like (`apps.conf` holds `brew cask …` lines). A word like
-  `$hostname` is replaced by its value from `dot.conf`.
+  `$hostname` is replaced by its value from `dot.toml` (see below).
 - **src/settings/<topic>.sh** has one function per setting. The comment above
-  it is its documentation (`dot settings` prints it); the function validates
+  it is its documentation (`dot explain` prints it); the function validates
   the value and expands it into what the system needs. Tap-to-click, for
   example, is three keys.
 - **src/lib/** is the only code that reads or changes the system (`defaults`,
@@ -67,9 +67,38 @@ comes from the same files, so a new command is one new file.
 
 ## Personal values
 
-`dot.conf` holds everything personal and isn't in git; `dot.conf.example` is
-its public template. Config files refer to values as `$name`, so a fork
-changes one file, not the config.
+`dot.toml` holds everything personal and isn't in git; `dot.toml.example` is
+its public template. `config/` refers to values by their path, so `config/`
+stays the same for everyone and a fork only writes its own `dot.toml`.
+
+```toml
+hostname = "ronny"
+ssh_key = "GitHub"
+
+[git]
+name = "Your Name"
+email = "you@example.com"
+
+[git.identity.work]
+dir = "~/code/your-company"
+name = "Your Name"
+email = "you@your-company.com"
+```
+
+- **A value** is `$` and its path: `$hostname`, or `$git.name` for `name`
+  under `[git]`. `system hostname $hostname` becomes
+  `system hostname ronny`, and a value with spaces stays one value.
+- **A collection** is `$` and a table followed by `.*`: `$git.identity.*`
+  hands `git identities` every `[git.identity.<label>]` table, however many
+  there are, including none. Each table is one identity, organization or
+  profile; the setting's documentation (`dot explain`) says which keys it
+  needs.
+
+The file is a subset of TOML: `[table]` headers, `key = "value"` with
+double- or single-quoted strings, and `#` comments. Numbers, booleans,
+arrays, inline tables, dotted keys and multi-line strings aren't accepted;
+`dot` stops with the file and line of anything it can't read, so the file
+is always valid TOML.
 
 ## Adding a setting
 
@@ -79,6 +108,7 @@ changes one file, not the config.
    comment giving its syntax and values (`# dock visibility <always|hidden>`).
    It validates the input and calls `src/lib/` functions.
 3. Add its line to a file in `config/`, and a row to [settings.md](settings.md).
+   `dot explain <topic>` shows it as others will see it.
 4. Try it with `dot check <file>`, then `dot apply <file>`.
 
 [AGENTS.md](../AGENTS.md) has the exact conventions.

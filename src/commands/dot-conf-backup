@@ -1,11 +1,11 @@
 #!/bin/sh
-# Summary: Save dot.conf to 1Password
+# Summary: Save dot.toml to 1Password
 # Usage: dot conf backup [--force]
 # Group: conf
 #
-# Uploads dot.conf if it changed since the last backup (Touch ID). A Mac that
+# Uploads dot.toml if it changed since the last backup (Touch ID). A Mac that
 # never backed up or restored doesn't replace an existing backup, since its
-# dot.conf could be the installer's defaults: restore first, or use --force.
+# dot.toml could be the installer's defaults: restore first, or use --force.
 #
 # FLAGS
 #   --force   Replace the backup even if this Mac never restored it
@@ -17,7 +17,7 @@ case ${1:-} in
 esac
 DOT_MODE=apply
 . "$DOT_ROOT/src/lib/run.sh"
-begin_setting "dot.conf backup"
-op_document "dotfiles: dot.conf" "$DOT_ROOT/dot.conf"
+begin_setting "dot.toml backup"
+op_document "dotfiles: dot.toml" "$DOT_ROOT/dot.toml"
 end_setting
 report

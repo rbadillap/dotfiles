@@ -8,7 +8,7 @@
 # and adds the original as the "upstream" remote. Forking your own repo just
 # clones it. In zsh, dot then takes you to the repo.
 #
-# Your username comes from github_user in dot.conf, or from gh. Forking goes
+# Your username comes from [github] user in dot.toml, or from gh. Forking goes
 # through gh, so it may ask for Touch ID.
 #
 # ARGUMENTS
@@ -33,9 +33,9 @@ ghx() {
   if [ -f "$HOME/.config/op/plugins/gh.json" ]; then op plugin run -- gh "$@"; else gh "$@"; fi
 }
 
-# my_login: your GitHub username, from dot.conf or else from gh.
+# my_login: your GitHub username, from dot.toml or else from gh.
 my_login() {
-  login=$(sed -n 's/^github_user=//p' "$DOT_ROOT/dot.conf" 2>/dev/null | head -1)
+  login=$(. "$DOT_ROOT/src/lib/conf.sh"; DOT_CONF=$(conf_parse "$DOT_ROOT/dot.toml" 2>/dev/null) && conf_get github.user) || login=
   [ -n "$login" ] || login=$(ghx api user --jq .login 2>/dev/null) || login=
   printf %s "$login"
 }
@@ -56,7 +56,7 @@ command -v gh >/dev/null || die "gh isn't installed (config/packages.conf)"
 slug=$("$clone" --resolve "$1" 2>/dev/null) ||
   bad "not a GitHub repo: '$1' (see 'dot clone --help' for accepted forms)"
 me=$(my_login)
-[ -n "$me" ] || die "can't tell your GitHub username: set github_user in dot.conf, or log in to gh"
+[ -n "$me" ] || die "can't tell your GitHub username: set user under [github] in dot.toml, or log in to gh"
 
 # The repo as GitHub knows it: right case, renames followed, and it must exist.
 info=$(ghx api "repos/$slug" --jq '[.full_name, (.allow_forking | tostring), .owner.login] | join(" ")' 2>/dev/null) ||

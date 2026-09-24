@@ -1,2 +1,3 @@
-# Personal values; see dot.conf.example
-dot.conf
+# Personal values; see dot.toml.example
+dot.toml
+dot.toml.before-restore

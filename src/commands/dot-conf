@@ -1,10 +1,10 @@
 #!/bin/sh
-# Summary: Back up, restore or edit dot.conf with 1Password
+# Summary: Back up, restore or edit dot.toml with 1Password
 # Usage: dot conf <command>
 # Group: additional
 #
-# dot.conf holds your personal values and isn't in git, so it's kept in
-# 1Password as the Document "dotfiles: dot.conf", tagged "dotfiles", in your
+# dot.toml holds your personal values and isn't in git, so it's kept in
+# 1Password as the Document "dotfiles: dot.toml", tagged "dotfiles", in your
 # built-in personal vault. dot check tells you when it changed since the
 # last backup.
 #

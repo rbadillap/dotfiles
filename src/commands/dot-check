@@ -18,7 +18,7 @@
 # EXIT CODES
 #   0  everything matches
 #   1  differences found, or a setting has an error
-#   2  bad usage, unknown file, or dot.conf missing
+#   2  bad usage, unknown file, or dot.toml missing or invalid
 set -eu
 DOT_MODE=check
 . "$DOT_ROOT/src/lib/run.sh"

@@ -22,7 +22,7 @@
 # EXIT CODES
 #   0  applied, or nothing to do
 #   1  a setting had an error
-#   2  bad usage, unknown file, or dot.conf missing
+#   2  bad usage, unknown file, or dot.toml missing or invalid
 set -eu
 DOT_MODE=apply
 . "$DOT_ROOT/src/lib/run.sh"

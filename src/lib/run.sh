@@ -12,30 +12,35 @@ for f in "$DOT_ROOT"/src/lib/*.sh; do
 done
 for f in "$DOT_ROOT"/src/settings/*.sh; do . "$f"; done
 
-# Values from dot.conf. Names are checked before use, so eval only ever sees
-# a plain identifier.
-if [ ! -f "$DOT_ROOT/dot.conf" ]; then
-  echo "dot: dot.conf not found. Create it from the example and edit it:" >&2
-  echo "  cp \"$DOT_ROOT/dot.conf.example\" \"$DOT_ROOT/dot.conf\"" >&2
+# Values from dot.toml, as "<path>=<value>" lines (src/lib/conf.sh).
+if [ ! -f "$DOT_ROOT/dot.toml" ]; then
+  echo "dot: dot.toml not found. Create it from the example and edit it:" >&2
+  echo "  cp \"$DOT_ROOT/dot.toml.example\" \"$DOT_ROOT/dot.toml\"" >&2
   exit 2
 fi
-while IFS== read -r key value || [ -n "$key" ]; do
-  case $key in ''|'#'*) continue ;; esac
-  case $key in
-    *[!a-z0-9_]*) echo "dot: dot.conf: invalid name '$key'" >&2; exit 2 ;;
-  esac
-  eval "DOTVAR_$key=\$value"
-done < "$DOT_ROOT/dot.conf"
+DOT_CONF=$(conf_parse "$DOT_ROOT/dot.toml") || exit 2
 
-# resolve <word>: $name becomes its value from dot.conf; other words pass through.
+# resolve <word>: $path becomes its value from dot.toml; $path.* stays the
+# table's path, for settings that read each table under it (conf_tables).
+# Other words pass through.
 resolve() {
   case $1 in
-    \$*) name=${1#\$}
-      case $name in *[!a-z0-9_]*|'') fail "invalid variable: $1"; return 1 ;; esac
-      eval "set -- \"\${DOTVAR_$name-\$1}\""
-      case $1 in \$*) fail "$1 is not defined in dot.conf"; return 1 ;; esac ;;
+    \$*) path=${1#\$}
+      case $path in
+        *.\*) path=${path%.\*}; star=1 ;;
+        *) star=0 ;;
+      esac
+      case $path in *[!A-Za-z0-9_.-]*|''|.*|*.|*..*) fail "invalid reference: $1"; return 1 ;; esac
+      if [ "$star" = 1 ]; then printf %s "$path"; return 0; fi
+      conf_get "$path" && return 0
+      if [ -n "$(conf_tables "$path")" ]; then
+        fail "$1 is a table: use $1.* to pass the tables under it"
+      else
+        fail "$1: $path is not set in dot.toml"
+      fi
+      return 1 ;;
+    *) printf %s "$1" ;;
   esac
-  printf %s "$1"
 }
 
 # run_setting <topic> <setting> [<value>...]: one setting.
@@ -46,18 +51,20 @@ run_setting() {
   fn="${topic}_$(printf %s "$name" | tr - _)"
   # Only functions in src/settings/ are settings; lib functions can't be called this way.
   if ! grep -qx "$fn() {" "$DOT_ROOT/src/settings/$topic.sh" 2>/dev/null; then
-    fail "unknown setting: $topic $name (see 'dot settings')"
+    fail "unknown setting: $topic $name (see 'dot explain')"
     return
   fi
-  # Resolve $name references from dot.conf, keeping the argument list intact.
-  n=$#
+  # Resolve $path references from dot.toml, keeping the argument list intact.
+  # A table reference ($aws.*) is shown as written.
+  n=$# shown=
   while [ "$n" -gt 0 ]; do
     word=$(resolve "$1") || return 0
+    case $1 in \$*.\*) shown="$shown $1" ;; *) shown="$shown $word" ;; esac
     shift
     set -- "$@" "$word"
     n=$((n - 1))
   done
-  begin_setting "$topic $name $*"
+  begin_setting "$topic $name$shown"
   "$fn" "$@"
   end_setting
 }
@@ -99,13 +106,13 @@ run() {
   report
 }
 
-# conf_backup_status: part of a full dot check. dot.conf isn't in git, so its
+# conf_backup_status: part of a full dot check. dot.toml isn't in git, so its
 # backup in 1Password must follow it; dot conf backup updates it.
 conf_backup_status() {
-  begin_setting "dot.conf backup"
-  case $(op_backup_state "dotfiles: dot.conf" "$DOT_ROOT/dot.conf") in
-    changed) changed "1Password \"dotfiles: dot.conf\"" "changed since the last backup" "run: dot conf backup" ;;
-    never)   changed "1Password \"dotfiles: dot.conf\"" "not backed up from this Mac" "run: dot conf backup, or dot conf restore" ;;
+  begin_setting "dot.toml backup"
+  case $(op_backup_state "dotfiles: dot.toml" "$DOT_ROOT/dot.toml") in
+    changed) changed "1Password \"dotfiles: dot.toml\"" "changed since the last backup" "run: dot conf backup" ;;
+    never)   changed "1Password \"dotfiles: dot.toml\"" "not backed up from this Mac" "run: dot conf backup, or dot conf restore" ;;
   esac
   end_setting
 }

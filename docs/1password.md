@@ -53,15 +53,17 @@ Mac is fine; GitHub accepts several.
 ## 4. Use the key
 
 Log in to GitHub first: [auth/github.md](auth/github.md). Then, in
-`dot.conf`, `ssh_key` is the key's **title** in 1Password, and `github_user`
-your GitHub username:
+`dot.toml`, `ssh_key` is the key's **title** in 1Password, and `user` under
+`[github]` your GitHub username:
 
-    ssh_key=GitHub
-    github_user=rbadillap
+    ssh_key = "GitHub"
+
+    [github]
+    user = "your-username"
 
     dot apply ssh       # ssh agent 1password
     dot apply git       # git signing-key $ssh_key
-    dot apply github    # github ssh-key $github_user $ssh_key
+    dot apply github    # github ssh-key $github.user $ssh_key
 
 - **`ssh agent 1password`** adds a `Host *` block to `~/.ssh/config` that
   points at the agent. The rest of the file stays yours.
@@ -86,19 +88,19 @@ Commits made before signing was on aren't signed. If they aren't pushed yet,
 
 ## Identities per folder
 
-The global identity (`git_name`, `git_email`) is the default. Repos under a
-folder can use another name and email:
+The global identity (`name` and `email` under `[git]`) is the default. Repos
+under a folder can use another name and email: add one table per identity to
+`dot.toml`, with any label.
 
-    # dot.conf
-    site_dir=~/code/rbadillap/rbadillap
-    site_git_name=Ronny Badilla
-    site_git_email=info@ronnybadilla.com
+    [git.identity.work]
+    dir = "~/code/your-company"
+    name = "Your Name"
+    email = "you@your-company.com"
 
-    # config/git.conf
-    git identity $site_dir $site_git_name $site_git_email
-
-`dot apply git` writes the identity to `~/.config/git/identities/<folder>`
-and includes it for every repo under the folder (git's `includeIf gitdir`),
+`config/git.conf` applies every one of them (`git identities
+$git.identity.*`), so adding an identity doesn't touch `config/`.
+`dot apply git` writes each to `~/.config/git/identities/<folder>` and
+includes it for every repo under the folder (git's `includeIf gitdir`),
 including repos cloned there later. To see which identity a repo uses:
 
     git -C <repo> var GIT_AUTHOR_IDENT
@@ -106,23 +108,24 @@ including repos cloned there later. To see which identity a repo uses:
 Signing uses the same key; the extra email joins `allowed_signers`. For
 *Verified* on GitHub, the email must be verified on your account.
 
-## Backup of dot.conf
+## Backup of dot.toml
 
-`dot.conf` isn't in git, so it's kept in 1Password as the Document
-"dotfiles: dot.conf", tagged `dotfiles`, in your built-in personal vault:
+`dot.toml` isn't in git, so it's kept in 1Password as the Document
+"dotfiles: dot.toml", tagged `dotfiles`, in your built-in personal vault:
 
     dot conf backup     # save it (Touch ID)
     dot conf restore    # get it back, e.g. on a new Mac
     dot conf edit       # open it in your editor
 
-`dot check` tells you when `dot.conf` changed since the last backup, without
+`dot check` tells you when `dot.toml` changed since the last backup, without
 Touch ID: it compares the file with a record of the last upload, kept in
 `~/.local/state/dotfiles/`.
 
 A Mac that hasn't restored or backed up yet doesn't replace an existing
-backup, since its `dot.conf` could be the installer's defaults: restore first,
+backup, since its `dot.toml` could be the installer's defaults: restore first,
 or use `dot conf backup --force`. `dot conf restore` likewise keeps a
-`dot.conf` that differs from the backup unless you pass `--force`, and saves
-the old one as `dot.conf.before-restore`.
+`dot.toml` that differs from the backup unless you pass `--force`, and saves
+the old one as `dot.toml.before-restore`. Neither accepts a file `dot` can't
+read.
 
 The installer's **restore** option does the same on a clean Mac.
