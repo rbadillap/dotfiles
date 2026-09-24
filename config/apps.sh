@@ -7,3 +7,6 @@ brew cask thebrowsercompany-dia
 brew cask ghostty
 # Editor.
 brew cask zed
+# Chat.
+brew cask discord
+brew cask slack

@@ -383,7 +383,7 @@ All are installed with Homebrew and split by what they are:
 
 | File                  | Holds                          | Now                                  |
 |-----------------------|--------------------------------|--------------------------------------|
-| `config/apps.sh`      | Apps you open (casks)          | 1Password, Google Chrome, Dia, Ghostty, Zed |
+| `config/apps.sh`      | Apps you open (casks)          | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack |
 | `config/fonts.sh`     | Fonts (casks)                  | JetBrains Mono Nerd Font             |
 | `config/packages.sh`  | Command-line tools             | 1Password CLI (`op`), GitHub CLI (`gh`), Starship |
 
