@@ -18,7 +18,13 @@ brewpkg() {
 "*) return 0 ;; esac
 
   if [ "$DOT_MODE" = apply ]; then
-    HOMEBREW_NO_ENV_HINTS=1 "$brew" install --quiet "--$1" "$2" || { fail "brew install --$1 $2 failed"; return; }
+    # --adopt: an app already installed by hand (same version) becomes managed
+    # by Homebrew instead of failing with "already an App".
+    adopt=; [ "$1" = cask ] && adopt=--adopt
+    if ! out=$(HOMEBREW_NO_ENV_HINTS=1 "$brew" install --quiet "--$1" $adopt "$2" 2>&1 </dev/null); then
+      fail "brew install --$1 $2 failed: $(printf %s "$out" | grep -m1 '^Error' || printf %s "$out" | tail -1)"
+      return
+    fi
     DOT_CHANGED=1
   fi
   changed "brew $1 $2" "not installed" "installed"

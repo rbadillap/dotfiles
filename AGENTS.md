@@ -32,6 +32,7 @@ point) and docs/getting-started.md (the full guide).
 | Change a preference               | `config/<theme>.sh`                        |
 | Install an app (GUI)              | `brew cask <name>` in `config/apps.sh`      |
 | Install a CLI tool                | `brew formula <name>` or `brew cask <name>` in `config/packages.sh` |
+| Install a font                    | `brew cask <name>` in `config/fonts.sh`     |
 | Change the shell                  | `shell/<topic>.zsh`, listed in `shell/init.zsh` |
 | Add a setting                     | function in `catalog/<topic>.sh`, line in `config/<theme>.sh`, row in the "What gets configured" table of docs/getting-started.md |
 | Add a personal value (names, …)   | `dot.conf` (real) and `dot.conf.example` (placeholder) |

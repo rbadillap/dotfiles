@@ -3,3 +3,5 @@ brew cask 1password
 # Browsers.
 brew cask google-chrome
 brew cask thebrowsercompany-dia
+# Terminal.
+brew cask ghostty

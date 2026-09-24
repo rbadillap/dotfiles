@@ -285,8 +285,10 @@ Open a new terminal to see it. Personal customization (history, completion,
 aliases) comes later, each as its own file.
 
 **Symbols in the prompt.** Some of Starship's default symbols need a Nerd
-Font. If the prompt shows empty boxes, the terminal font lacks them; fonts
-are part of the terminal setup.
+Font. [Ghostty](https://ghostty.org), the terminal in `config/apps.sh`, ships
+with JetBrains Mono and Nerd Font symbols built in, so it needs no setup.
+Other apps (Terminal.app, editors) can use JetBrains Mono Nerd Font from
+`config/fonts.sh`; pick it in their font settings.
 
 ## What gets configured
 
@@ -319,17 +321,22 @@ installed. A config file is named after its theme, not its topic:
 
 ## Apps and packages
 
-Both are installed with Homebrew and split by what they are:
+All are installed with Homebrew and split by what they are:
 
 | File                  | Holds                          | Now                                  |
 |-----------------------|--------------------------------|--------------------------------------|
-| `config/apps.sh`      | Apps you open (casks)          | 1Password, Google Chrome, Dia        |
+| `config/apps.sh`      | Apps you open (casks)          | 1Password, Google Chrome, Dia, Ghostty |
+| `config/fonts.sh`     | Fonts (casks)                  | JetBrains Mono Nerd Font             |
 | `config/packages.sh`  | Command-line tools             | 1Password CLI (`op`), GitHub CLI (`gh`), Starship |
 
 To add one, find its exact name with `brew search <name>`, then add a line:
 `brew cask <name>` for an app or prebuilt binary, `brew formula <name>` for a
-CLI tool. `./dot apply apps` or `./dot apply packages` installs it. Removing
+CLI tool. `./dot apply apps` (or `packages`, `fonts`) installs it. Removing
 a line doesn't uninstall anything.
+
+An app you already installed by hand is adopted instead of reinstalled
+(`brew install --adopt`), as long as it's the same version. Adopting may ask
+for your password, because Homebrew fixes the app's ownership.
 
 ## How it works
 
