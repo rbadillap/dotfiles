@@ -10,10 +10,18 @@ else
   c_ok= c_diff= c_apply= c_err= c_off=
 fi
 
-begin_setting() { DOT_LABEL=$1 DOT_DIRTY=0 DOT_CHANGED=0; }
+begin_setting() { DOT_LABEL=$1 DOT_DIRTY=0 DOT_CHANGED=0 DOT_NOTES=; }
 
 end_setting() {
   [ "$DOT_DIRTY" = 1 ] || printf '  %s✓%s %s\n' "$c_ok" "$c_off" "$DOT_LABEL"
+  [ -z "$DOT_NOTES" ] || printf %s "$DOT_NOTES"
+}
+
+# note <text>: information shown under the setting. Never counts as a
+# difference or an error.
+note() {
+  DOT_NOTES="$DOT_NOTES$(printf '      · %s' "$1")
+"
 }
 
 # detail <text>: print the setting header once, then an indented detail line.

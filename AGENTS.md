@@ -10,6 +10,8 @@ point) and docs/getting-started.md (the full guide).
 - Ask before `./dot apply`, before anything that uses sudo, and before any
   other command that changes the machine.
 - Never commit `dot.conf`, secrets, or machine-specific values.
+- Never rewrite `~/.zshrc`: only the marked `# >>> dotfiles` block belongs to
+  the repo. Tools may append to the rest.
 - Never read or print private keys or tokens. Public keys come from
   1Password's agent (`ssh_pubkey`); tokens reach CLIs only through 1Password
   shell plugins.
@@ -30,6 +32,7 @@ point) and docs/getting-started.md (the full guide).
 | Change a preference               | `config/<theme>.sh`                        |
 | Install an app (GUI)              | `brew cask <name>` in `config/apps.sh`      |
 | Install a CLI tool                | `brew formula <name>` or `brew cask <name>` in `config/packages.sh` |
+| Change the shell                  | `shell/<topic>.zsh`, listed in `shell/init.zsh` |
 | Add a setting                     | function in `catalog/<topic>.sh`, line in `config/<theme>.sh`, row in the "What gets configured" table of docs/getting-started.md |
 | Add a personal value (names, …)   | `dot.conf` (real) and `dot.conf.example` (placeholder) |
 | Support a new tool (defaults, git…) | new `lib/<tool>.sh`                      |
@@ -60,6 +63,8 @@ fd 3, so commands run by a setting keep the real stdin.
 - Call lib functions; never touch the system directly.
 - After the lib calls, declare effects:
   - `restart <app>` is done automatically at the end of apply.
+  - `note "<text>"` adds information under the setting (e.g. lines in
+    `~/.zshrc` that aren't from the repo). It never counts as a difference.
   - `effect "<step>"` is reported to the user (e.g. log out).
   - Both are no-ops unless the setting actually changed something.
 

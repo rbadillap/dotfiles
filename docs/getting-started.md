@@ -243,6 +243,49 @@ Commits made before this step aren't signed. If they haven't been pushed,
 re-sign them with `git rebase --root --force-rebase` (one Touch ID per
 commit, unless 1Password remembers the approval).
 
+## 6. Shell
+
+zsh, with no framework, and the [Starship](https://starship.rs) prompt. zsh is
+macOS's default shell, so there's nothing to install for it; Starship comes
+from `config/packages.sh`.
+
+    ./dot apply packages   # installs starship
+    ./dot apply shell      # connects ~/.zshrc to this repo
+
+**`~/.zshrc` stays yours.** Many tools (Homebrew, 1Password, version
+managers) tell you to append a line to it, and they should be free to. So
+this repo never owns or rewrites the file; `shell init zsh` only adds one
+marked block that loads the repo's shell setup:
+
+    # >>> dotfiles: managed by ./dot apply shell
+    source "/Users/you/code/<owner>/dotfiles/shell/init.zsh"
+    # <<< dotfiles
+
+`./dot check shell` lists every other line in `~/.zshrc` as a note:
+
+    ✓ shell init zsh
+        · not from this repo: source /Users/you/.config/op/plugins.sh
+
+A note never counts as a difference. It tells you something was added
+outside the repo, so you can decide: move it into `shell/` to make it part of
+the setup, or leave it.
+
+**One file per topic** in `shell/`, loaded by `shell/init.zsh` in a fixed
+order:
+
+| File                | Does                                                 |
+|---------------------|------------------------------------------------------|
+| `shell/path.zsh`    | Homebrew: `PATH`, `MANPATH` and completions          |
+| `shell/op.zsh`      | 1Password shell plugins (e.g. `gh` gets its token)   |
+| `shell/prompt.zsh`  | Starship                                             |
+
+Open a new terminal to see it. Personal customization (history, completion,
+aliases) comes later, each as its own file.
+
+**Symbols in the prompt.** Some of Starship's default symbols need a Nerd
+Font. If the prompt shows empty boxes, the terminal font lacks them; fonts
+are part of the terminal setup.
+
 ## What gets configured
 
 | Topic      | Setting             | Values                              |
@@ -259,6 +302,7 @@ commit, unless 1Password remembers the approval).
 | `mouse`    | `speed`             | `0.0`–`3.0`                         |
 | `mouse`    | `secondary-click`   | `right`, `left`, `off`              |
 | `mouse`    | `natural-scrolling` | `true`, `false`; also applies to the trackpad |
+| `shell`    | `init`              | `zsh`: adds the managed block to `~/.zshrc` |
 | `ssh`      | `agent`             | `1password` |
 | `system`   | `hostname`          | letters, digits, hyphens; sets all three macOS names (sudo) |
 | `trackpad` | `speed`             | `0.0`–`3.0`                         |
@@ -278,7 +322,7 @@ Both are installed with Homebrew and split by what they are:
 | File                  | Holds                          | Now                                  |
 |-----------------------|--------------------------------|--------------------------------------|
 | `config/apps.sh`      | Apps you open (casks)          | 1Password, Google Chrome, Dia        |
-| `config/packages.sh`  | Command-line tools             | 1Password CLI (`op`), GitHub CLI (`gh`) |
+| `config/packages.sh`  | Command-line tools             | 1Password CLI (`op`), GitHub CLI (`gh`), Starship |
 
 To add one, find its exact name with `brew search <name>`, then add a line:
 `brew cask <name>` for an app or prebuilt binary, `brew formula <name>` for a

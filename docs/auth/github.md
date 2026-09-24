@@ -80,7 +80,7 @@ It asks three things:
 
        echo "source /Users/you/.config/op/plugins.sh" >> ~/.zshrc && source ~/.zshrc
 
-   Run it; that's step 3.
+   Run it, or skip it if you use this repo's shell setup (see step 3).
 
 ## 3. Activate the plugin in your shell (once per Mac)
 
@@ -93,8 +93,10 @@ things:
 - It runs `source ~/.zshrc`, so the terminal you're in has the alias right
   away.
 
-> Temporary: once the shell setup is part of this repo, `./dot apply` will
-> add that line, and this step goes away.
+With this repo's shell setup (getting-started, step 6) the command isn't
+needed: `shell/op.zsh` already loads `plugins.sh`. Running it anyway is
+harmless; `./dot check shell` then lists that line as a note, and you can
+delete it from `~/.zshrc`.
 
 ## 4. Check it
 
@@ -116,7 +118,7 @@ minute or two, but that hasn't been measured yet.
 | Time             | ~10 min the first time; per Mac: not yet measured | not measured |
 | Browser          | once, to create the token                   | on every Mac      |
 | 2FA              | once, when creating the token               | on every Mac, if asked |
-| Per machine      | `op plugin init gh` + the shell line        | the whole login   |
+| Per machine      | `op plugin init gh` (the shell line comes from `./dot apply shell`) | the whole login   |
 | Expires          | as set when creating the token              | no                |
 | Secret on disk   | no                                          | in the macOS Keychain |
 
