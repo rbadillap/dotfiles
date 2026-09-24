@@ -1,0 +1,25 @@
+#!/bin/sh
+# Summary: Compare the Mac with config/; changes nothing
+# Usage: dot check [<file>]
+# Usage: dot check <topic> <setting> <value>
+# Group: core
+#
+# Shows every setting in config/ that differs from the Mac, without changing
+# anything, and never asks for a password or Touch ID.
+#
+# EXAMPLES
+#   # Everything in config/
+#   $ dot check
+#   # One file, config/dock.conf
+#   $ dot check dock
+#   # Would this value differ?
+#   $ dot check keyboard repeat-rate 1
+#
+# EXIT CODES
+#   0  everything matches
+#   1  differences found, or a setting has an error
+#   2  bad usage, unknown file, or dot.conf missing
+set -eu
+DOT_MODE=check
+. "$DOT_ROOT/src/lib/run.sh"
+run "$@"

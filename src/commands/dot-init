@@ -1,0 +1,42 @@
+#!/bin/sh
+# Summary: Print the zsh setup that ~/.zshrc loads
+# Usage: dot init zsh
+# Group: additional
+#
+# Prints zsh code that sets up Homebrew, the dot command (which takes you into
+# the repo after dot clone, dot fork and dot cd), its completion, and then
+# loads your files in config/shell/. `dot apply shell` adds the line that
+# evaluates it to ~/.zshrc:
+#
+#   eval "$(/path/to/dotfiles/dot init zsh)"
+set -eu
+[ "${1:-}" = zsh ] && [ $# -eq 1 ] || { echo "dot init: expected 'zsh'" >&2; echo "Run 'dot init --help' for usage." >&2; exit 2; }
+
+cat <<EOF
+export DOT_ROOT="$DOT_ROOT"
+
+# Homebrew: PATH, MANPATH and completions for everything it installs.
+[[ -x /opt/homebrew/bin/brew ]] && eval "\$(/opt/homebrew/bin/brew shellenv)"
+
+# dot. clone, fork and cd print a path; the shell then goes there.
+dot() {
+  case "\$1" in
+    clone|fork|cd)
+      case " \$* " in *" -h "*|*" --help "*) "\$DOT_ROOT/dot" "\$@"; return ;; esac
+      local dir
+      dir=\$("\$DOT_ROOT/dot" "\$@") || return
+      [[ -d \$dir ]] && cd "\$dir" ;;
+    *) "\$DOT_ROOT/dot" "\$@" ;;
+  esac
+}
+
+# Completion.
+(( \$+functions[compdef] )) || { autoload -Uz compinit && compinit -i; }
+EOF
+"$DOT_ROOT/src/commands/dot-completion" zsh
+cat <<EOF
+
+# Your shell setup, one file per topic.
+for _dot_file in "\$DOT_ROOT"/config/shell/*.zsh(N); do source "\$_dot_file"; done
+unset _dot_file
+EOF

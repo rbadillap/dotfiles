@@ -284,7 +284,7 @@ restore_conf() {
   info "Integrate with 1Password CLI. Then come back here."
   while ask "    Ready to restore?" y; do
     if op document get "dotfiles: dot.conf" --out-file "$DOTFILES_DIR/dot.conf" --force >/dev/null 2>&1; then
-      # Same record `./dot apply backup` keeps (lib/op.sh), so check sees it as backed up.
+      # Same record `./dot apply backup` keeps (src/lib/op.sh), so check sees it as backed up.
       state=${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles
       mkdir -p "$state"
       shasum -a 256 "$DOTFILES_DIR/dot.conf" | cut -d' ' -f1 > "$state/dotfiles-dot-conf.sha256"

@@ -1,0 +1,41 @@
+#!/bin/sh
+# Summary: Completion candidates for the words typed so far
+# Usage: dot __complete [<word>...]
+# Group: hidden
+#
+# Prints one candidate per line, as "value:description" or "value". Used by
+# the zsh completion from dot completion.
+set -eu
+
+commands=$DOT_ROOT/src/commands
+settings() { "$commands/dot-settings" --index; }
+tab=$(printf '\t')
+
+# First word: commands, with their summaries.
+if [ $# -eq 0 ]; then
+  for f in "$commands"/dot-*; do
+    name=${f##*/dot-}
+    case $name in *-*|__*) continue ;; esac
+    grep -q '^# Group: hidden' "$f" && continue
+    printf '%s:%s\n' "$name" "$(sed -n 's/^# Summary: //p' "$f" | head -1 | sed 's/:/\\:/g')"
+  done
+  echo "help:Show help for a command"
+  exit 0
+fi
+
+cmd=$1; shift
+case $cmd in
+  check|apply)
+    case $# in
+      0) # a config file, or a topic for a single setting
+         { ls "$DOT_ROOT/config" | sed -n 's/\.conf$//p'; settings | cut -f1; } | sort -u ;;
+      1) settings | awk -F "$tab" -v t="$1" '$1 == t { print $2 }' ;;
+      2) # values listed as <a|b|c> in the setting's syntax
+         settings | awk -F "$tab" -v t="$1" -v s="$2" '$1 == t && $2 == s { print $3 }' |
+           sed -n 's/.*<\([^>]*|[^>]*\)>.*/\1/p' | tr '|' '\n' ;;
+    esac ;;
+  settings) [ $# -eq 0 ] && settings | cut -f1 | sort -u ;;
+  help) [ $# -eq 0 ] && ls "$commands" | sed -n 's/^dot-\([a-z][a-z]*\)$/\1/p' ;;
+  completion|init) [ $# -eq 0 ] && echo zsh ;;
+esac
+exit 0

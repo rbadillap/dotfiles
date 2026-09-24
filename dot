@@ -1,138 +1,50 @@
 #!/bin/sh
-# dot: check or apply the desired state declared in config/.
-# Run `dot --help` for usage; see usage() below.
+# dot: the single entry point. Each command is a file in src/commands/:
+# dot-<command>, or dot-<group>-<subcommand>. This only finds and runs it.
 set -eu
 
 DOT_ROOT=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
 export DOT_ROOT
+commands=$DOT_ROOT/src/commands
 
 # Homebrew tools (op, gh, brew) even from a shell opened before Homebrew.
 case :$PATH: in *:/opt/homebrew/bin:*) ;; *) [ -d /opt/homebrew/bin ] && PATH=/opt/homebrew/bin:$PATH ;; esac
 
-# usage [status]: help on stdout for -h (exit 0), on stderr for bad usage (exit 2).
-usage() {
-  cat <<EOF
-Usage: dot check|apply [<theme> [<setting> <value>]]
-
-  dot check                          everything in config/; changes nothing
-  dot apply                          fix every difference
-  dot check <theme>                  one file, config/<theme>.sh
-  dot apply <topic> <setting> <value>  one setting, e.g. to try it live
-
-check never changes anything. apply changes only what differs; steps that
-need sudo say so and ask for your password.
-
-Options:
-  -h, --help   show this help
-
-Exit codes: 0 all good, 1 differences or errors, 2 bad usage.
-More: docs/dot.md, and docs/README.md for everything else
-EOF
-  exit "${1:-2}"
-}
-
-# -h or --help anywhere shows the help.
-for arg in "$@"; do
-  case $arg in -h|--help) usage 0 ;; esac
-done
-
-[ $# -ge 1 ] || usage >&2
+[ $# -gt 0 ] || exec "$commands/dot-help"
 case $1 in
-  check|apply) DOT_MODE=$1 ;;
-  help) usage 0 ;;
-  *) echo "dot: unknown command '$1'" >&2; usage >&2 ;;
+  -h|--help|help) shift; exec "$commands/dot-help" "$@" ;;
+  --version) git -C "$DOT_ROOT" log -1 --format='dot %h (%cs)'; exit 0 ;;
+  -*) echo "dot: unknown flag '$1'" >&2; echo "Run 'dot --help' for usage." >&2; exit 2 ;;
 esac
-shift
 
-# Themes and topics are plain names; anything else is an unknown option or a typo.
-if [ $# -ge 1 ]; then
-  case $1 in
-    -*) echo "dot: unknown option '$1'" >&2; usage >&2 ;;
-    *[!a-z0-9-]*) echo "dot: invalid name '$1'" >&2; usage >&2 ;;
-  esac
-fi
-
-DOT_DRIFT=$(mktemp)
-DOT_EFFECTS=$(mktemp)
-DOT_RESTARTS=$(mktemp)
-trap 'rm -f "$DOT_DRIFT" "$DOT_EFFECTS" "$DOT_RESTARTS"' EXIT
-export DOT_MODE DOT_DRIFT DOT_EFFECTS DOT_RESTARTS
-
-for f in "$DOT_ROOT"/lib/*.sh; do . "$f"; done
-for f in "$DOT_ROOT"/catalog/*.sh; do . "$f"; done
-
-# Run one declared setting: "<topic> <setting> <value>".
-setting() {
-  topic=$1 name=$2
-  shift 2
-  fn="${topic}_$(printf %s "$name" | tr - _)"
-  # Only catalog functions are settings; lib/ functions can't be called this way.
-  if ! grep -qx "$fn() {" "$DOT_ROOT/catalog/$topic.sh" 2>/dev/null; then
-    fail "unknown setting: $topic $name"
-    return
-  fi
-  # Resolve $name references from dot.conf, keeping the argument list intact.
-  n=$#
-  while [ "$n" -gt 0 ]; do
-    word=$(resolve "$1") || return 0
-    shift
-    set -- "$@" "$word"
-    n=$((n - 1))
-  done
-  begin_setting "$topic $name $*"
-  "$fn" "$@"
-  end_setting
-}
-
-# Values from dot.conf. Names are checked before use, so eval only ever sees
-# a plain identifier.
-if [ ! -f "$DOT_ROOT/dot.conf" ]; then
-  echo "dot.conf not found. Create it from the example and edit it:" >&2
-  echo "  cp \"$DOT_ROOT/dot.conf.example\" \"$DOT_ROOT/dot.conf\"" >&2
+if [ $# -ge 2 ] && [ -x "$commands/dot-$1-$2" ]; then
+  cmd=$1-$2; shift 2
+elif [ -x "$commands/dot-$1" ]; then
+  cmd=$1; shift
+else
+  echo "dot: unknown command '$1'" >&2
+  # Did you mean…? Commands within two edits of what was typed.
+  guess=$(ls "$commands" | sed -n 's/^dot-\([a-z][a-z]*\)$/\1/p' | awk -v w="$1" '
+    function dist(a, b,   i, j, la, lb, d, c) {
+      la = length(a); lb = length(b)
+      for (i = 0; i <= la; i++) d[i, 0] = i
+      for (j = 0; j <= lb; j++) d[0, j] = j
+      for (i = 1; i <= la; i++) for (j = 1; j <= lb; j++) {
+        c = (substr(a, i, 1) != substr(b, j, 1))
+        d[i, j] = d[i-1, j] + 1
+        if (d[i, j-1] + 1 < d[i, j]) d[i, j] = d[i, j-1] + 1
+        if (d[i-1, j-1] + c < d[i, j]) d[i, j] = d[i-1, j-1] + c
+      }
+      return d[la, lb]
+    }
+    dist(w, $0) <= 2 { print "    " $0 }')
+  [ -z "$guess" ] || printf '\nDid you mean this?\n%s\n' "$guess" >&2
+  echo "Run 'dot --help' for usage." >&2
   exit 2
 fi
-while IFS== read -r key value || [ -n "$key" ]; do
-  case $key in ''|'#'*) continue ;; esac
-  case $key in
-    *[!a-z0-9_]*) echo "dot.conf: invalid name '$key'" >&2; exit 2 ;;
-  esac
-  eval "DOTVAR_$key=\$value"
-done < "$DOT_ROOT/dot.conf"
 
-# resolve <word>: $name becomes its value from dot.conf; other words pass through.
-resolve() {
-  case $1 in
-    \$*) name=${1#\$}
-      case $name in *[!a-z0-9_]*|'') fail "invalid variable: $1"; return 1 ;; esac
-      eval "set -- \"\${DOTVAR_$name-\$1}\""
-      case $1 in \$*) fail "$1 is not defined in dot.conf"; return 1 ;; esac ;;
-  esac
-  printf %s "$1"
-}
-
-# Config files are data, not code: each line is "<topic> <setting> <value>".
-# The file is read on fd 3 so commands run by a setting (brew, sudo...) keep
-# the real stdin and can't consume the rest of the file.
-run_file() {
-  while read -r topic name value <&3 || [ -n "$topic" ]; do
-    case $topic in ''|'#'*) continue ;; esac
-    set -f
-    setting "$topic" "$name" $value
-    set +f
-  done 3< "$1"
-}
-
-if [ $# -eq 0 ]; then
-  for f in "$DOT_ROOT"/config/*.sh; do run_file "$f"; done
-elif [ $# -eq 1 ]; then
-  file="$DOT_ROOT/config/$1.sh"
-  if [ ! -f "$file" ]; then
-    echo "dot: no config/$1.sh. Themes: $(cd "$DOT_ROOT/config" && ls *.sh | sed 's/\.sh$//' | tr '\n' ' ')" >&2
-    exit 2
-  fi
-  run_file "$file"
-else
-  setting "$@"
-fi
-
-report
+# --help anywhere after the command shows that command's help.
+for arg in "$@"; do
+  case $arg in -h|--help) exec "$commands/dot-help" $(printf %s "$cmd" | tr - ' ') ;; esac
+done
+exec "$commands/dot-$cmd" "$@"

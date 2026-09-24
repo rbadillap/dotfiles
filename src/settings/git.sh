@@ -1,4 +1,4 @@
-# Git settings. Identity comes from dot.conf; see config/git.sh.
+# Git settings. Identity comes from dot.conf; see config/git.conf.
 
 # git name <name>   author name on commits; may contain spaces
 git_name() {

@@ -1,11 +1,11 @@
 # Rectangle (window tiling): https://rectangleapp.com. Installed from
-# config/apps.sh; it needs Accessibility permission once (manual).
+# config/apps.conf; it needs Accessibility permission once (manual).
 
 # rectangle shortcut <action> <combo>
 # <action>: left-half right-half center-half first-third center-third
 #   last-third first-two-thirds last-two-thirds first-fourth second-fourth
 #   third-fourth last-fourth maximize almost-maximize center
-# <combo>: e.g. cmd+opt+left, cmd+shift+opt+up (see lib/keys.sh)
+# <combo>: e.g. cmd+opt+left, cmd+shift+opt+up (see src/lib/keys.sh)
 rectangle_shortcut() {
   case $1 in
     left-half|right-half|center-half|first-third|center-third|last-third|\

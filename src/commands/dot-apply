@@ -1,0 +1,29 @@
+#!/bin/sh
+# Summary: Fix every difference, or try one setting live
+# Usage: dot apply [<file>]
+# Usage: dot apply <topic> <setting> <value>
+# Group: core
+#
+# Changes only what differs from config/, so running it twice is safe. Steps
+# that need sudo say so and ask for your password. At the end it restarts apps
+# that need it and lists anything left for you, such as logging out.
+#
+# With a single setting it applies without saving to config/: to keep it, add
+# the same line to a config file.
+#
+# EXAMPLES
+#   # Everything in config/
+#   $ dot apply
+#   # One file, config/dock.conf
+#   $ dot apply dock
+#   # Try a setting live
+#   $ dot apply keyboard repeat-rate 1
+#
+# EXIT CODES
+#   0  applied, or nothing to do
+#   1  a setting had an error
+#   2  bad usage, unknown file, or dot.conf missing
+set -eu
+DOT_MODE=apply
+. "$DOT_ROOT/src/lib/run.sh"
+run "$@"

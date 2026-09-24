@@ -1,16 +1,34 @@
 # Using dot
 
-`dot` compares the Mac with what `config/` declares, and fixes the
-differences. It's on `PATH` once the shell is set up ([shell.md](shell.md)),
-so it works from any folder; before that, run `./dot` from the repo.
+`dot` is the only command. Everything this repo does is a subcommand:
 
-    ./dot check                          # everything; changes nothing
-    ./dot apply                          # fix every difference
-    ./dot check <theme>                  # one file: config/<theme>.sh
-    ./dot apply <topic> <setting> <value>  # one setting, not saved anywhere
-    ./dot --help                         # usage (-h works anywhere on the line)
+    dot <command> [<subcommand>] [flags]
 
-## Output
+| Command            | Does                                                        |
+|--------------------|-------------------------------------------------------------|
+| `dot check`        | compares the Mac with `config/`; changes nothing            |
+| `dot apply`        | fixes every difference, or tries one setting live           |
+| `dot settings`     | lists the settings you can use in `config/`                 |
+| `dot clone`        | clones a GitHub repo into `~/code/<owner>/<repo>`           |
+| `dot fork`         | forks a GitHub repo and clones it with an `upstream` remote |
+| `dot cd`           | goes to the dotfiles repo                                   |
+| `dot init zsh`     | prints the zsh setup that `~/.zshrc` loads                  |
+| `dot completion zsh` | prints the zsh completion script                          |
+
+`dot --help` lists them, `dot <command> --help` (or `dot help <command>`)
+explains one, and a typo gets a suggestion. Completion covers commands,
+config files, settings and their values: `dot apply dock visibility <Tab>`
+offers `always autohide hidden`.
+
+Once the shell is set up ([shell.md](shell.md)), `dot` works from any folder.
+Before that, or from scripts, run it by path: `~/code/<owner>/dotfiles/dot`.
+
+## check and apply
+
+    dot check                           # everything in config/; changes nothing
+    dot apply                           # fix every difference
+    dot check dock                      # one file: config/dock.conf
+    dot apply keyboard repeat-rate 1    # one setting, not saved anywhere
 
     ✓ dock visibility hidden
     ~ keyboard repeat-rate 2
@@ -21,35 +39,55 @@ so it works from any folder; before that, run `./dot` from the repo.
         · not from this repo: source ~/.config/op/plugins.sh
     ! mouse secondary-click: expected right, left or off, got 'middle'
 
-| Mark | Meaning                                                            |
-|------|--------------------------------------------------------------------|
-| `✓`  | matches                                                            |
-| `~`  | differs; each indented line is an underlying value and its target  |
-| `→`  | changed by `apply`                                                 |
-| `!`  | error: an invalid value or a failed step; nothing changed for it   |
-| `·`  | a note: information only, never a difference                       |
-| `(sudo)` | needs your password; `apply` asks for it                        |
+| Mark     | Meaning                                                          |
+|----------|------------------------------------------------------------------|
+| `✓`      | matches                                                          |
+| `~`      | differs; each indented line is an underlying value and its target |
+| `→`      | changed by `apply`                                               |
+| `!`      | error: an invalid value or a failed step; nothing changed for it |
+| `·`      | a note: information only, never a difference                     |
+| `(sudo)` | needs your password; `apply` asks for it                         |
 
-`apply` changes only what differs, so running it twice is safe. At the end
-it restarts apps that need it (the Dock, Rectangle) and lists anything left
-for you, such as logging out.
+`check` never changes anything and never asks for a password or Touch ID.
+`apply` changes only what differs, so running it twice is safe; at the end it
+restarts apps that need it and lists anything left for you, such as logging
+out.
 
-## Trying a setting live
+To try a setting, apply it alone: `dot apply keyboard repeat-rate 1`. To keep
+it, add the same line to a file in `config/`.
 
-The single-setting form applies without saving:
+## settings
 
-    ./dot apply keyboard repeat-rate 1
+    dot settings            # every setting, with values and what config/ sets
+    dot settings trackpad   # one topic
 
-If you like it, copy the same line (`keyboard repeat-rate 1`) into its
-`config/` file. If not, apply the previous value.
+## clone and fork
+
+    dot clone vercel/next.js                   # ~/code/vercel/next.js
+    dot clone https://github.com/shadcn-ui/ui  # URLs work too
+    dot fork vercel/next.js                    # your fork in ~/code/<you>/next.js
+
+- **clone** accepts `owner/repo` and any GitHub URL form (`https://`, `git@`,
+  `ssh://`, with `.git`, `/tree/…`, `?…` or `#…`); other hosts are refused.
+  It clones over SSH with your 1Password key, uses GitHub's spelling of the
+  name, and only prints the path if the repo is already there. It never
+  overwrites a folder holding something else, and a failed clone leaves
+  nothing behind.
+- **fork** forks the repo to your account, or reuses your fork (even one
+  GitHub renamed), clones it, and adds the original as `upstream`. Forking
+  your own repo just clones it. Your username comes from `github_user` in
+  `dot.conf`.
+
+In zsh, both take you to the repo, as does `dot cd`. For scripts, the only
+thing on stdout is the path: `dir=$(dot clone vercel/next.js)`.
 
 ## Exit codes
 
-| Code | Meaning                                                           |
-|------|-------------------------------------------------------------------|
-| `0`  | everything matches (check) or was applied (apply)                 |
-| `1`  | differences found, or a setting had an error                      |
-| `2`  | bad usage (unknown command, option or theme), or `dot.conf` missing |
+| Code | Meaning                                                            |
+|------|--------------------------------------------------------------------|
+| `0`  | success: everything matches, applied, cloned                       |
+| `1`  | differences found, or something failed                             |
+| `2`  | bad usage: unknown command, flag or file, or `dot.conf` missing     |
 
-Without a terminal (agents, logs), output is plain text without colors.
-`NO_COLOR` also turns colors off.
+Messages go to stderr and results to stdout. Without a terminal (agents,
+logs) output is plain text; `NO_COLOR` turns colors off too.

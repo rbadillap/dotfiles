@@ -6,15 +6,15 @@ Which editor you use is a personal value, in `dot.conf`:
 
     editor=zed    # zed, code, cursor, nvim, vim or nano
 
-`./dot apply editor` sets git's `core.editor` (`zed --wait`: GUI editors wait
-until you close the file). `shell/editor.zsh` exports the same command as
+`dot apply editor` sets git's `core.editor` (`zed --wait`: GUI editors wait
+until you close the file). `config/shell/editor.zsh` exports the same command as
 `EDITOR` and `VISUAL`, so every tool that opens an editor agrees.
 
 ## Zed settings
 
-Zed comes from `config/apps.sh`. Its settings live in the repo:
+Zed comes from `config/apps.conf`. Its settings live in the repo:
 
-    ./dot apply zed    # ~/.config/zed/settings.json → home/.config/zed/settings.json
+    dot apply zed    # ~/.config/zed/settings.json → config/home/.config/zed/settings.json
 
 The file is **linked**, not copied. When you change a setting in Zed, Zed
 writes it into the repo; `git diff` shows it, and you commit or discard it.

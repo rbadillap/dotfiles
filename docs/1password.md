@@ -10,8 +10,8 @@ One SSH key does two jobs:
 - **Authentication:** `git push` and `git pull` to GitHub.
 - **Commit signing:** GitHub shows your commits as *Verified*.
 
-The app (`config/apps.sh`) and its CLI, `op` (`config/packages.sh`), come
-from `./dot apply`. The first three steps below are manual because they
+The app (`config/apps.conf`) and its CLI, `op` (`config/packages.conf`), come
+from `dot apply`. The first three steps below are manual because they
 involve your account.
 
 ## 1. Sign in
@@ -59,9 +59,9 @@ your GitHub username:
     ssh_key=GitHub
     github_user=rbadillap
 
-    ./dot apply ssh       # ssh agent 1password
-    ./dot apply git       # git signing-key $ssh_key
-    ./dot apply github    # github ssh-key $github_user $ssh_key
+    dot apply ssh       # ssh agent 1password
+    dot apply git       # git signing-key $ssh_key
+    dot apply github    # github ssh-key $github_user $ssh_key
 
 - **`ssh agent 1password`** adds a `Host *` block to `~/.ssh/config` that
   points at the agent. The rest of the file stays yours.
@@ -72,9 +72,9 @@ your GitHub username:
   an authentication key and as a signing key, titled after the hostname
   (e.g. `ronny (1Password)`).
 
-`./dot check` needs no Touch ID: the public key comes from the agent, and
+`dot check` needs no Touch ID: the public key comes from the agent, and
 GitHub's public key lists show what your account has. Signing a commit asks
-for Touch ID, and so does `./dot apply github`, which adds keys through `gh`.
+for Touch ID, and so does `dot apply github`, which adds keys through `gh`.
 
 Check it:
 
@@ -94,10 +94,10 @@ folder can use another name and email:
     site_git_name=Ronny Badilla
     site_git_email=info@ronnybadilla.com
 
-    # config/git.sh
+    # config/git.conf
     git identity $site_dir $site_git_name $site_git_email
 
-`./dot apply git` writes the identity to `~/.config/git/identities/<folder>`
+`dot apply git` writes the identity to `~/.config/git/identities/<folder>`
 and includes it for every repo under the folder (git's `includeIf gitdir`),
 including repos cloned there later. To see which identity a repo uses:
 
@@ -111,11 +111,11 @@ Signing uses the same key; the extra email joins `allowed_signers`. For
 `dot.conf` isn't in git, so it's kept in 1Password as the Document
 "dotfiles: dot.conf", tagged `dotfiles`, in your built-in personal vault:
 
-    backup dot-conf 1password    # config/backup.sh
+    backup dot-conf 1password    # config/backup.conf
 
-    ./dot apply backup           # uploads dot.conf (Touch ID)
+    dot apply backup           # uploads dot.conf (Touch ID)
 
-`./dot check` tells you when `dot.conf` changed since the last backup,
+`dot check` tells you when `dot.conf` changed since the last backup,
 without Touch ID: it compares the file with a record of the last upload,
 kept in `~/.local/state/dotfiles/`.
 

@@ -1,8 +1,8 @@
 # Window tiling
 
 [Rectangle](https://rectangleapp.com) tiles windows in thirds and fourths,
-which suits an ultrawide screen. It comes from `config/apps.sh`, and its
-shortcuts are declared in `config/windows.sh`:
+which suits an ultrawide screen. It comes from `config/apps.conf`, and its
+shortcuts are declared in `config/windows.conf`:
 
 | Shortcut | Window             |
 |----------|--------------------|
@@ -13,7 +13,7 @@ shortcuts are declared in `config/windows.sh`:
 | `⌘⇧⌥↑`   | center half (50%)  |
 | `⌘⇧⌥→`   | right fourth (25%) |
 
-    ./dot apply windows
+    dot apply windows
 
 This also turns off macOS's own edge tiling (`windows native-tiling false`),
 so the two don't compete, and restarts Rectangle to load the shortcuts. Sizes
@@ -32,4 +32,4 @@ first.
 
 `<combo>` is modifiers and one key joined by `+`: modifiers `cmd`, `opt`,
 `ctrl`, `shift`; keys `left`, `right`, `up`, `down`, `space`, `return`, or a
-letter. The actions are listed in `catalog/rectangle.sh`.
+letter. The actions are listed in `src/settings/rectangle.sh`.

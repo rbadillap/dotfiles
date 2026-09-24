@@ -11,7 +11,7 @@ ssh_key=GitHub
 # Your GitHub username.
 github_user=your-username
 # Another name and email for repos under one folder (see `git identity` in
-# config/git.sh; delete that line if you don't need it).
+# config/git.conf; delete that line if you don't need it).
 site_dir=~/code/you/site
 site_git_name=Your Name
 site_git_email=you@example.org

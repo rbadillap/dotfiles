@@ -11,7 +11,7 @@ is at the end, for comparison.
 
 - 1Password with **Integrate with 1Password CLI** turned on
   ([1password.md](../1password.md), step 2).
-- `gh` and `op` installed; `./dot apply packages` does it.
+- `gh` and `op` installed; `dot apply packages` does it.
 
 ## 1. Create a token (once, ever)
 
@@ -42,7 +42,7 @@ Open <https://github.com/settings/personal-access-tokens/new>:
 
   *Metadata* becomes *Read-only* automatically.
 - **Account permissions:** set these to *Read and write*. Without them,
-  `./dot apply github` fails with HTTP 403:
+  `dot apply github` fails with HTTP 403:
   - *Git SSH keys* (upload your SSH key for authentication)
   - *SSH signing keys* (upload it for commit signing)
 
@@ -93,8 +93,8 @@ things:
   away.
 
 With this repo's shell setup ([shell.md](../shell.md)) the command isn't
-needed: `shell/op.zsh` already loads `plugins.sh`. Running it anyway is
-harmless; `./dot check shell` then lists that line as a note, and you can
+needed: `config/shell/op.zsh` already loads `plugins.sh`. Running it anyway is
+harmless; `dot check shell` then lists that line as a note, and you can
 delete it from `~/.zshrc`.
 
 Then add the `dotfiles` tag, keeping the one `op` added:
@@ -116,7 +116,7 @@ nothing is written to disk.
 | Time             | ~10 min to create the token (fine-grained); per Mac: not measured | not measured |
 | Browser          | once, to create the token                   | on every Mac      |
 | 2FA              | once, when creating the token               | on every Mac, if asked |
-| Per machine      | `op plugin init gh` (the shell line comes from `./dot apply shell`) | the whole login   |
+| Per machine      | `op plugin init gh` (the shell line comes from `dot apply shell`) | the whole login   |
 | Expires          | as set when creating the token              | no                |
 | Secret on disk   | no                                          | in the macOS Keychain |
 

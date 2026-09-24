@@ -1,44 +1,45 @@
 # Shell
 
 zsh (macOS's default shell), without a framework, and the
-[Starship](https://starship.rs) prompt from `config/packages.sh`.
+[Starship](https://starship.rs) prompt from `config/packages.conf`.
 
-    ./dot apply packages   # installs Starship
-    ./dot apply shell      # connects ~/.zshrc to this repo
+    dot apply packages   # installs Starship
+    dot apply shell      # connects ~/.zshrc to this repo
 
 ## ~/.zshrc stays yours
 
 Tools such as Homebrew and 1Password ask you to append lines to `~/.zshrc`,
 and they're free to. The repo never owns or rewrites the file:
-`shell init zsh` adds one marked block that loads the repo's setup.
+`shell init zsh` keeps one marked block in it.
 
-    # >>> dotfiles: managed by ./dot apply shell
-    source "/Users/you/code/<owner>/dotfiles/shell/init.zsh"
+    # >>> dotfiles: managed by dot apply shell
+    eval "$("/Users/you/code/<owner>/dotfiles/dot" init zsh)"
     # <<< dotfiles
 
-`./dot check shell` lists every other line as a note, so you notice what
-tools added and can move it into `shell/` or leave it:
+`dot check shell` lists every other line as a note, so you notice what tools
+added and can move it into `config/shell/` or leave it:
 
     ✓ shell init zsh
         · not from this repo: source /Users/you/.config/op/plugins.sh
 
-## shell/
+## What `dot init zsh` sets up
 
-One file per topic, loaded by `shell/init.zsh` in this order:
+1. **Homebrew**: `PATH`, `MANPATH` and completions.
+2. **dot**, as a shell function: `dot clone`, `dot fork` and `dot cd` take you
+   to the folder.
+3. **Completion** for `dot` ([dot.md](dot.md)).
+4. **Your files** in `config/shell/`, in alphabetical order:
 
-| File                | Does                                                 |
-|---------------------|------------------------------------------------------|
-| `shell/path.zsh`    | Homebrew: `PATH`, `MANPATH`, completions; this repo's `bin/` |
-| `shell/op.zsh`      | 1Password shell plugins: `gh` gets its token from 1Password |
-| `shell/editor.zsh`  | `EDITOR` and `VISUAL`, from git's `core.editor` ([editor.md](editor.md)) |
-| `shell/code.zsh`    | `clone` and `fork` take you to the repo ([tools.md](tools.md)) |
-| `shell/prompt.zsh`  | Starship                                             |
+| File                        | Does                                                  |
+|-----------------------------|-------------------------------------------------------|
+| `config/shell/editor.zsh`   | `EDITOR` and `VISUAL`, from git's `core.editor` ([editor.md](editor.md)) |
+| `config/shell/op.zsh`       | 1Password shell plugins: `gh` gets its token from 1Password |
+| `config/shell/prompt.zsh`   | Starship                                              |
 
-To add a topic, create `shell/<topic>.zsh` and add it to the list in
-`shell/init.zsh`.
+To add something to your shell, create `config/shell/<topic>.zsh`.
 
 ## Terminal and font
 
-[Ghostty](https://ghostty.org), from `config/apps.sh`, includes JetBrains Mono
-with the Nerd Font symbols Starship uses, so it needs no font setup. Other
-apps can use JetBrains Mono Nerd Font from `config/fonts.sh`.
+[Ghostty](https://ghostty.org), from `config/apps.conf`, includes JetBrains
+Mono with the Nerd Font symbols Starship uses, so it needs no font setup.
+Other apps can use JetBrains Mono Nerd Font from `config/fonts.conf`.

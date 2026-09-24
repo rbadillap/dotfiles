@@ -1,0 +1,9 @@
+#!/bin/sh
+# Summary: Go to the dotfiles repo
+# Usage: dot cd
+# Group: additional
+#
+# Prints the repo's path. In zsh, dot then takes you there.
+set -eu
+[ $# -eq 0 ] || { echo "dot cd: takes no arguments" >&2; exit 2; }
+echo "$DOT_ROOT"

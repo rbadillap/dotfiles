@@ -1,28 +1,31 @@
 #!/bin/sh
-# fork: fork a GitHub repo to your account, clone the fork into
-# ~/code/<you>/<repo>, and add the original as the "upstream" remote.
-# Messages go to stderr; the last line on stdout is the repo's path.
+# Summary: Fork a GitHub repo and clone it with an upstream remote
+# Usage: dot fork <repo>
+# Group: repos
+#
+# Forks the repo to your GitHub account, or reuses your fork if you already
+# have one (even if GitHub named it differently), clones it with dot clone,
+# and adds the original as the "upstream" remote. Forking your own repo just
+# clones it. In zsh, dot then takes you to the repo.
+#
+# Your username comes from github_user in dot.conf, or from gh. Forking goes
+# through gh, so it may ask for Touch ID.
+#
+# ARGUMENTS
+#   <repo> accepts the same forms as dot clone.
+#
+# EXAMPLES
+#   $ dot fork vercel/next.js
+#
+# OUTPUT
+#   Messages go to stderr; stdout carries only the repo's path.
+#   Exit codes: 0 done, 1 failed, 2 bad usage.
 set -eu
 
-BIN=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
+clone=$DOT_ROOT/src/commands/dot-clone
 
-usage() {
-  cat <<EOF
-Usage: fork <repo>
-
-Forks a GitHub repo to your account (or reuses your existing fork), clones
-it with clone, and sets the original as the "upstream" remote. Forking your
-own repo just clones it. In zsh, fork then takes you to the repo.
-
-<repo> accepts the same forms as clone (owner/repo, GitHub URLs).
-Your username comes from github_user in dot.conf, or from gh.
-
-Exit codes: 0 done, 1 failed, 2 bad usage.
-EOF
-}
-
-die() { echo "fork: $*" >&2; exit 1; }
-bad() { echo "fork: $*" >&2; echo "Run 'fork --help' for usage." >&2; exit 2; }
+die() { echo "dot fork: $*" >&2; exit 1; }
+bad() { echo "dot fork: $*" >&2; echo "Run 'dot fork --help' for usage." >&2; exit 2; }
 lower() { printf %s "$1" | tr '[:upper:]' '[:lower:]'; }
 
 # gh, through 1Password's shell plugin when that's where its token lives.
@@ -32,7 +35,7 @@ ghx() {
 
 # my_login: your GitHub username, from dot.conf or else from gh.
 my_login() {
-  login=$(sed -n 's/^github_user=//p' "$BIN/../dot.conf" 2>/dev/null | head -1)
+  login=$(sed -n 's/^github_user=//p' "$DOT_ROOT/dot.conf" 2>/dev/null | head -1)
   [ -n "$login" ] || login=$(ghx api user --jq .login 2>/dev/null) || login=
   printf %s "$login"
 }
@@ -45,16 +48,13 @@ fork_of() {
     head -1
 }
 
-[ $# -ge 1 ] || { usage >&2; exit 2; }
-case $1 in
-  -h|--help) usage; exit 0 ;;
-  -*) bad "unknown option '$1'" ;;
-esac
+[ $# -ge 1 ] || bad "missing <repo>"
+case $1 in -*) bad "unknown flag '$1'" ;; esac
 [ $# -eq 1 ] || bad "expected one repo, got $#"
-command -v gh >/dev/null || die "gh isn't installed (config/packages.sh)"
+command -v gh >/dev/null || die "gh isn't installed (config/packages.conf)"
 
-slug=$("$BIN/clone" --resolve "$1" 2>/dev/null) ||
-  bad "not a GitHub repo: '$1' (see 'clone --help' for accepted forms)"
+slug=$("$clone" --resolve "$1" 2>/dev/null) ||
+  bad "not a GitHub repo: '$1' (see 'dot clone --help' for accepted forms)"
 me=$(my_login)
 [ -n "$me" ] || die "can't tell your GitHub username: set github_user in dot.conf, or log in to gh"
 
@@ -65,16 +65,16 @@ set -- $info
 upstream=$1 allow=$2 owner=$3
 
 if [ "$(lower "$owner")" = "$(lower "$me")" ]; then
-  echo "fork: $upstream is yours; cloning it instead" >&2
-  exec "$BIN/clone" "$upstream"
+  echo "dot fork: $upstream is yours; cloning it instead" >&2
+  exec "$clone" "$upstream"
 fi
 
 fork=$(fork_of "$me" "$upstream")
 if [ -n "$fork" ]; then
-  echo "fork: you already have a fork: $fork" >&2
+  echo "dot fork: you already have a fork: $fork" >&2
 else
   [ "$allow" != false ] || die "$upstream doesn't allow forking"
-  echo "fork: forking $upstream to $me" >&2
+  echo "dot fork: forking $upstream to $me" >&2
   ghx repo fork "$upstream" --clone=false >&2 || die "gh couldn't fork $upstream"
   # Forking is asynchronous, and GitHub renames the fork if the name is taken,
   # so look it up instead of assuming its name.
@@ -83,17 +83,17 @@ else
     [ -n "$fork" ] && break
     sleep 2
   done
-  [ -n "$fork" ] || die "forked $upstream, but the fork isn't listed yet; run fork again in a moment"
+  [ -n "$fork" ] || die "forked $upstream, but the fork isn't listed yet; run dot fork again in a moment"
 fi
 
-dir=$("$BIN/clone" "$fork") || exit 1
+dir=$("$clone" "$fork") || exit 1
 
 have=$(git -C "$dir" remote get-url upstream 2>/dev/null) || have=
 if [ -z "$have" ]; then
   git -C "$dir" remote add upstream "git@github.com:$upstream.git"
-  echo "fork: upstream → $upstream" >&2
+  echo "dot fork: upstream → $upstream" >&2
 else
-  have_slug=$("$BIN/clone" --resolve "$have" 2>/dev/null) || have_slug=
+  have_slug=$("$clone" --resolve "$have" 2>/dev/null) || have_slug=
   [ "$(lower "$have_slug")" = "$(lower "$upstream")" ] ||
     die "upstream in $dir points to $have, not $upstream; fix it by hand"
 fi

@@ -1,30 +1,35 @@
 #!/bin/sh
-# clone: clone a GitHub repo into ~/code/<owner>/<repo>, where every repo lives.
-# Messages go to stderr; the last line on stdout is the repo's path, so the
-# zsh wrapper in shell/code.zsh can cd into it.
+# Summary: Clone a GitHub repo into ~/code/<owner>/<repo>
+# Usage: dot clone <repo>
+# Group: repos
+#
+# Clones over SSH, with your key from 1Password, into ~/code/<owner>/<repo>
+# using GitHub's own spelling of the name. If the repo is already there, it
+# only prints the path. It never overwrites a folder that holds something
+# else, and a failed clone leaves nothing behind. In zsh, dot then takes you
+# to the repo.
+#
+# ARGUMENTS
+#   <repo> is owner/repo, github.com/owner/repo, https://github.com/owner/repo
+#   (with .git, /tree/…, ?… or #…), git@github.com:owner/repo or
+#   ssh://git@github.com/owner/repo. Only GitHub repos are supported.
+#
+# FLAGS
+#   --resolve   Print owner/repo and exit, without cloning
+#
+# EXAMPLES
+#   $ dot clone vercel/next.js
+#   $ dot clone https://github.com/shadcn-ui/ui
+#
+# OUTPUT
+#   Messages go to stderr; stdout carries only the repo's path.
+#   Exit codes: 0 cloned or already there, 1 failed, 2 bad usage.
 set -eu
 
 CODE_DIR=${CODE_DIR:-$HOME/code}
 
-usage() {
-  cat <<EOF
-Usage: clone <repo>
-       clone --resolve <repo>    print owner/repo and exit
-
-Clones a GitHub repo over SSH (your key from 1Password) into
-~/code/<owner>/<repo>. If it's already there, it only prints the path.
-In zsh, clone then takes you to the repo.
-
-<repo> can be: owner/repo, github.com/owner/repo,
-https://github.com/owner/repo[.git][/anything], git@github.com:owner/repo[.git],
-ssh://git@github.com/owner/repo[.git]. Only GitHub repos are supported.
-
-Exit codes: 0 cloned or already there, 1 failed, 2 bad usage.
-EOF
-}
-
-die() { echo "clone: $*" >&2; exit 1; }
-bad() { echo "clone: $*" >&2; echo "Run 'clone --help' for usage." >&2; exit 2; }
+die() { echo "dot clone: $*" >&2; exit 1; }
+bad() { echo "dot clone: $*" >&2; echo "Run 'dot clone --help' for usage." >&2; exit 2; }
 tildify() { case $1 in "$HOME"/*) printf '~/%s' "${1#"$HOME"/}" ;; *) printf %s "$1" ;; esac; }
 lower() { printf %s "$1" | tr '[:upper:]' '[:lower:]'; }
 
@@ -49,11 +54,10 @@ resolve() {
   printf '%s/%s\n' "$owner" "$repo"
 }
 
-[ $# -ge 1 ] || { usage >&2; exit 2; }
+[ $# -ge 1 ] || bad "missing <repo>"
 case $1 in
-  -h|--help) usage; exit 0 ;;
   --resolve) [ $# -eq 2 ] || bad "--resolve takes one repo"; resolve "$2"; exit 0 ;;
-  -*) bad "unknown option '$1'" ;;
+  -*) bad "unknown flag '$1'" ;;
 esac
 [ $# -eq 1 ] || bad "expected one repo, got $#"
 
@@ -69,7 +73,7 @@ if [ -e "$dir" ]; then
     origin=$(git -C "$dir" remote get-url origin 2>/dev/null) || origin=
     have=$( (resolve "$origin") 2>/dev/null) || have=
     if [ "$(lower "$have")" = "$(lower "$slug")" ]; then
-      echo "clone: $slug is already in $(tildify "$dir")" >&2
+      echo "dot clone: $slug is already in $(tildify "$dir")" >&2
       echo "$dir"
       exit 0
     fi
@@ -80,7 +84,7 @@ if [ -e "$dir" ]; then
 fi
 
 mkdir -p "$(dirname "$dir")"
-echo "clone: git@github.com:$slug.git → $(tildify "$dir")" >&2
+echo "dot clone: git@github.com:$slug.git → $(tildify "$dir")" >&2
 git clone "git@github.com:$slug.git" "$dir" >&2 ||
   die "couldn't clone $slug. Does it exist, and can you access it? SSH uses your 1Password key (Touch ID)."
 echo "$dir"

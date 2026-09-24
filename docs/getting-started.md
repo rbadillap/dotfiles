@@ -84,6 +84,6 @@ macOS doesn't let scripts do these:
 
 ## 6. Open a new terminal
 
-Ghostty (from `config/apps.sh`) with zsh and Starship: [shell.md](shell.md).
-Your editor is set too: [editor.md](editor.md). `dot`, `clone` and `fork` now
-work from any folder: [tools.md](tools.md).
+Ghostty (from `config/apps.conf`) with zsh and Starship: [shell.md](shell.md).
+Your editor is set too: [editor.md](editor.md). `dot` now works from any
+folder, with completion: [dot.md](dot.md).

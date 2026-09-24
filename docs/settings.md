@@ -1,9 +1,9 @@
 # Settings
 
-Every setting `dot` knows. Values chosen for this Mac live in
-`config/<theme>.sh`; change them there, or delete a line to leave that
-setting alone. A config file is named after its theme and may mix topics
-(`config/windows.sh` holds `rectangle …` and `windows …` lines).
+Every setting `dot` knows; `dot settings` prints the same list from the code,
+with what `config/` sets. Your values live in `config/*.conf`: change them
+there, or delete a line to leave that setting alone. A file can mix topics
+(`config/windows.conf` holds `rectangle …` and `windows …` lines).
 
 | Topic       | Setting             | Values                                           |
 |-------------|---------------------|--------------------------------------------------|
@@ -22,7 +22,7 @@ setting alone. A config file is named after its theme and may mix topics
 | `mouse`     | `speed`             | `0.0`–`3.0`                                      |
 | `mouse`     | `secondary-click`   | `right`, `left`, `off`                           |
 | `mouse`     | `natural-scrolling` | `true`, `false`; macOS applies it to the trackpad too |
-| `rectangle` | `shortcut`          | `<action> <combo>`, e.g. `first-third cmd+opt+left`; actions in `catalog/rectangle.sh` |
+| `rectangle` | `shortcut`          | `<action> <combo>`, e.g. `first-third cmd+opt+left`; actions in `src/settings/rectangle.sh` |
 | `shell`     | `init`              | `zsh`: the managed block in `~/.zshrc`           |
 | `ssh`       | `agent`             | `1password`                                      |
 | `system`    | `hostname`          | letters, digits, hyphens; sets all three macOS names (sudo) |
@@ -30,7 +30,7 @@ setting alone. A config file is named after its theme and may mix topics
 | `trackpad`  | `tap-to-click`      | `true`, `false`                                  |
 | `trackpad`  | `three-finger-drag` | `true`, `false`; moves three-finger swipes to four fingers |
 | `windows`   | `native-tiling`     | `true`, `false`: macOS's own edge tiling         |
-| `zed`       | `settings`          | `linked`: symlink to `home/.config/zed/settings.json` |
+| `zed`       | `settings`          | `linked`: symlink to `config/home/.config/zed/settings.json` |
 
 `$name` values come from `dot.conf`.
 
@@ -40,9 +40,9 @@ All come from Homebrew:
 
 | File                  | Holds                  | Installed                                          |
 |-----------------------|------------------------|----------------------------------------------------|
-| `config/apps.sh`      | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, Rectangle |
-| `config/fonts.sh`     | fonts                  | JetBrains Mono Nerd Font                           |
-| `config/packages.sh`  | command-line tools     | 1Password CLI (`op`), GitHub CLI (`gh`), Starship  |
+| `config/apps.conf`      | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, Rectangle |
+| `config/fonts.conf`     | fonts                  | JetBrains Mono Nerd Font                           |
+| `config/packages.conf`  | command-line tools     | 1Password CLI (`op`), GitHub CLI (`gh`), Starship  |
 
 To add one, find its exact name with `brew search <name>` and add
 `brew cask <name>` (apps, fonts, binaries) or `brew formula <name>`

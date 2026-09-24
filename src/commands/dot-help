@@ -1,0 +1,76 @@
+#!/bin/sh
+# Summary: Show help for dot or one of its commands
+# Usage: dot help [<command>]
+# Group: hidden
+set -eu
+
+commands=$DOT_ROOT/src/commands
+
+# header <file>: the first comment block, without the leading "# ".
+header() { sed -n '1d; /^#/!q; s/^# \{0,1\}//p' "$1"; }
+# field <name> <file>: one "Name: value" line of the header.
+field() { header "$2" | sed -n "s/^$1: //p"; }
+
+# commands_in <group>: "name:  Summary" for each visible command in a group.
+commands_in() {
+  for f in "$commands"/dot-*; do
+    name=${f##*/dot-}
+    case $name in *-*|__*) continue ;; esac
+    [ "$(field Group "$f")" = "$1" ] || continue
+    printf '  %-13s %s\n' "$name:" "$(field Summary "$f")"
+  done
+}
+
+if [ $# -eq 0 ]; then
+  cat <<EOF
+Set up this Mac from config/, and keep it that way.
+
+USAGE
+  dot <command> [<subcommand>] [flags]
+
+CORE COMMANDS
+$(commands_in core)
+
+REPO COMMANDS
+$(commands_in repos)
+
+ADDITIONAL COMMANDS
+$(commands_in additional)
+
+FLAGS
+  -h, --help     Show help for a command
+      --version  Show the dotfiles version
+
+EXAMPLES
+  \$ dot check
+  \$ dot apply dock
+  \$ dot apply dock visibility hidden
+  \$ dot clone vercel/next.js
+
+LEARN MORE
+  Use 'dot <command> --help' for more information about a command.
+  Exit codes: 0 ok, 1 differences or errors, 2 bad usage.
+  Docs: $DOT_ROOT/docs/README.md
+EOF
+  exit 0
+fi
+
+file=$commands/dot-$(printf '%s' "$*" | tr ' ' -)
+if [ ! -f "$file" ]; then
+  echo "dot: unknown command '$*'" >&2
+  echo "Run 'dot --help' for the list of commands." >&2
+  exit 2
+fi
+
+# The header: Summary/Usage/Group lines, a blank line, then a description and
+# optional sections (FLAGS, EXAMPLES…). Printed as: description, USAGE, sections.
+body=$(header "$file" | sed '1,/^$/d')
+printf '%s\n' "$body" | sed '/^[A-Z][A-Z ]*$/,$d' | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}'
+echo
+echo "USAGE"
+field Usage "$file" | sed 's/^/  /'
+rest=$(printf '%s\n' "$body" | sed -n '/^[A-Z][A-Z ]*$/,$p')
+[ -z "$rest" ] || printf '\n%s\n' "$rest"
+echo
+echo "LEARN MORE"
+echo "  Use 'dot --help' for the list of commands."
