@@ -9,7 +9,6 @@ there, or delete a line to leave that setting alone. A file can mix topics
 |-------------|---------------------|--------------------------------------------------|
 | `brew`      | `formula`           | a Homebrew formula (command-line tool), e.g. `gh` |
 | `brew`      | `cask`              | a Homebrew cask (app, font or binary), e.g. `1password` |
-| `backup`    | `dot-conf`          | `1password`: keep `dot.conf` in 1Password as a Document |
 | `dock`      | `visibility`        | `always`, `autohide`, `hidden`                   |
 | `editor`    | `default`           | `zed`, `code`, `cursor`, `nvim`, `vim`, `nano`; from `$editor` |
 | `git`       | `name`              | any text; from `$git_name`                       |

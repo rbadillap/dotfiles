@@ -1,0 +1,17 @@
+#!/bin/sh
+# Summary: Open dot.conf in your editor
+# Usage: dot conf edit
+# Group: conf
+#
+# Opens dot.conf in $EDITOR (or git's core.editor). If there's no dot.conf
+# yet, it starts from dot.conf.example. Afterwards, dot conf backup saves the
+# change to 1Password.
+set -eu
+[ $# -eq 0 ] || { echo "dot conf edit: takes no arguments" >&2; exit 2; }
+conf=$DOT_ROOT/dot.conf
+[ -f "$conf" ] || cp "$DOT_ROOT/dot.conf.example" "$conf"
+editor=${VISUAL:-${EDITOR:-$(git config --global core.editor 2>/dev/null || echo vi)}}
+before=$(shasum -a 256 "$conf")
+sh -c "$editor \"\$1\"" editor "$conf"
+[ "$before" = "$(shasum -a 256 "$conf")" ] ||
+  echo "dot conf edit: dot.conf changed. Run 'dot check' to see its effect, and 'dot conf backup' to save it." >&2

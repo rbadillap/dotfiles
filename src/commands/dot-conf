@@ -1,0 +1,19 @@
+#!/bin/sh
+# Summary: Back up, restore or edit dot.conf with 1Password
+# Usage: dot conf <command>
+# Group: additional
+#
+# dot.conf holds your personal values and isn't in git, so it's kept in
+# 1Password as the Document "dotfiles: dot.conf", tagged "dotfiles", in your
+# built-in personal vault. dot check tells you when it changed since the
+# last backup.
+#
+# EXAMPLES
+#   $ dot conf edit
+#   $ dot conf backup
+#   $ dot conf restore
+set -eu
+[ $# -eq 0 ] && exec "$DOT_ROOT/src/commands/dot-help" conf
+echo "dot conf: unknown command '$1'" >&2
+"$DOT_ROOT/src/commands/dot-help" conf >&2
+exit 2

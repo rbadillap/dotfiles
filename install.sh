@@ -274,7 +274,7 @@ personal_values() {
 }
 
 # restore_conf: download the dot.conf backup from 1Password (the Document
-# "dotfiles: dot.conf", saved by `./dot apply backup`). Installs 1Password and
+# "dotfiles: dot.conf", saved by `dot conf backup`). Installs 1Password and
 # its CLI first, and waits while you sign in. Fails if you give up.
 restore_conf() {
   step "Restoring dot.conf from 1Password"
@@ -284,7 +284,7 @@ restore_conf() {
   info "Integrate with 1Password CLI. Then come back here."
   while ask "    Ready to restore?" y; do
     if op document get "dotfiles: dot.conf" --out-file "$DOTFILES_DIR/dot.conf" --force >/dev/null 2>&1; then
-      # Same record `./dot apply backup` keeps (src/lib/op.sh), so check sees it as backed up.
+      # Same record `dot conf backup` keeps (src/lib/op.sh), so check sees it as backed up.
       state=${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles
       mkdir -p "$state"
       shasum -a 256 "$DOTFILES_DIR/dot.conf" | cut -d' ' -f1 > "$state/dotfiles-dot-conf.sha256"

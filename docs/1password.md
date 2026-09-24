@@ -111,20 +111,18 @@ Signing uses the same key; the extra email joins `allowed_signers`. For
 `dot.conf` isn't in git, so it's kept in 1Password as the Document
 "dotfiles: dot.conf", tagged `dotfiles`, in your built-in personal vault:
 
-    backup dot-conf 1password    # config/backup.conf
+    dot conf backup     # save it (Touch ID)
+    dot conf restore    # get it back, e.g. on a new Mac
+    dot conf edit       # open it in your editor
 
-    dot apply backup           # uploads dot.conf (Touch ID)
+`dot check` tells you when `dot.conf` changed since the last backup, without
+Touch ID: it compares the file with a record of the last upload, kept in
+`~/.local/state/dotfiles/`.
 
-`dot check` tells you when `dot.conf` changed since the last backup,
-without Touch ID: it compares the file with a record of the last upload,
-kept in `~/.local/state/dotfiles/`.
+A Mac that hasn't restored or backed up yet doesn't replace an existing
+backup, since its `dot.conf` could be the installer's defaults: restore first,
+or use `dot conf backup --force`. `dot conf restore` likewise keeps a
+`dot.conf` that differs from the backup unless you pass `--force`, and saves
+the old one as `dot.conf.before-restore`.
 
-`apply` replaces the backup with your current `dot.conf`, but a Mac that
-hasn't restored or backed up yet never overwrites an existing backup: its
-`dot.conf` could be the wizard's defaults. It stops and asks you to restore
-first (or to delete the item, if you really mean to replace it).
-
-On a new Mac, the installer's **restore** option downloads it. To restore by
-hand:
-
-    op document get "dotfiles: dot.conf" --out-file dot.conf
+The installer's **restore** option does the same on a clean Mac.

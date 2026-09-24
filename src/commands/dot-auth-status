@@ -1,0 +1,39 @@
+#!/bin/sh
+# Summary: Show which logins are done and which are missing
+# Usage: dot auth status
+# Group: auth
+#
+# Checks each account this setup uses: the 1Password CLI, GitHub's CLI (gh,
+# through 1Password) and SSH to GitHub (key from 1Password). It asks 1Password
+# for Touch ID, like any command that uses those logins.
+#
+# EXIT CODES
+#   0  every login works
+#   1  at least one is missing
+set -eu
+[ $# -eq 0 ] || { echo "dot auth status: takes no arguments" >&2; exit 2; }
+. "$DOT_ROOT/src/lib/output.sh"
+missing=0
+ok()  { printf '  %s✓%s %s\n' "$c_ok" "$c_off" "$1"; }
+bad() { printf '  %s!%s %s\n      %s\n' "$c_err" "$c_off" "$1" "$2"; missing=$((missing + 1)); }
+ghx() { if [ -f "$HOME/.config/op/plugins/gh.json" ]; then op plugin run -- gh "$@"; else gh "$@"; fi; }
+
+# `op whoami` only knows CLI sessions; with the app integration, `op account get` works.
+if who=$(op account get --format json 2>/dev/null | /usr/bin/jq -r '.domain // empty'); [ -n "$who" ]; then
+  ok "1Password CLI ($who.1password.com)"
+else
+  bad "1Password CLI" "open 1Password, sign in, and turn on Settings → Developer → Integrate with 1Password CLI"
+fi
+if login=$(ghx api user --jq .login 2>/dev/null); [ -n "$login" ]; then
+  ok "GitHub CLI ($login)"
+else
+  bad "GitHub CLI" "see docs/auth/github.md"
+fi
+if ssh -T -o BatchMode=yes -o ConnectTimeout=10 git@github.com 2>&1 | grep -q 'successfully authenticated'; then
+  ok "SSH to GitHub"
+else
+  bad "SSH to GitHub" "see docs/1password.md: SSH agent, key, and dot apply github"
+fi
+
+echo
+if [ "$missing" -eq 0 ]; then echo "Every login works."; else echo "$missing login(s) missing."; exit 1; fi

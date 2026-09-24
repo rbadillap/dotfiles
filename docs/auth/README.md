@@ -17,6 +17,8 @@ guide here, with how much manual work its login takes.
 
 ## Friction
 
+`dot auth status` checks the logins this setup uses.
+
 Each platform guide measures both ways with the same criteria:
 
 | Criterion        | Question                                              |

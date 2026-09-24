@@ -1,0 +1,23 @@
+#!/bin/sh
+# Summary: Save dot.conf to 1Password
+# Usage: dot conf backup [--force]
+# Group: conf
+#
+# Uploads dot.conf if it changed since the last backup (Touch ID). A Mac that
+# never backed up or restored doesn't replace an existing backup, since its
+# dot.conf could be the installer's defaults: restore first, or use --force.
+#
+# FLAGS
+#   --force   Replace the backup even if this Mac never restored it
+set -eu
+case ${1:-} in
+  '') ;;
+  --force) [ $# -eq 1 ] || { echo "dot conf backup: too many arguments" >&2; exit 2; }; DOT_FORCE=1 ;;
+  *) echo "dot conf backup: unknown argument '$1'" >&2; echo "Run 'dot conf backup --help' for usage." >&2; exit 2 ;;
+esac
+DOT_MODE=apply
+. "$DOT_ROOT/src/lib/run.sh"
+begin_setting "dot.conf backup"
+op_document "dotfiles: dot.conf" "$DOT_ROOT/dot.conf"
+end_setting
+report

@@ -24,6 +24,13 @@ if [ $# -eq 0 ]; then
 fi
 
 cmd=$1; shift
+# A group (dot conf, dot auth): its subcommands, with their summaries.
+if [ $# -eq 0 ] && ls "$commands/dot-$cmd"-* >/dev/null 2>&1; then
+  for f in "$commands/dot-$cmd"-*; do
+    printf '%s:%s\n' "${f##*/dot-$cmd-}" "$(sed -n 's/^# Summary: //p' "$f" | head -1 | sed 's/:/\\:/g')"
+  done
+  exit 0
+fi
 case $cmd in
   check|apply)
     case $# in

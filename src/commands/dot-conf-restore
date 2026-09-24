@@ -1,0 +1,35 @@
+#!/bin/sh
+# Summary: Replace dot.conf with its backup from 1Password
+# Usage: dot conf restore [--force]
+# Group: conf
+#
+# Downloads "dotfiles: dot.conf" from 1Password (Touch ID). If you already
+# have a dot.conf that differs from the backup, it stops unless you pass
+# --force; the file it replaces is kept as dot.conf.before-restore.
+#
+# FLAGS
+#   --force   Replace a dot.conf that differs from the backup
+set -eu
+force=0
+case ${1:-} in
+  '') ;;
+  --force) [ $# -eq 1 ] || { echo "dot conf restore: too many arguments" >&2; exit 2; }; force=1 ;;
+  *) echo "dot conf restore: unknown argument '$1'" >&2; echo "Run 'dot conf restore --help' for usage." >&2; exit 2 ;;
+esac
+. "$DOT_ROOT/src/lib/op.sh"
+conf=$DOT_ROOT/dot.conf
+tmp=$(mktemp); trap 'rm -f "$tmp"' EXIT
+op document get "dotfiles: dot.conf" --out-file "$tmp" --force >/dev/null 2>&1 ||
+  { echo "dot conf restore: couldn't read \"dotfiles: dot.conf\" from 1Password (signed in, CLI integration on, backup exists?)" >&2; exit 1; }
+if [ -f "$conf" ] && cmp -s "$tmp" "$conf"; then
+  echo "dot conf restore: dot.conf already matches the backup" >&2
+elif [ -f "$conf" ] && [ "$force" != 1 ]; then
+  echo "dot conf restore: your dot.conf differs from the backup. Run with --force to replace it (it's kept as dot.conf.before-restore)." >&2
+  exit 1
+else
+  [ ! -f "$conf" ] || cp "$conf" "$conf.before-restore"
+  cp "$tmp" "$conf"
+  echo "dot conf restore: restored dot.conf from 1Password" >&2
+fi
+mkdir -p "$DOT_STATE"
+shasum -a 256 "$conf" | cut -d' ' -f1 > "$(op_record "dotfiles: dot.conf")"

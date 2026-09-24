@@ -81,6 +81,7 @@ run_file() {
 run() {
   if [ $# -eq 0 ]; then
     for f in "$DOT_ROOT"/config/*.conf; do run_file "$f"; done
+    [ "$DOT_MODE" = check ] && conf_backup_status
   elif [ $# -eq 1 ]; then
     case $1 in
       -*) echo "dot: unknown flag '$1'" >&2; exit 2 ;;
@@ -96,4 +97,15 @@ run() {
     run_setting "$@"
   fi
   report
+}
+
+# conf_backup_status: part of a full dot check. dot.conf isn't in git, so its
+# backup in 1Password must follow it; dot conf backup updates it.
+conf_backup_status() {
+  begin_setting "dot.conf backup"
+  case $(op_backup_state "dotfiles: dot.conf" "$DOT_ROOT/dot.conf") in
+    changed) changed "1Password \"dotfiles: dot.conf\"" "changed since the last backup" "run: dot conf backup" ;;
+    never)   changed "1Password \"dotfiles: dot.conf\"" "not backed up from this Mac" "run: dot conf backup, or dot conf restore" ;;
+  esac
+  end_setting
 }

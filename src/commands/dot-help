@@ -69,6 +69,13 @@ printf '%s\n' "$body" | sed '/^[A-Z][A-Z ]*$/,$d' | sed -e :a -e '/^\n*$/{$d;N;b
 echo
 echo "USAGE"
 field Usage "$file" | sed 's/^/  /'
+# A group (dot-conf with dot-conf-backup, …) lists its subcommands.
+group=${file##*/dot-}
+subs=$(for f in "$commands/dot-$group"-*; do
+  [ -f "$f" ] || continue
+  printf '  %-13s %s\n' "${f##*/dot-"$group"-}:" "$(field Summary "$f")"
+done)
+[ -z "$subs" ] || printf '\nCOMMANDS\n%s\n' "$subs"
 rest=$(printf '%s\n' "$body" | sed -n '/^[A-Z][A-Z ]*$/,$p')
 [ -z "$rest" ] || printf '\n%s\n' "$rest"
 echo

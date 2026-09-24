@@ -1,0 +1,15 @@
+#!/bin/sh
+# Summary: Check logins (1Password, GitHub, SSH)
+# Usage: dot auth <command>
+# Group: additional
+#
+# Logins can't be declared in config/: each account needs you once. See
+# docs/auth/ for each platform's login.
+#
+# EXAMPLES
+#   $ dot auth status
+set -eu
+[ $# -eq 0 ] && exec "$DOT_ROOT/src/commands/dot-help" auth
+echo "dot auth: unknown command '$1'" >&2
+"$DOT_ROOT/src/commands/dot-help" auth >&2
+exit 2

@@ -12,6 +12,10 @@
 | `dot clone`        | clones a GitHub repo into `~/code/<owner>/<repo>`           |
 | `dot fork`         | forks a GitHub repo and clones it with an `upstream` remote |
 | `dot cd`           | goes to the dotfiles repo                                   |
+| `dot conf`         | backs up, restores or edits `dot.conf` with 1Password       |
+| `dot doctor`       | checks that dot's own requirements are in place             |
+| `dot update`       | pulls the latest dotfiles, then runs `dot check`            |
+| `dot auth status`  | shows which logins work: 1Password, GitHub, SSH             |
 | `dot init zsh`     | prints the zsh setup that `~/.zshrc` loads                  |
 | `dot completion zsh` | prints the zsh completion script                          |
 
@@ -80,6 +84,25 @@ it, add the same line to a file in `config/`.
 
 In zsh, both take you to the repo, as does `dot cd`. For scripts, the only
 thing on stdout is the path: `dir=$(dot clone vercel/next.js)`.
+
+## conf
+
+    dot conf edit       # open dot.conf in your editor
+    dot conf backup     # save it to 1Password
+    dot conf restore    # get it back from 1Password
+
+See [1password.md](1password.md#backup-of-dotconf).
+
+## doctor, update and auth
+
+- **`dot doctor`** checks what `dot` itself needs: Command Line Tools,
+  Homebrew, 1Password and its CLI and SSH agent, `gh`, `dot.conf` (including
+  values missing from it), and the shell setup. Each problem comes with its
+  fix. No Touch ID.
+- **`dot update`** fast-forwards the repo from GitHub, then runs `dot check`
+  to show what the new version would change. It never applies.
+- **`dot auth status`** checks each login this setup uses: the 1Password CLI,
+  `gh`, and SSH to GitHub. It asks for Touch ID. See [auth/](auth/README.md).
 
 ## Exit codes
 

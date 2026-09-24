@@ -26,7 +26,8 @@ or `n`, and Enter keeps the default. Then it:
    `./dot apply` (step 3).
 
 Every step is skipped when already done, so rerunning is safe; after a
-failure, it says which step failed and a rerun continues from there.
+failure, it says which step failed and a rerun continues from there. If
+something seems off later, `dot doctor` says what's missing and how to fix it.
 
 | Option        | Does                                                   |
 |---------------|--------------------------------------------------------|
@@ -74,7 +75,8 @@ and your editor is set ([editor.md](editor.md)).
 
 Sign in to 1Password, turn on its SSH agent, create an SSH key, log in to
 GitHub, and turn on signed commits: [1password.md](1password.md), then
-[auth/github.md](auth/github.md).
+[auth/github.md](auth/github.md). `dot auth status` confirms every login
+works.
 
 ## 6. Manual steps
 

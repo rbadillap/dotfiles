@@ -1,0 +1,45 @@
+#!/bin/sh
+# Summary: Check that dot's own requirements are in place
+# Usage: dot doctor
+# Group: additional
+#
+# Checks what dot itself needs, not your settings (that's dot check): the
+# Command Line Tools, Homebrew, 1Password and its CLI, dot.conf, and the
+# shell setup. Never asks for a password or Touch ID. Each problem comes
+# with how to fix it.
+#
+# EXIT CODES
+#   0  everything is in place
+#   1  something is missing
+set -eu
+[ $# -eq 0 ] || { echo "dot doctor: takes no arguments" >&2; exit 2; }
+. "$DOT_ROOT/src/lib/output.sh"
+problems=0
+ok()  { printf '  %s✓%s %s\n' "$c_ok" "$c_off" "$1"; }
+bad() { printf '  %s!%s %s\n      %s\n' "$c_err" "$c_off" "$1" "$2"; problems=$((problems + 1)); }
+has() { command -v "$1" >/dev/null 2>&1; }
+
+[ "$(uname -m)" = arm64 ] && ok "Apple Silicon Mac" || bad "Apple Silicon Mac" "Homebrew only supports Apple Silicon"
+[ -x /Library/Developer/CommandLineTools/usr/bin/git ] && ok "Command Line Tools" ||
+  bad "Command Line Tools" "run install.sh, or: xcode-select --install"
+[ -x /opt/homebrew/bin/brew ] && ok "Homebrew" || bad "Homebrew" "run install.sh"
+[ -d /Applications/1Password.app ] && ok "1Password" || bad "1Password" "dot apply apps"
+has op && ok "1Password CLI (op)" || bad "1Password CLI (op)" "dot apply packages"
+[ -S "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock" ] && ok "1Password SSH agent" ||
+  bad "1Password SSH agent" "1Password → Settings → Developer → Use the SSH agent"
+has gh && ok "GitHub CLI (gh)" || bad "GitHub CLI (gh)" "dot apply packages"
+
+conf=$DOT_ROOT/dot.conf
+if [ -f "$conf" ]; then
+  missing=$(sed -n 's/^\([a-z0-9_]*\)=.*/\1/p' "$DOT_ROOT/dot.conf.example" | while read -r key; do
+    grep -q "^$key=" "$conf" || printf '%s ' "$key"
+  done)
+  [ -z "$missing" ] && ok "dot.conf" || bad "dot.conf is missing values: $missing" "dot conf edit (see dot.conf.example)"
+else
+  bad "dot.conf" "dot conf restore, or: cp dot.conf.example dot.conf"
+fi
+grep -qF "$DOT_ROOT/dot\" init zsh" "$HOME/.zshrc" 2>/dev/null && ok "Shell setup in ~/.zshrc" ||
+  bad "Shell setup in ~/.zshrc" "dot apply shell, then open a new terminal"
+
+echo
+if [ "$problems" -eq 0 ]; then echo "Everything dot needs is in place."; else echo "$problems problem(s) found."; exit 1; fi

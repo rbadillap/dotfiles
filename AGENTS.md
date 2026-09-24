@@ -84,7 +84,7 @@ come from it:
     #!/bin/sh
     # Summary: One line, starting with a verb
     # Usage: dot <name> <args>          (one line per form)
-    # Group: core | repos | additional | hidden
+    # Group: core | repos | additional | hidden | <group> (for dot-<group>-<sub>)
     #
     # Description paragraph(s).
     #
@@ -152,9 +152,11 @@ commands run by a setting keep the real stdin.
     it when it changes); neither touches the rest of the file
   - `gh_ssh_key` in gh.sh (check reads GitHub's public key lists with curl,
     no token; apply adds keys via `gh` through 1Password)
-  - `op_document` in op.sh (backs a file up to 1Password, tagged `dotfiles`;
-    check compares it with a local record of the last upload, so it needs no
-    Touch ID; a Mac without that record never overwrites an existing backup)
+  - `op_document` and `op_backup_state` in op.sh (back a file up to
+    1Password, tagged `dotfiles`, for `dot conf backup`; the state compares
+    it with a local record of the last upload, so a full `dot check` reports
+    it without Touch ID; a Mac without that record never overwrites an
+    existing backup unless `DOT_FORCE=1`)
   - `link` in link.sh (symlinks a `config/home/` file into `~`; backs up an
     existing file instead of overwriting it)
   - Helpers that aren't checks: `ssh_pubkey` in ssh.sh (a public key from
@@ -191,6 +193,7 @@ back (Zed: plain JSON, no comments).
   `config/home/`.
 - `./dot check [<file>]` exits 0 when the Mac matches, 1 on differences or
   errors, and 2 on bad usage or a missing `dot.conf`.
+- `./dot doctor` must pass; `./dot auth status` (Touch ID) checks logins.
 - `./dot --help` and `./dot <cmd> --help` must render; `./dot __complete …`
   must list what completion should offer.
 - To test an apply path without touching real settings, source the libs in a
