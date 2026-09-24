@@ -1,12 +1,6 @@
 #!/bin/sh
 # dot: check or apply the desired state declared in config/.
-#
-#   dot check|apply                          every file in config/
-#   dot check|apply <topic>                  config/<topic>.sh
-#   dot check|apply <topic> <setting> <value> a single setting
-#
-# check never changes anything and exits 1 if something differs.
-# apply changes only what differs; steps that need sudo say so and prompt.
+# Run `dot --help` for usage; see usage() below.
 set -eu
 
 DOT_ROOT=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
@@ -15,17 +9,48 @@ export DOT_ROOT
 # Homebrew tools (op, gh, brew) even from a shell opened before Homebrew.
 case :$PATH: in *:/opt/homebrew/bin:*) ;; *) [ -d /opt/homebrew/bin ] && PATH=/opt/homebrew/bin:$PATH ;; esac
 
+# usage [status]: help on stdout for -h (exit 0), on stderr for bad usage (exit 2).
 usage() {
-  sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'
-  exit 2
+  cat <<EOF
+Usage: dot check|apply [<theme> [<setting> <value>]]
+
+  dot check                          everything in config/; changes nothing
+  dot apply                          fix every difference
+  dot check <theme>                  one file, config/<theme>.sh
+  dot apply <topic> <setting> <value>  one setting, e.g. to try it live
+
+check never changes anything. apply changes only what differs; steps that
+need sudo say so and ask for your password.
+
+Options:
+  -h, --help   show this help
+
+Exit codes: 0 all good, 1 differences or errors, 2 bad usage.
+Full guide: docs/getting-started.md
+EOF
+  exit "${1:-2}"
 }
 
-[ $# -ge 1 ] || usage
+# -h or --help anywhere shows the help.
+for arg in "$@"; do
+  case $arg in -h|--help) usage 0 ;; esac
+done
+
+[ $# -ge 1 ] || usage >&2
 case $1 in
   check|apply) DOT_MODE=$1 ;;
-  *) usage ;;
+  help) usage 0 ;;
+  *) echo "dot: unknown command '$1'" >&2; usage >&2 ;;
 esac
 shift
+
+# Themes and topics are plain names; anything else is an unknown option or a typo.
+if [ $# -ge 1 ]; then
+  case $1 in
+    -*) echo "dot: unknown option '$1'" >&2; usage >&2 ;;
+    *[!a-z0-9-]*) echo "dot: invalid name '$1'" >&2; usage >&2 ;;
+  esac
+fi
 
 DOT_DRIFT=$(mktemp)
 DOT_EFFECTS=$(mktemp)
@@ -101,7 +126,10 @@ if [ $# -eq 0 ]; then
   for f in "$DOT_ROOT"/config/*.sh; do run_file "$f"; done
 elif [ $# -eq 1 ]; then
   file="$DOT_ROOT/config/$1.sh"
-  [ -f "$file" ] || { echo "no such config: config/$1.sh" >&2; exit 2; }
+  if [ ! -f "$file" ]; then
+    echo "dot: no config/$1.sh. Themes: $(cd "$DOT_ROOT/config" && ls *.sh | sed 's/\.sh$//' | tr '\n' ' ')" >&2
+    exit 2
+  fi
   run_file "$file"
 else
   setting "$@"

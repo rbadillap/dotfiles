@@ -120,13 +120,15 @@ The single-setting form is for trying something live. If you like it, copy
 the same line (`keyboard repeat-rate 1`) into `config/keyboard.sh`. If you
 don't, apply the old value again.
 
+`./dot --help` (or `-h`, anywhere on the line) prints a short usage summary.
+
 ### Exit codes
 
 | Code | Meaning                                              |
 |------|------------------------------------------------------|
 | `0`  | Everything matches (check) or was applied (apply)    |
 | `1`  | Differences found, or a setting had an error         |
-| `2`  | Bad usage, unknown topic, or `dot.conf` missing      |
+| `2`  | Bad usage (unknown command, option or theme), or `dot.conf` missing |
 
 ## 4. Manual steps
 
