@@ -345,6 +345,40 @@ and doesn't keep comments in place, so explanations belong in these docs.
 is linked to `~/.config/zed/settings.json`, so where a file goes is obvious
 from its path. More apps (Ghostty, Starship…) will follow the same pattern.
 
+## 8. Window tiling
+
+On a 49" ultrawide, three columns work best. macOS tiles windows natively
+(halves, quarters, fill, center) but has **no thirds**, so
+[Rectangle](https://rectangleapp.com) does the tiling. It's open source, comes
+from `config/apps.sh`, and its shortcuts are declared in `config/windows.sh`:
+
+| Shortcut  | Window                  |
+|-----------|-------------------------|
+| `⌘⌥←`     | left third (33%)        |
+| `⌘⌥↑`     | center third (33%)      |
+| `⌘⌥→`     | right third (33%)       |
+| `⌘⇧⌥←`    | left fourth (25%)       |
+| `⌘⇧⌥↑`    | center half (50%)       |
+| `⌘⇧⌥→`    | right fourth (25%)      |
+
+    ./dot apply windows
+
+It also turns off macOS's own tiling (`windows native-tiling false`), so the
+two don't compete, and restarts Rectangle to load the shortcuts. Sizes are
+fractions of the screen, so they work on any display.
+
+**Manual, once per Mac:** Rectangle needs **Accessibility** permission to
+move windows. Grant it when it asks, or in *System Settings → Privacy &
+Security → Accessibility*. macOS doesn't allow scripts to grant it.
+
+Note that `⌘⌥←/→` switches tabs in Chrome, Dia and Zed; Rectangle takes those
+keys first.
+
+**Why not macOS alone, or the Shortcuts app?** Both were tried. Native tiling
+has no thirds. The Shortcuts app can resize and move windows, but each Mac
+would need six shortcuts built or imported by hand, with fixed pixel sizes;
+Rectangle needs one permission.
+
 ## What gets configured
 
 | Topic      | Setting             | Values                              |
@@ -364,11 +398,13 @@ from its path. More apps (Ghostty, Starship…) will follow the same pattern.
 | `mouse`    | `secondary-click`   | `right`, `left`, `off`              |
 | `mouse`    | `natural-scrolling` | `true`, `false`; also applies to the trackpad |
 | `shell`    | `init`              | `zsh`: adds the managed block to `~/.zshrc` |
+| `rectangle` | `shortcut`         | `<action> <combo>`, e.g. `first-third cmd+opt+left` (actions in `catalog/rectangle.sh`) |
 | `ssh`      | `agent`             | `1password` |
 | `system`   | `hostname`          | letters, digits, hyphens; sets all three macOS names (sudo) |
 | `trackpad` | `speed`             | `0.0`–`3.0`                         |
 | `trackpad` | `tap-to-click`      | `true`, `false`                     |
 | `trackpad` | `three-finger-drag` | `true`, `false`                     |
+| `windows`  | `native-tiling`     | `true`, `false`: macOS's own edge tiling |
 | `zed`      | `settings`          | `linked`: symlink to `home/.config/zed/settings.json` |
 
 My choices live in `config/<theme>.sh`. Change the values there, or delete a
@@ -383,7 +419,7 @@ All are installed with Homebrew and split by what they are:
 
 | File                  | Holds                          | Now                                  |
 |-----------------------|--------------------------------|--------------------------------------|
-| `config/apps.sh`      | Apps you open (casks)          | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack |
+| `config/apps.sh`      | Apps you open (casks)          | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, Rectangle |
 | `config/fonts.sh`     | Fonts (casks)                  | JetBrains Mono Nerd Font             |
 | `config/packages.sh`  | Command-line tools             | 1Password CLI (`op`), GitHub CLI (`gh`), Starship |
 

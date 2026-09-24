@@ -69,7 +69,10 @@ report() {
   if [ -s "$DOT_RESTARTS" ]; then
     echo
     while read -r p; do
-      killall "$p" 2>/dev/null && echo "Restarted $p." || echo "Could not restart $p; restart it by hand."
+      killall "$p" 2>/dev/null || true   # may not be running yet
+      sleep 1
+      pgrep -xq "$p" || open -a "$p" 2>/dev/null || true
+      if pgrep -xq "$p"; then echo "Restarted $p."; else echo "Could not restart $p; open it by hand."; fi
     done < "$DOT_RESTARTS"
   fi
   if [ -s "$DOT_EFFECTS" ]; then

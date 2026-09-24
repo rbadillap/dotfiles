@@ -10,3 +10,5 @@ brew cask zed
 # Chat.
 brew cask discord
 brew cask slack
+# Window tiling (see config/windows.sh).
+brew cask rectangle

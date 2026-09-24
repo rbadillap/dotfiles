@@ -67,7 +67,8 @@ fd 3, so commands run by a setting keep the real stdin.
 - Validate input and call `fail "<message>"; return` on bad values.
 - Call lib functions; never touch the system directly.
 - After the lib calls, declare effects:
-  - `restart <app>` is done automatically at the end of apply.
+  - `restart <app>` is done automatically at the end of apply; an app that
+    doesn't come back on its own (not the Dock) is reopened.
   - `note "<text>"` adds information under the setting (e.g. lines in
     `~/.zshrc` that aren't from the repo). It never counts as a difference.
   - `effect "<step>"` is reported to the user (e.g. log out).
@@ -75,7 +76,7 @@ fd 3, so commands run by a setting keep the real stdin.
     something; notes always show.
 
 **lib/<tool>.sh**, one file per tool (defaults, scutil, git, brew, ssh, gh,
-file, link), is the only code that reads or changes the system.
+file, link, keys), is the only code that reads or changes the system.
 - Each function reads the current value and returns 0 if it matches.
 - Otherwise, in apply mode it changes it and sets `DOT_CHANGED=1`. In both
   modes it calls `changed "<what>" "<from>" "<to>" [note]`.
@@ -93,6 +94,10 @@ file, link), is the only code that reads or changes the system.
     plugin; may ask for Touch ID)
   - `link` in link.sh (symlinks a `home/` file into `~`; backs up an existing
     file instead of overwriting it)
+  - `default_shortcut` in defaults.sh (a `{keyCode, modifierFlags}` shortcut, as
+    Rectangle stores them)
+  - `key_combo` in keys.sh is a helper: turns `cmd+opt+left` into a key code
+    and modifier flags
   - `ssh_pubkey` in ssh.sh is a helper, not a check: it prints a public key
     from 1Password's agent by item title, without Touch ID
 

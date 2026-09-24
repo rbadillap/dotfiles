@@ -36,3 +36,19 @@ default_unset() {
   fi
   changed "${host:+$host }$1 $2" "$have" '(unset)'
 }
+
+# default_shortcut <domain> <key> <keyCode> <modifierFlags>: a shortcut stored
+# as a {keyCode, modifierFlags} dictionary (e.g. Rectangle).
+default_shortcut() {
+  plist=$(defaults export "$1" - 2>/dev/null)
+  have_code=$(printf %s "$plist" | plutil -extract "$2.keyCode" raw -o - - 2>/dev/null) || have_code=
+  have_flags=$(printf %s "$plist" | plutil -extract "$2.modifierFlags" raw -o - - 2>/dev/null) || have_flags=
+  [ "$have_code" = "$3" ] && [ "$have_flags" = "$4" ] && return 0
+
+  if [ "$DOT_MODE" = apply ]; then
+    defaults write "$1" "$2" -dict keyCode -int "$3" modifierFlags -int "$4"
+    DOT_CHANGED=1
+  fi
+  have='(unset)'; [ -n "$have_code" ] && have="key $have_code, flags $have_flags"
+  changed "$1 $2" "$have" "key $3, flags $4"
+}
