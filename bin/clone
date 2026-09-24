@@ -1,0 +1,86 @@
+#!/bin/sh
+# clone: clone a GitHub repo into ~/code/<owner>/<repo>, where every repo lives.
+# Messages go to stderr; the last line on stdout is the repo's path, so the
+# zsh wrapper in shell/code.zsh can cd into it.
+set -eu
+
+CODE_DIR=${CODE_DIR:-$HOME/code}
+
+usage() {
+  cat <<EOF
+Usage: clone <repo>
+       clone --resolve <repo>    print owner/repo and exit
+
+Clones a GitHub repo over SSH (your key from 1Password) into
+~/code/<owner>/<repo>. If it's already there, it only prints the path.
+In zsh, clone then takes you to the repo.
+
+<repo> can be: owner/repo, github.com/owner/repo,
+https://github.com/owner/repo[.git][/anything], git@github.com:owner/repo[.git],
+ssh://git@github.com/owner/repo[.git]. Only GitHub repos are supported.
+
+Exit codes: 0 cloned or already there, 1 failed, 2 bad usage.
+EOF
+}
+
+die() { echo "clone: $*" >&2; exit 1; }
+bad() { echo "clone: $*" >&2; echo "Run 'clone --help' for usage." >&2; exit 2; }
+tildify() { case $1 in "$HOME"/*) printf '~/%s' "${1#"$HOME"/}" ;; *) printf %s "$1" ;; esac; }
+lower() { printf %s "$1" | tr '[:upper:]' '[:lower:]'; }
+
+# resolve <repo>: prints owner/repo; exits 2 for anything that isn't one.
+resolve() {
+  s=$1
+  case $s in
+    https://github.com/*|http://github.com/*|https://www.github.com/*) s=${s#*github.com/} ;;
+    github.com/*|www.github.com/*) s=${s#*github.com/} ;;
+    git@github.com:*) s=${s#git@github.com:} ;;
+    ssh://git@github.com/*) s=${s#ssh://git@github.com/} ;;
+    *://*|*@*:*) bad "only GitHub repos are supported, got '$1'" ;;
+  esac
+  owner=${s%%/*} rest=${s#*/}
+  [ "$rest" != "$s" ] || bad "expected owner/repo, got '$1'"
+  repo=${rest%%/*}            # drop /tree/main/… and similar
+  repo=${repo%%[?#]*}         # drop ?query and #fragment
+  repo=${repo%.git}
+  case $owner in *.*) bad "only GitHub repos are supported, got '$1'" ;; esac
+  case $owner in ''|-*|*[!A-Za-z0-9-]*) bad "invalid GitHub owner '$owner' in '$1'" ;; esac
+  case $repo in ''|.|..|*[!A-Za-z0-9._-]*) bad "invalid repo name '$repo' in '$1'" ;; esac
+  printf '%s/%s\n' "$owner" "$repo"
+}
+
+[ $# -ge 1 ] || { usage >&2; exit 2; }
+case $1 in
+  -h|--help) usage; exit 0 ;;
+  --resolve) [ $# -eq 2 ] || bad "--resolve takes one repo"; resolve "$2"; exit 0 ;;
+  -*) bad "unknown option '$1'" ;;
+esac
+[ $# -eq 1 ] || bad "expected one repo, got $#"
+
+slug=$(resolve "$1") || exit $?
+# GitHub's own spelling (case, renames), from its public API; no token needed.
+# Private repos aren't visible there, so they keep the spelling given.
+canonical=$(curl -fsS "https://api.github.com/repos/$slug" 2>/dev/null | /usr/bin/jq -r '.full_name // empty' 2>/dev/null) || canonical=
+[ -z "$canonical" ] || slug=$canonical
+dir=$CODE_DIR/$slug
+
+if [ -e "$dir" ]; then
+  if [ -d "$dir/.git" ]; then
+    origin=$(git -C "$dir" remote get-url origin 2>/dev/null) || origin=
+    have=$( (resolve "$origin") 2>/dev/null) || have=
+    if [ "$(lower "$have")" = "$(lower "$slug")" ]; then
+      echo "clone: $slug is already in $(tildify "$dir")" >&2
+      echo "$dir"
+      exit 0
+    fi
+    die "$(tildify "$dir") is another repo (origin: ${origin:-none}). Move it aside and retry."
+  elif [ ! -d "$dir" ] || [ -n "$(ls -A "$dir")" ]; then
+    die "$(tildify "$dir") exists and isn't a git repo. Move it aside and retry."
+  fi
+fi
+
+mkdir -p "$(dirname "$dir")"
+echo "clone: git@github.com:$slug.git → $(tildify "$dir")" >&2
+git clone "git@github.com:$slug.git" "$dir" >&2 ||
+  die "couldn't clone $slug. Does it exist, and can you access it? SSH uses your 1Password key (Touch ID)."
+echo "$dir"

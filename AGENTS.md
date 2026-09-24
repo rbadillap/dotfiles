@@ -45,6 +45,7 @@ point) and docs/ (index: docs/README.md).
 | Install a font                    | `brew cask <name>` in `config/fonts.sh`     |
 | Put an app's config file in `~`   | the file under `home/`, mirroring its path in `~`, plus a catalog setting that calls `link` |
 | Change the shell                  | `shell/<topic>.zsh`, listed in `shell/init.zsh` |
+| Add a command for everyday work   | `bin/<name>` (POSIX sh), with `--help`; docs/tools.md |
 | Add a setting                     | function in `catalog/<topic>.sh`, line in `config/<theme>.sh`, row in docs/settings.md |
 | Add a personal value (names, …)   | `dot.conf` (real) and `dot.conf.example` (placeholder) |
 | Support a new tool (defaults, git…) | new `lib/<tool>.sh`                      |
@@ -116,6 +117,12 @@ op, file, link, keys), is the only code that reads or changes the system.
 **home/** mirrors `~`. Each file is linked into place by a catalog setting
 that calls `link`, and apps edit it through the link. Keep app settings in
 the format the app writes back (Zed: plain JSON, no comments).
+
+**bin/** holds everyday commands (`clone`, `fork`), on `PATH` via `shell/path.zsh`.
+Each is POSIX sh with `--help`; messages go to stderr, and stdout carries only
+the result (a path), so scripts and agents can use them. Exit codes: 0 done,
+1 failed, 2 bad usage. Be defensive: validate input, never overwrite, leave
+nothing half-done on failure. `bin/dot` links to `dot`.
 
 **shell/** holds zsh files, one per topic, loaded in the order listed in
 `shell/init.zsh`. `~/.zshrc` only sources `init.zsh` through the managed

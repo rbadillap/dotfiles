@@ -28,9 +28,10 @@ One file per topic, loaded by `shell/init.zsh` in this order:
 
 | File                | Does                                                 |
 |---------------------|------------------------------------------------------|
-| `shell/path.zsh`    | Homebrew: `PATH`, `MANPATH`, completions             |
+| `shell/path.zsh`    | Homebrew: `PATH`, `MANPATH`, completions; this repo's `bin/` |
 | `shell/op.zsh`      | 1Password shell plugins: `gh` gets its token from 1Password |
 | `shell/editor.zsh`  | `EDITOR` and `VISUAL`, from git's `core.editor` ([editor.md](editor.md)) |
+| `shell/code.zsh`    | `clone` and `fork` take you to the repo ([tools.md](tools.md)) |
 | `shell/prompt.zsh`  | Starship                                             |
 
 To add a topic, create `shell/<topic>.zsh` and add it to the list in

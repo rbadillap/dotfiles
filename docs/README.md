@@ -15,4 +15,5 @@ Topics:
 | [shell.md](shell.md)             | zsh, Starship, and how `~/.zshrc` is shared with tools  |
 | [editor.md](editor.md)           | default editor and Zed settings                         |
 | [windows.md](windows.md)         | window tiling with Rectangle                            |
+| [tools.md](tools.md)             | `clone` and `fork`, commands in `bin/`                  |
 | [auth/](auth/README.md)          | logging in to account-based CLIs, one guide per platform |
