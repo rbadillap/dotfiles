@@ -1,7 +1,8 @@
 # Using dot
 
 `dot` compares the Mac with what `config/` declares, and fixes the
-differences.
+differences. It's on `PATH` once the shell is set up ([shell.md](shell.md)),
+so it works from any folder; before that, run `./dot` from the repo.
 
     ./dot check                          # everything; changes nothing
     ./dot apply                          # fix every difference

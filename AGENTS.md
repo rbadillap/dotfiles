@@ -150,8 +150,9 @@ block.
 
 ## Verify
 
-- `sh -n <file>` for every changed script (POSIX sh), `zsh -n` for `shell/`,
-  and `/usr/bin/jq .` for JSON under `home/`.
+- `sh -n <file>` for every changed script (POSIX sh, including `bin/`),
+  `zsh -n` for `shell/`, and `/usr/bin/jq .` for JSON under `home/`.
+- Test `bin/` tools against a throwaway `CODE_DIR=$(mktemp -d)`, never ~/code.
 - `./dot check <theme>` exits 0 when the machine matches, 1 on differences
   or errors, and 2 on bad usage (unknown command, option or theme) or a
   missing `dot.conf`.

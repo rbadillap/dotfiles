@@ -16,8 +16,8 @@ Each setting passes through three layers:
   expands it into what the system needs. Tap-to-click, for example, is
   three keys: built-in trackpad, Bluetooth trackpad and a per-host global.
 - **lib/** has one file per tool (`defaults`, `scutil`, `git`, `brew`, `ssh`,
-  `gh`, `link`, `file`, `keys`). It is the only code that reads or changes the
-  system, and it's where check and apply differ.
+  `gh`, `op`, `link`, `file`, `keys`). It is the only code that reads or
+  changes the system, and it's where check and apply differ.
 - **dot** ties them together and only accepts settings defined in catalog/.
 
 The engine is POSIX shell plus tools that ship with macOS and git from the
