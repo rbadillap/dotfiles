@@ -12,6 +12,9 @@ set -eu
 DOT_ROOT=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
 export DOT_ROOT
 
+# Homebrew tools (op, gh, brew) even from a shell opened before Homebrew.
+case :$PATH: in *:/opt/homebrew/bin:*) ;; *) [ -d /opt/homebrew/bin ] && PATH=/opt/homebrew/bin:$PATH ;; esac
+
 usage() {
   sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'
   exit 2
@@ -83,13 +86,15 @@ resolve() {
 }
 
 # Config files are data, not code: each line is "<topic> <setting> <value>".
+# The file is read on fd 3 so commands run by a setting (brew, sudo...) keep
+# the real stdin and can't consume the rest of the file.
 run_file() {
-  while read -r topic name value || [ -n "$topic" ]; do
+  while read -r topic name value <&3 || [ -n "$topic" ]; do
     case $topic in ''|'#'*) continue ;; esac
     set -f
     setting "$topic" "$name" $value
     set +f
-  done < "$1"
+  done 3< "$1"
 }
 
 if [ $# -eq 0 ]; then

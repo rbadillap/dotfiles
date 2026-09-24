@@ -10,6 +10,9 @@ point) and docs/getting-started.md (the full guide).
 - Ask before `./dot apply`, before anything that uses sudo, and before any
   other command that changes the machine.
 - Never commit `dot.conf`, secrets, or machine-specific values.
+- Never read or print private keys or tokens. Public keys come from
+  1Password's agent (`ssh_pubkey`); tokens reach CLIs only through 1Password
+  shell plugins.
 - Everything in this repo is written in English.
 - Keep it minimal: add files and folders only when needed. Update README.md
   and this file in the same change as the structure they describe.
@@ -21,18 +24,23 @@ point) and docs/getting-started.md (the full guide).
 
 | Task                              | Location                                   |
 |-----------------------------------|--------------------------------------------|
-| Change a preference               | `config/<topic>.sh`                        |
-| Add a setting                     | function in `catalog/<topic>.sh`, line in `config/<topic>.sh`, row in the "What gets configured" table of docs/getting-started.md |
+| Change a preference               | `config/<theme>.sh`                        |
+| Install an app (GUI)              | `brew cask <name>` in `config/apps.sh`      |
+| Install a CLI tool                | `brew formula <name>` or `brew cask <name>` in `config/packages.sh` |
+| Add a setting                     | function in `catalog/<topic>.sh`, line in `config/<theme>.sh`, row in the "What gets configured" table of docs/getting-started.md |
 | Add a personal value (names, …)   | `dot.conf` (real) and `dot.conf.example` (placeholder) |
 | Support a new tool (defaults, git…) | new `lib/<tool>.sh`                      |
 | Document a clean-machine step     | `docs/getting-started.md`                  |
+| Document a login (GitHub, Vercel…) | `docs/auth/<platform>.md`, plus its row in `docs/auth/README.md` |
 | Change what happens before the repo exists | `install.sh` |
 
 New files in `config/`, `catalog/` and `lib/` are picked up automatically.
 
 ## Layers
 
-**config/<topic>.sh** holds data and is never executed.
+**config/<theme>.sh** holds data and is never executed. A file groups lines by
+theme and may mix topics; `./dot check <theme>` runs that file. It's read on
+fd 3, so commands run by a setting keep the real stdin.
 - One `<topic> <setting> <value>` per line, with no verbs. Lines starting
   with `#` are comments.
 - Values are split on spaces, except that a whole word `$name` is replaced
@@ -52,7 +60,7 @@ New files in `config/`, `catalog/` and `lib/` are picked up automatically.
   - `effect "<step>"` is reported to the user (e.g. log out).
   - Both are no-ops unless the setting actually changed something.
 
-**lib/<tool>.sh**, one file per tool (defaults, scutil, git), is the only code
+**lib/<tool>.sh**, one file per tool (defaults, scutil, git, brew, ssh, gh, file), is the only code
 that reads or changes the system.
 - Each function reads the current value and returns 0 if it matches.
 - Otherwise, in apply mode it changes it and sets `DOT_CHANGED=1`. In both
@@ -63,6 +71,13 @@ that reads or changes the system.
   - `default` / `default_unset` in defaults.sh
   - `scutil_name` in scutil.sh (sudo)
   - `gitconfig` in gitconfig.sh (global ~/.gitconfig)
+  - `brewpkg` in brew.sh (installs only; never uninstalls)
+  - `file_block` in file.sh (appends a block if missing; never rewrites the
+    rest of the file, so tools can keep editing it)
+  - `gh_ssh_key` in gh.sh (GitHub API via `gh`, through 1Password's shell
+    plugin; may ask for Touch ID)
+  - `ssh_pubkey` in ssh.sh is a helper, not a check: it prints a public key
+    from 1Password's agent by item title, without Touch ID
 
 ## install.sh
 
