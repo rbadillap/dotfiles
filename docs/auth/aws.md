@@ -15,31 +15,38 @@ gets temporary credentials for one account and role at a time.
 
 ## 1. Declare it in dot.toml (once, ever)
 
-One table per organization, and one table under it per profile (an account
-and the role, or permission set, you use in it):
+One table per organization. A profile is an account and the role (the
+permission set) you use in it:
 
-    [aws.work]
+    [aws.work]                          # profile "work": view only
     start_url = "https://d-xxxxxxxxxx.awsapps.com/start"
     region = "us-west-2"
-
-    [aws.work.admin]
     account = "123456789012"
+    role = "ViewOnlyAccess"
+
+    [aws.work.admin]                    # profile "work-admin": same account
     role = "AdministratorAccess"
 
-The profile is named `<org>-<profile>`: here `work-admin`. A profile takes
-the organization's region unless it sets its own `region`. The accounts and
-roles you have are the ones the access portal lists.
+- **The organization's own profile** is named after it (`work`) and comes
+  from `account` and `role` in its table. Make it the harmless one:
+  `ViewOnlyAccess` shows what exists and how it's configured, without
+  reading data or changing anything.
+- **Each table under it** is a profile named `<org>-<name>` (`work-admin`),
+  so changing things takes a name you type on purpose. It uses the
+  organization's account and region unless it sets its own `account` or
+  `region`, as another account in the organization would.
+
+The accounts and roles you have are the ones the access portal lists.
 
 ## 2. Apply it
 
     dot apply aws
 
 This installs the AWS CLI, links its aliases (below), and writes one managed
-block to `~/.aws/config`:
-an `[sso-session work]` for the organization and a `[profile work-admin]`
-for each profile. Anything else in the file, such as profiles a client gives
-you, is left alone. There's no default profile, so every command names the
-account it acts on.
+block to `~/.aws/config`: an `[sso-session work]` for the organization and a
+`[profile …]` for each profile. Anything else in the file, such as profiles
+a client gives you, is left alone. There's no default profile, so every
+command names the account it acts on.
 
 ## 3. Log in (per session)
 
@@ -51,7 +58,7 @@ covers every profile of that organization.
 
 ## 4. Check it
 
-    aws whoami --profile work-admin
+    aws whoami --profile work
 
 It prints the account and an `assumed-role/AWSReservedSSO_<role>_…` ARN.
 `whoami` is an alias for `aws sts get-caller-identity`, from
@@ -61,8 +68,9 @@ It prints the account and an `assumed-role/AWSReservedSSO_<role>_…` ARN.
 
 ## Everyday use
 
-    aws s3 ls --profile work-admin      # one command
-    export AWS_PROFILE=work-admin       # or every command in this terminal
+    aws s3 ls --profile work            # one command
+    export AWS_PROFILE=work             # or every command in this terminal
+    aws s3 mb s3://new --profile work-admin   # a change takes the admin profile
     aws sso logout                      # end the session early
 
 When the session expires, commands fail with a message to log in again: run
@@ -92,7 +100,8 @@ useless, and `~/.aws/credentials` isn't used.
 
 ## Another account, role or organization
 
-- **Another account or role** in the same organization: another
-  `[aws.<org>.<profile>]` table, then `dot apply aws`. No new login.
+- **Another role or account** in the same organization: another
+  `[aws.<org>.<name>]` table (with its own `account` for another account),
+  then `dot apply aws`. No new login.
 - **Another organization:** another `[aws.<org>]` table with its profiles,
   then `dot apply aws` and its own `aws sso login --sso-session <org>`.

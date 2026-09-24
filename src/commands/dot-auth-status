@@ -35,16 +35,22 @@ if ssh -T -o BatchMode=yes -o ConnectTimeout=10 git@github.com 2>&1 | grep -q 's
 else
   bad "SSH to GitHub" "see docs/1password.md: SSH agent, key, and dot apply github"
 fi
-# AWS: one line per [aws.<org>] in dot.toml, tried through its first profile.
+# AWS: one line per [aws.<org>] in dot.toml, tried through its own profile
+# (<org>) or else its first one (<org>-<name>).
 . "$DOT_ROOT/src/lib/conf.sh"
 DOT_CONF=$(conf_parse "$DOT_ROOT/dot.toml" 2>/dev/null) || DOT_CONF=
 for org in $(conf_tables aws); do
-  profile=$(conf_tables "aws.$org" | head -1)
-  [ -n "$profile" ] || continue
+  if conf_get "aws.$org.role" >/dev/null; then
+    profile=$org
+  else
+    profile=$(conf_tables "aws.$org" | head -1)
+    [ -n "$profile" ] || continue
+    profile=$org-$profile
+  fi
   if ! command -v aws >/dev/null; then
     bad "AWS $org" "dot apply aws"
-  elif account=$(aws sts get-caller-identity --profile "$org-$profile" --query Account --output text 2>/dev/null); then
-    ok "AWS $org ($org-$profile, $account)"
+  elif account=$(aws sts get-caller-identity --profile "$profile" --query Account --output text 2>/dev/null); then
+    ok "AWS $org ($profile, $account)"
   else
     bad "AWS $org" "aws sso login --sso-session $org (see docs/auth/aws.md)"
   fi
