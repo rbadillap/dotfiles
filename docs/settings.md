@@ -22,6 +22,7 @@ there, or delete a line to leave that setting alone. A file can mix topics
 | `mouse`     | `secondary-click`   | `right`, `left`, `off`                           |
 | `mouse`     | `natural-scrolling` | `true`, `false`; macOS applies it to the trackpad too |
 | `rectangle` | `shortcut`          | `<action> <combo>`, e.g. `first-third cmd+opt+left`; actions in `src/settings/rectangle.sh` |
+| `screenshot` | `save-to`         | `clipboard`, `desktop` (macOS default), `preview`: where ⌘⇧3 and ⌘⇧4 send it |
 | `shell`     | `init`              | `zsh`: the managed block in `~/.zshrc`           |
 | `ssh`       | `agent`             | `1password`                                      |
 | `system`    | `hostname`          | letters, digits, hyphens; sets all three macOS names (sudo) |

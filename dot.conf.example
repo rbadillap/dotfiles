@@ -6,7 +6,7 @@
 hostname=my-mac
 git_name=Your Name
 git_email=you@example.com
-# Title of your SSH key item in 1Password (Personal vault).
+# Title of your SSH key item in 1Password (in your built-in personal vault).
 ssh_key=GitHub
 # Your GitHub username.
 github_user=your-username
