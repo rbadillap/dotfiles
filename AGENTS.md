@@ -12,6 +12,9 @@ point) and docs/getting-started.md (the full guide).
 - Never commit `dot.conf`, secrets, or machine-specific values.
 - Never rewrite `~/.zshrc`: only the marked `# >>> dotfiles` block belongs to
   the repo. Tools may append to the rest.
+- Files under `home/` are linked into `~`, and apps edit them in place (e.g.
+  Zed's settings). Treat unexpected diffs there as the user's changes: never
+  revert them without asking.
 - Never read or print private keys or tokens. Public keys come from
   1Password's agent (`ssh_pubkey`); tokens reach CLIs only through 1Password
   shell plugins.
@@ -33,6 +36,7 @@ point) and docs/getting-started.md (the full guide).
 | Install an app (GUI)              | `brew cask <name>` in `config/apps.sh`      |
 | Install a CLI tool                | `brew formula <name>` or `brew cask <name>` in `config/packages.sh` |
 | Install a font                    | `brew cask <name>` in `config/fonts.sh`     |
+| Put an app's config file in `~`   | the file under `home/`, mirroring its path in `~`, plus a catalog setting that calls `link` |
 | Change the shell                  | `shell/<topic>.zsh`, listed in `shell/init.zsh` |
 | Add a setting                     | function in `catalog/<topic>.sh`, line in `config/<theme>.sh`, row in the "What gets configured" table of docs/getting-started.md |
 | Add a personal value (names, …)   | `dot.conf` (real) and `dot.conf.example` (placeholder) |
@@ -69,7 +73,7 @@ fd 3, so commands run by a setting keep the real stdin.
   - `effect "<step>"` is reported to the user (e.g. log out).
   - Both are no-ops unless the setting actually changed something.
 
-**lib/<tool>.sh**, one file per tool (defaults, scutil, git, brew, ssh, gh, file), is the only code
+**lib/<tool>.sh**, one file per tool (defaults, scutil, git, brew, ssh, gh, file, link), is the only code
 that reads or changes the system.
 - Each function reads the current value and returns 0 if it matches.
 - Otherwise, in apply mode it changes it and sets `DOT_CHANGED=1`. In both
@@ -85,6 +89,8 @@ that reads or changes the system.
     rest of the file, so tools can keep editing it)
   - `gh_ssh_key` in gh.sh (GitHub API via `gh`, through 1Password's shell
     plugin; may ask for Touch ID)
+  - `link` in link.sh (symlinks a `home/` file into `~`; backs up an existing
+    file instead of overwriting it)
   - `ssh_pubkey` in ssh.sh is a helper, not a check: it prints a public key
     from 1Password's agent by item title, without Touch ID
 

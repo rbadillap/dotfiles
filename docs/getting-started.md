@@ -279,6 +279,7 @@ order:
 |---------------------|------------------------------------------------------|
 | `shell/path.zsh`    | Homebrew: `PATH`, `MANPATH` and completions          |
 | `shell/op.zsh`      | 1Password shell plugins (e.g. `gh` gets its token)   |
+| `shell/editor.zsh`  | `EDITOR` and `VISUAL`, from git's `core.editor` (step 7) |
 | `shell/prompt.zsh`  | Starship                                             |
 
 Open a new terminal to see it. Personal customization (history, completion,
@@ -290,6 +291,31 @@ with JetBrains Mono and Nerd Font symbols built in, so it needs no setup.
 Other apps (Terminal.app, editors) can use JetBrains Mono Nerd Font from
 `config/fonts.sh`; pick it in their font settings.
 
+## 7. Editor
+
+Which editor you use is a personal value, in `dot.conf`:
+
+    editor=zed          # zed, code, cursor, nvim, vim or nano
+
+`./dot apply editor` sets git's `core.editor` to it (`zed --wait`: GUI editors
+must wait until you close the file). The shell exports the same command as
+`EDITOR` and `VISUAL` (`shell/editor.zsh` reads it from git), so tools that
+open an editor all agree, from one source of truth.
+
+Zed itself comes from `config/apps.sh`, and its settings live in this repo:
+
+    ./dot apply zed     # ~/.config/zed/settings.json → home/.config/zed/settings.json
+
+**Linked, not copied.** `~/.config/zed/settings.json` becomes a symlink to the
+repo's file. When you change a setting in Zed, Zed writes it into the repo,
+and `git diff` shows it: commit it to keep it, or discard it. If a settings
+file already exists, `apply` keeps it as `settings.json.backup` rather than
+overwriting it.
+
+**`home/` mirrors your home folder.** A file at `home/.config/zed/settings.json`
+is linked to `~/.config/zed/settings.json`, so where a file goes is obvious
+from its path. More apps (Ghostty, Starship…) will follow the same pattern.
+
 ## What gets configured
 
 | Topic      | Setting             | Values                              |
@@ -297,6 +323,7 @@ Other apps (Terminal.app, editors) can use JetBrains Mono Nerd Font from
 | `brew`     | `formula`           | a Homebrew formula (CLI tool), e.g. `gh` |
 | `brew`     | `cask`              | a Homebrew cask (app or binary), e.g. `1password` |
 | `dock`     | `visibility`        | `always`, `autohide`, `hidden`      |
+| `editor`   | `default`           | `zed`, `code`, `cursor`, `nvim`, `vim`, `nano`; from `$editor` |
 | `git`      | `name`              | any text, spaces allowed; from `$git_name` |
 | `git`      | `email`             | an email address; from `$git_email` |
 | `git`      | `signing-key`       | title of an SSH key in 1Password; from `$ssh_key` |
@@ -312,6 +339,7 @@ Other apps (Terminal.app, editors) can use JetBrains Mono Nerd Font from
 | `trackpad` | `speed`             | `0.0`–`3.0`                         |
 | `trackpad` | `tap-to-click`      | `true`, `false`                     |
 | `trackpad` | `three-finger-drag` | `true`, `false`                     |
+| `zed`      | `settings`          | `linked`: symlink to `home/.config/zed/settings.json` |
 
 My choices live in `config/<theme>.sh`. Change the values there, or delete a
 line to leave that setting alone; a package whose line is removed stays
@@ -325,7 +353,7 @@ All are installed with Homebrew and split by what they are:
 
 | File                  | Holds                          | Now                                  |
 |-----------------------|--------------------------------|--------------------------------------|
-| `config/apps.sh`      | Apps you open (casks)          | 1Password, Google Chrome, Dia, Ghostty |
+| `config/apps.sh`      | Apps you open (casks)          | 1Password, Google Chrome, Dia, Ghostty, Zed |
 | `config/fonts.sh`     | Fonts (casks)                  | JetBrains Mono Nerd Font             |
 | `config/packages.sh`  | Command-line tools             | 1Password CLI (`op`), GitHub CLI (`gh`), Starship |
 

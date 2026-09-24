@@ -5,3 +5,5 @@ brew cask google-chrome
 brew cask thebrowsercompany-dia
 # Terminal.
 brew cask ghostty
+# Editor.
+brew cask zed

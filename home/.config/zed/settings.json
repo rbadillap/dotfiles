@@ -1,0 +1,4 @@
+// Zed settings. ~/.config/zed/settings.json links here (`./dot apply zed`),
+// so changes made in Zed land in this repo; review them with `git diff`.
+{
+}

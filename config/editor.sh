@@ -1,0 +1,1 @@
+editor default $editor
