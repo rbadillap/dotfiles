@@ -15,7 +15,7 @@ setting alone. A config file is named after its theme and may mix topics
 | `git`       | `email`             | an email address; from `$git_email`              |
 | `git`       | `signing-key`       | title of an SSH key in 1Password; from `$ssh_key` |
 | `git`       | `identity`          | `<dir> <name> <email>`: identity for repos under `<dir>` |
-| `github`    | `ssh-key`           | title of an SSH key in 1Password; added for authentication and signing |
+| `github`    | `ssh-key`           | `<user> <title>`: an SSH key in 1Password, added to your account for authentication and signing; from `$github_user $ssh_key` |
 | `keyboard`  | `repeat-rate`       | integer; lower is faster (System Settings stops at 2) |
 | `keyboard`  | `repeat-delay`      | integer; lower is shorter (System Settings stops at 15) |
 | `mouse`     | `speed`             | `0.0`–`3.0`                                      |

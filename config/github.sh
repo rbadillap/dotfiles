@@ -1,1 +1,1 @@
-github ssh-key $ssh_key
+github ssh-key $github_user $ssh_key

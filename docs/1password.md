@@ -45,13 +45,15 @@ accepts several.
 ## 4. Use the key
 
 Log in to GitHub first: [auth/github.md](auth/github.md). Then, in
-`dot.conf`, `ssh_key` is the key's **title** in 1Password:
+`dot.conf`, `ssh_key` is the key's **title** in 1Password, and `github_user`
+your GitHub username:
 
     ssh_key=GitHub
+    github_user=rbadillap
 
     ./dot apply ssh       # ssh agent 1password
     ./dot apply git       # git signing-key $ssh_key
-    ./dot apply github    # github ssh-key $ssh_key
+    ./dot apply github    # github ssh-key $github_user $ssh_key
 
 - **`ssh agent 1password`** adds a `Host *` block to `~/.ssh/config` that
   points at the agent. The rest of the file stays yours.
@@ -62,8 +64,9 @@ Log in to GitHub first: [auth/github.md](auth/github.md). Then, in
   an authentication key and as a signing key, titled after the hostname
   (e.g. `ronny (1Password)`).
 
-The public key is read from the agent, so `./dot check` needs no Touch ID.
-Signing a commit does, and so does anything that calls GitHub through `gh`.
+`./dot check` needs no Touch ID: the public key comes from the agent, and
+GitHub's public key lists show what your account has. Signing a commit asks
+for Touch ID, and so does `./dot apply github`, which adds keys through `gh`.
 
 Check it:
 

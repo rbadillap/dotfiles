@@ -6,7 +6,8 @@ point) and docs/ (index: docs/README.md).
 
 ## Rules
 
-- Run `./dot check` freely: it never changes anything.
+- Run `./dot check` freely: it never changes anything. It never needs Touch ID
+  or a password either; keep it that way when adding settings.
 - Ask before `./dot apply`, before anything that uses sudo, and before any
   other command that changes the machine.
 - Never commit `dot.conf`, secrets, or machine-specific values.
@@ -94,8 +95,9 @@ file, link, keys), is the only code that reads or changes the system.
   - `brewpkg` in brew.sh (installs only; never uninstalls)
   - `file_block` in file.sh (appends a block if missing; never rewrites the
     rest of the file, so tools can keep editing it)
-  - `gh_ssh_key` in gh.sh (GitHub API via `gh`, through 1Password's shell
-    plugin; may ask for Touch ID)
+  - `gh_ssh_key` in gh.sh (check reads GitHub's public key lists with curl, no
+    token; apply adds keys via `gh` through 1Password, which may ask for
+    Touch ID)
   - `link` in link.sh (symlinks a `home/` file into `~`; backs up an existing
     file instead of overwriting it)
   - `default_shortcut` in defaults.sh (a `{keyCode, modifierFlags}` shortcut, as

@@ -7,11 +7,17 @@ ghx() {
   if [ -f "$HOME/.config/op/plugins/gh.json" ]; then op plugin run -- gh "$@"; else gh "$@"; fi
 }
 
-# gh_ssh_key <authentication|signing> <public key> <title>
+# gh_ssh_key <user> <authentication|signing> <public key> <title>
+# check reads GitHub's public key lists, so it needs no token and no Touch ID;
+# only apply goes through gh (and 1Password).
 gh_ssh_key() {
-  case $1 in signing) endpoint=ssh_signing_keys ;; *) endpoint=keys ;; esac
-  if ! list=$(ghx api "user/$endpoint" --jq '.[].key' 2>&1); then
-    fail "GitHub $1 keys: can't list them. Does the token allow SSH keys? ($(printf %s "$list" | tail -1))"
+  user=$1; shift
+  case $1 in
+    signing) url=https://api.github.com/users/$user/ssh_signing_keys ;;
+    *)       url=https://github.com/$user.keys ;;
+  esac
+  if ! list=$(curl -fsS "$url" 2>&1); then
+    fail "GitHub $1 keys: can't read $url ($list)"
     return
   fi
   material=$(printf %s "$2" | awk '{ print $2 }')
