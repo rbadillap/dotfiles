@@ -2,7 +2,7 @@
 
 macOS setup as code: `config/` declares settings, `./dot check|apply` compares
 them with the machine and fixes differences. Human docs: README.md (entry
-point) and docs/getting-started.md (the full guide).
+point), docs/getting-started.md (the full guide) and docs/auth/ (logins).
 
 ## Rules
 
@@ -71,10 +71,11 @@ fd 3, so commands run by a setting keep the real stdin.
   - `note "<text>"` adds information under the setting (e.g. lines in
     `~/.zshrc` that aren't from the repo). It never counts as a difference.
   - `effect "<step>"` is reported to the user (e.g. log out).
-  - Both are no-ops unless the setting actually changed something.
+  - `restart` and `effect` are no-ops unless the setting actually changed
+    something; notes always show.
 
-**lib/<tool>.sh**, one file per tool (defaults, scutil, git, brew, ssh, gh, file, link), is the only code
-that reads or changes the system.
+**lib/<tool>.sh**, one file per tool (defaults, scutil, git, brew, ssh, gh,
+file, link), is the only code that reads or changes the system.
 - Each function reads the current value and returns 0 if it matches.
 - Otherwise, in apply mode it changes it and sets `DOT_CHANGED=1`. In both
   modes it calls `changed "<what>" "<from>" "<to>" [note]`.
@@ -93,6 +94,14 @@ that reads or changes the system.
     file instead of overwriting it)
   - `ssh_pubkey` in ssh.sh is a helper, not a check: it prints a public key
     from 1Password's agent by item title, without Touch ID
+
+**home/** mirrors `~`. Each file is linked into place by a catalog setting
+that calls `link`, and apps edit it through the link. Keep app settings in
+the format the app writes back (Zed: plain JSON, no comments).
+
+**shell/** holds zsh files, one per topic, loaded in the order listed in
+`shell/init.zsh`. `~/.zshrc` only sources `init.zsh` through the managed
+block.
 
 ## install.sh
 
@@ -114,9 +123,11 @@ that reads or changes the system.
 
 ## Verify
 
-- `sh -n <file>` for every changed script. Scripts are POSIX sh.
-- `./dot check <topic>` exits 0 when the machine matches, 1 on differences
-  or errors, and 2 on bad usage or a missing `dot.conf`.
+- `sh -n <file>` for every changed script (POSIX sh), `zsh -n` for `shell/`,
+  and `/usr/bin/jq .` for JSON under `home/`.
+- `./dot check <theme>` exits 0 when the machine matches, 1 on differences
+  or errors, and 2 on bad usage (unknown command, option or theme) or a
+  missing `dot.conf`.
 - To test an apply path without touching real settings, source the libs in a
   subshell with `DOT_MODE=apply` against a throwaway defaults domain, then
   `defaults delete` it.

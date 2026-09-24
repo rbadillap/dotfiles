@@ -385,9 +385,11 @@ Each setting passes through three layers:
   expands it into what macOS actually needs. For example, tap-to-click is
   three keys: built-in trackpad, Bluetooth trackpad and a per-host global.
 - **lib/** has one file per tool (`defaults`, `scutil`, `git`, `brew`, `ssh`,
-  `gh`, plus `file` for managed blocks inside files). It is the only
-  code that reads or changes the system, and it's where check vs. apply
-  happens.
+  `gh`), plus `file` for managed blocks inside files and `link` for files
+  linked from `home/`. It is the only code that reads or changes the system,
+  and it's where check vs. apply happens.
+- **home/** mirrors your home folder: its files are linked into `~` (step 7).
+- **shell/** holds the zsh setup, one file per topic (step 6).
 - **dot** is the CLI that ties them together. It only accepts settings
   defined in catalog/. Everything is POSIX shell plus tools that ship with
   macOS (and git, from the Command Line Tools), so it runs right after the
