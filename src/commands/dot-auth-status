@@ -4,8 +4,9 @@
 # Group: auth
 #
 # Checks each account this setup uses: the 1Password CLI, GitHub's CLI (gh,
-# through 1Password) and SSH to GitHub (key from 1Password). It asks 1Password
-# for Touch ID, like any command that uses those logins.
+# through 1Password), SSH to GitHub (key from 1Password), and each AWS
+# organization in dot.toml (its SSO session). It asks 1Password for Touch
+# ID, like any command that uses those logins.
 #
 # EXIT CODES
 #   0  every login works
@@ -34,6 +35,20 @@ if ssh -T -o BatchMode=yes -o ConnectTimeout=10 git@github.com 2>&1 | grep -q 's
 else
   bad "SSH to GitHub" "see docs/1password.md: SSH agent, key, and dot apply github"
 fi
+# AWS: one line per [aws.<org>] in dot.toml, tried through its first profile.
+. "$DOT_ROOT/src/lib/conf.sh"
+DOT_CONF=$(conf_parse "$DOT_ROOT/dot.toml" 2>/dev/null) || DOT_CONF=
+for org in $(conf_tables aws); do
+  profile=$(conf_tables "aws.$org" | head -1)
+  [ -n "$profile" ] || continue
+  if ! command -v aws >/dev/null; then
+    bad "AWS $org" "dot apply aws"
+  elif account=$(aws sts get-caller-identity --profile "$org-$profile" --query Account --output text 2>/dev/null); then
+    ok "AWS $org ($org-$profile, $account)"
+  else
+    bad "AWS $org" "aws sso login --sso-session $org (see docs/auth/aws.md)"
+  fi
+done
 
 echo
 if [ "$missing" -eq 0 ]; then echo "Every login works."; else echo "$missing login(s) missing."; exit 1; fi

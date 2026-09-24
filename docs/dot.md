@@ -15,7 +15,7 @@
 | `dot conf`         | backs up, restores or edits `dot.toml` with 1Password       |
 | `dot doctor`       | checks that dot's own requirements are in place             |
 | `dot update`       | pulls the latest dotfiles, then runs `dot check`            |
-| `dot auth status`  | shows which logins work: 1Password, GitHub, SSH             |
+| `dot auth status`  | shows which logins work: 1Password, GitHub, SSH, AWS        |
 | `dot init zsh`     | prints the zsh setup that `~/.zshrc` loads                  |
 | `dot completion zsh` | prints the zsh completion script                          |
 
@@ -122,7 +122,8 @@ See [1password.md](1password.md#backup-of-dottoml).
 - **`dot update`** fast-forwards the repo from GitHub, then runs `dot check`
   to show what the new version would change. It never applies.
 - **`dot auth status`** checks each login this setup uses: the 1Password CLI,
-  `gh`, and SSH to GitHub. It asks for Touch ID. See [auth/](auth/README.md).
+  `gh`, SSH to GitHub, and each AWS organization in `dot.toml`. It asks for
+  Touch ID. See [auth/](auth/README.md).
 
 ## Exit codes
 

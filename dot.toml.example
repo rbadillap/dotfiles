@@ -27,3 +27,13 @@ telemetry = "disable"
 # dir = "~/code/your-company"
 # name = "Your Name"
 # email = "you@your-company.com"
+
+# AWS IAM Identity Center (SSO): one [aws.<org>] table per organization, and
+# one [aws.<org>.<profile>] table per profile, named <org>-<profile>.
+# [aws.work]
+# start_url = "https://d-0000000000.awsapps.com/start"
+# region = "us-east-1"
+#
+# [aws.work.admin]
+# account = "123456789012"
+# role = "AdministratorAccess"

@@ -83,7 +83,12 @@ GitHub, and turn on signed commits: [1password.md](1password.md), then
 [auth/github.md](auth/github.md). `dot auth status` confirms every login
 works.
 
-## 6. Manual steps
+## 6. Cloud
+
+For each AWS organization in `dot.toml`, log in once per session:
+`aws sso login --sso-session <org>` ([auth/aws.md](auth/aws.md)).
+
+## 7. Manual steps
 
 macOS doesn't let scripts do these:
 
