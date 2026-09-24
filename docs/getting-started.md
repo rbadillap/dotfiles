@@ -52,6 +52,8 @@ which git ignores. The installer offers three ways to create it:
   default.
 - **`m` by hand:** `cp dot.conf.example dot.conf`, then edit it.
 
+Later, `dot conf restore` gets the backup and `dot conf edit` opens the file
+([dot.md](dot.md#conf)).
 One `name=value` per line, without quotes; values may contain spaces. Lines
 starting with `#` are comments. `dot` won't run without this file.
 

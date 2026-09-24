@@ -5,7 +5,7 @@
 | [getting-started.md](getting-started.md)   | set up a Mac from a clean install, step by step       |
 | [dot.md](dot.md)                           | use `dot`: every command, output, exit codes          |
 | [settings.md](settings.md)                 | look up every setting, its values, and what gets installed |
-| [how-it-works.md](how-it-works.md)         | understand the layers and add a setting               |
+| [how-it-works.md](how-it-works.md)         | understand the layout, and add a setting or a command |
 
 Topics:
 
