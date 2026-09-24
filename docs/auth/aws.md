@@ -34,7 +34,8 @@ roles you have are the ones the access portal lists.
 
     dot apply aws
 
-This installs the AWS CLI and writes one managed block to `~/.aws/config`:
+This installs the AWS CLI, links its aliases (below), and writes one managed
+block to `~/.aws/config`:
 an `[sso-session work]` for the organization and a `[profile work-admin]`
 for each profile. Anything else in the file, such as profiles a client gives
 you, is left alone. There's no default profile, so every command names the
@@ -50,9 +51,12 @@ covers every profile of that organization.
 
 ## 4. Check it
 
-    aws sts get-caller-identity --profile work-admin
+    aws whoami --profile work-admin
 
 It prints the account and an `assumed-role/AWSReservedSSO_<role>_…` ARN.
+`whoami` is an alias for `aws sts get-caller-identity`, from
+`config/home/.aws/cli/alias`, which `dot apply aws` links to
+`~/.aws/cli/alias`; add your own aliases there.
 `dot auth status` does the same for each organization in `dot.toml`.
 
 ## Everyday use

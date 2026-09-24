@@ -11,7 +11,7 @@
       lib/               shared code, including everything that changes the system
     config/              what you want on the Mac; nothing personal (that is dot.toml)
       *.conf             what you want: `dock visibility hidden`
-      home/              files linked into ~ (Zed's settings, mise's global versions)
+      home/              files linked into ~ (Zed's settings, mise's versions, AWS aliases)
       shell/             your zsh setup, one file per topic
     docs/
 

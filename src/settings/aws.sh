@@ -40,3 +40,10 @@ region = $profile_region
   done
   file_managed_block "$HOME/.aws/config" 600 "# >>> dotfiles: managed by dot apply aws$block# <<< dotfiles"
 }
+
+# aws aliases <linked>   ~/.aws/cli/alias is a link to this repo's
+# config/home/.aws/cli/alias: shortcuts such as aws whoami
+aws_aliases() {
+  [ "$1" = linked ] || { fail "aws aliases: only 'linked' is supported, got '$1'"; return; }
+  link config/home/.aws/cli/alias "$HOME/.aws/cli/alias"
+}

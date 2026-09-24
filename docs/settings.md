@@ -7,6 +7,7 @@ there, or delete a line to leave that setting alone. A file can mix topics
 
 | Topic       | Setting             | Values                                           |
 |-------------|---------------------|--------------------------------------------------|
+| `aws`       | `aliases`           | `linked`: symlink to `config/home/.aws/cli/alias` (`aws whoami`) |
 | `aws`       | `sso`               | profiles in `~/.aws/config` for IAM Identity Center; from `$aws.*` ([auth/aws.md](auth/aws.md)) |
 | `brew`      | `formula`           | a Homebrew formula (command-line tool), e.g. `gh` |
 | `brew`      | `cask`              | a Homebrew cask (app, font or binary), e.g. `1password` |
