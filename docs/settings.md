@@ -18,6 +18,8 @@ there, or delete a line to leave that setting alone. A file can mix topics
 | `github`    | `ssh-key`           | `<user> <title>`: an SSH key in 1Password, added to your account for authentication and signing; from `$github_user $ssh_key` |
 | `keyboard`  | `repeat-rate`       | integer; lower is faster (System Settings stops at 2) |
 | `keyboard`  | `repeat-delay`      | integer; lower is shorter (System Settings stops at 15) |
+| `mise`      | `config`            | `linked`: symlink to `config/home/.config/mise/config.toml` |
+| `mise`      | `tools`             | `installed`: every tool in the global mise config |
 | `mouse`     | `speed`             | `0.0`–`3.0`                                      |
 | `mouse`     | `secondary-click`   | `right`, `left`, `off`                           |
 | `mouse`     | `natural-scrolling` | `true`, `false`; macOS applies it to the trackpad too |
@@ -43,6 +45,7 @@ All come from Homebrew:
 | `config/apps.conf`      | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, Rectangle |
 | `config/fonts.conf`     | fonts                  | JetBrains Mono Nerd Font                           |
 | `config/packages.conf`  | command-line tools     | 1Password CLI (`op`), GitHub CLI (`gh`), Starship  |
+| `config/mise.conf`      | languages and runtimes | mise; through it Node 24, pnpm, Bun ([runtimes.md](runtimes.md)) |
 
 To add one, find its exact name with `brew search <name>` and add
 `brew cask <name>` (apps, fonts, binaries) or `brew formula <name>`

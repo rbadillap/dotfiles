@@ -64,6 +64,7 @@ by its path, since the shell function only exists in interactive zsh.
 | Add a setting                      | function in `src/settings/<topic>.sh`, line in `config/`, row in docs/settings.md |
 | Add a command                      | `src/commands/dot-<name>` (or `dot-<group>-<sub>`), row in docs/dot.md |
 | Put an app's config file in `~`    | `config/home/<path>`, plus a setting that calls `link` |
+| Change a language or tool version | `config/home/.config/mise/config.toml` (global); docs/runtimes.md |
 | Add something to the shell         | `config/shell/<topic>.zsh`                            |
 | Add a personal value (names, …)    | `dot.conf` (real) and `dot.conf.example` (placeholder) |
 | Support a new system tool          | `src/lib/<tool>.sh`                                   |

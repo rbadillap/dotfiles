@@ -14,5 +14,6 @@ Topics:
 | [1password.md](1password.md)     | SSH agent, SSH key, commit signing, git identities, dot.conf backup |
 | [shell.md](shell.md)             | zsh, Starship, and how `~/.zshrc` is shared with tools  |
 | [editor.md](editor.md)           | default editor and Zed settings                         |
+| [runtimes.md](runtimes.md)       | Node, pnpm, Bun and other versions with mise            |
 | [windows.md](windows.md)         | window tiling with Rectangle                            |
 | [auth/](auth/README.md)          | logging in to account-based CLIs, one guide per platform |

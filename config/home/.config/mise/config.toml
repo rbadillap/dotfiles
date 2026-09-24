@@ -1,0 +1,10 @@
+# Global tool versions. A project's own mise.toml (or .nvmrc, see below) wins
+# inside that project. `mise use -g <tool>@<version>` edits this file.
+[tools]
+node = "24"
+pnpm = "latest"   # pnpm follows each project's "packageManager" field itself
+bun = "latest"
+
+[settings]
+# Also read other tools' version files, e.g. a project's .nvmrc.
+idiomatic_version_file_enable_tools = ["node"]
