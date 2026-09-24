@@ -312,6 +312,9 @@ and `git diff` shows it: commit it to keep it, or discard it. If a settings
 file already exists, `apply` keeps it as `settings.json.backup` rather than
 overwriting it.
 
+Keep the file plain JSON, without comments. Zed rewrites it on every change
+and doesn't keep comments in place, so explanations belong in these docs.
+
 **`home/` mirrors your home folder.** A file at `home/.config/zed/settings.json`
 is linked to `~/.config/zed/settings.json`, so where a file goes is obvious
 from its path. More apps (Ghostty, Starship…) will follow the same pattern.
