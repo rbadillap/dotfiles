@@ -84,7 +84,8 @@ file, link), is the only code that reads or changes the system.
 - Current functions:
   - `default` / `default_unset` in defaults.sh
   - `scutil_name` in scutil.sh (sudo)
-  - `gitconfig` in gitconfig.sh (global ~/.gitconfig)
+  - `gitconfig [-f <file>]` in gitconfig.sh (global ~/.gitconfig, or another
+    file such as an identity under ~/.config/git/identities/)
   - `brewpkg` in brew.sh (installs only; never uninstalls)
   - `file_block` in file.sh (appends a block if missing; never rewrites the
     rest of the file, so tools can keep editing it)

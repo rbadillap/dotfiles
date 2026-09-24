@@ -29,3 +29,20 @@ git_signing_key() {
   gitconfig gpg.ssh.allowedSignersFile "$HOME/.config/git/allowed_signers"
   file_block "$HOME/.config/git/allowed_signers" 644 "$email $key"
 }
+
+# git identity <dir> <name> <email>   commits in repos under <dir> use this
+# name and email instead of the global ones (git's includeIf). <dir> may start
+# with ~. Signing keeps the global key; the email is added to allowed_signers
+# so git can verify those commits locally.
+git_identity() {
+  [ $# -eq 3 ] || { fail "git identity: expected <dir> <name> <email>"; return; }
+  case $1 in "~"/*) dir=$HOME/${1#"~/"} ;; /*) dir=$1 ;; *) fail "git identity: <dir> must be absolute or start with ~/"; return ;; esac
+  case $3 in ?*@?*.?*) ;; *) fail "git identity: not an email address: '$3'"; return ;; esac
+  dir=${dir%/}/
+  file=$HOME/.config/git/identities/$(printf %s "${dir#"$HOME"/}" | tr -c 'A-Za-z0-9\n' - | sed 's/-*$//')
+  gitconfig -f "$file" user.name "$2"
+  gitconfig -f "$file" user.email "$3"
+  gitconfig "includeIf.gitdir:$dir.path" "$file"
+  key=$(git config --global --get user.signingkey 2>/dev/null) || return 0
+  file_block "$HOME/.config/git/allowed_signers" 644 "$3 $key"
+}

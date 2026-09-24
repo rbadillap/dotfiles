@@ -245,6 +245,32 @@ Commits made before this step aren't signed. If they haven't been pushed,
 re-sign them with `git rebase --root --force-rebase` (one Touch ID per
 commit, unless 1Password remembers the approval).
 
+### 5.5 Identities per folder
+
+Your global git identity (`git_name`, `git_email`) is the default. Repos under
+a given folder can use another name and email, without configuring each
+repo:
+
+    # dot.conf
+    site_dir=~/code/rbadillap/rbadillap
+    site_git_name=Ronny Badilla
+    site_git_email=info@ronnybadilla.com
+
+    # config/git.sh
+    git identity $site_dir $site_git_name $site_git_email
+
+`./dot apply git` writes the name and email to
+`~/.config/git/identities/<folder>` and tells git to include that file for
+repos under the folder (git's `includeIf gitdir`). A repo cloned there later
+picks it up automatically. To check which identity a repo uses:
+
+    git -C <repo> var GIT_AUTHOR_IDENT
+
+Signing keeps the same 1Password key, and the extra email is added to
+`~/.config/git/allowed_signers`. For GitHub to show those commits as
+*Verified*, the email must be verified on your GitHub account. Add one
+`git identity` line per folder that needs its own identity.
+
 ## 6. Shell
 
 zsh, with no framework, and the [Starship](https://starship.rs) prompt. zsh is
@@ -330,6 +356,7 @@ from its path. More apps (Ghostty, Starship…) will follow the same pattern.
 | `git`      | `name`              | any text, spaces allowed; from `$git_name` |
 | `git`      | `email`             | an email address; from `$git_email` |
 | `git`      | `signing-key`       | title of an SSH key in 1Password; from `$ssh_key` |
+| `git`      | `identity`          | `<dir> <name> <email>`: identity for repos under `<dir>`; from `$site_*` |
 | `github`   | `ssh-key`           | title of an SSH key in 1Password; added for auth and signing (needs `gh`) |
 | `keyboard` | `repeat-rate`       | integer; lower is faster (UI minimum is 2) |
 | `keyboard` | `repeat-delay`      | integer; lower is shorter (UI minimum is 15) |

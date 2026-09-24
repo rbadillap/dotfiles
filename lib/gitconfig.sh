@@ -1,13 +1,19 @@
-# Global git settings via git-config(1), stored in ~/.gitconfig. Sourced by dot.
+# Git settings via git-config(1). Sourced by dot.
 
-# gitconfig <key> <value>
+# gitconfig [-f <file>] <key> <value>: in ~/.gitconfig, or in <file> when given.
 gitconfig() {
-  have=$(git config --global --get "$1" 2>/dev/null) || have='(unset)'
+  where=--global label=git
+  if [ "$1" = -f ]; then
+    where="--file=$2" label=$(printf %s "$2" | sed "s#^$HOME#~#")
+    shift 2
+  fi
+  have=$(git config $where --get "$1" 2>/dev/null) || have='(unset)'
   [ "$have" = "$2" ] && return 0
 
   if [ "$DOT_MODE" = apply ]; then
-    git config --global "$1" "$2"
+    [ "$where" = --global ] || mkdir -p "$(dirname "${where#--file=}")"
+    git config $where "$1" "$2"
     DOT_CHANGED=1
   fi
-  changed "git $1" "$have" "$2"
+  changed "$label $1" "$have" "$2"
 }

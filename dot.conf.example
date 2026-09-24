@@ -8,5 +8,10 @@ git_name=Your Name
 git_email=you@example.com
 # Title of your SSH key item in 1Password (Personal vault).
 ssh_key=GitHub
+# Another name and email for repos under one folder (see `git identity` in
+# config/git.sh; delete that line if you don't need it).
+site_dir=~/code/you/site
+site_git_name=Your Name
+site_git_email=you@example.org
 # Your editor: zed, code, cursor, nvim, vim or nano.
 editor=zed
