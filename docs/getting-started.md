@@ -71,7 +71,7 @@ See [dot.md](dot.md) for the output and exit codes, and
 
 Ghostty (from `config/apps.conf`) with zsh and Starship: [shell.md](shell.md).
 From now on `dot` works from any folder, with completion ([dot.md](dot.md)),
-and your editor is set ([editor.md](editor.md)). Node, pnpm and Bun are ready, with
+and your editor is set ([editor.md](editor.md)). Node, pnpm, Bun, Python and uv are ready, with
 the right versions in each project ([runtimes.md](runtimes.md)).
 
 ## 5. 1Password and GitHub

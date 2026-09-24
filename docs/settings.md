@@ -45,7 +45,7 @@ All come from Homebrew:
 | `config/apps.conf`      | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, Rectangle |
 | `config/fonts.conf`     | fonts                  | JetBrains Mono Nerd Font                           |
 | `config/packages.conf`  | command-line tools     | 1Password CLI (`op`), GitHub CLI (`gh`), Starship  |
-| `config/mise.conf`      | languages and runtimes | mise; through it Node 24, pnpm, Bun ([runtimes.md](runtimes.md)) |
+| `config/mise.conf`      | languages and runtimes | mise; through it Node 24, pnpm, Bun, Python 3.13, uv ([runtimes.md](runtimes.md)) |
 
 To add one, find its exact name with `brew search <name>` and add
 `brew cask <name>` (apps, fonts, binaries) or `brew formula <name>`

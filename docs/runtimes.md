@@ -1,7 +1,7 @@
 # Languages and tool versions
 
-[mise](https://mise.jdx.dev) manages the versions of Node, pnpm, Bun and
-other tools, globally and per project.
+[mise](https://mise.jdx.dev) manages the versions of Node, pnpm, Bun, Python, uv
+and other tools, globally and per project.
 
     dot apply mise
 
@@ -17,6 +17,8 @@ This installs mise, links its global config, and installs every tool in it.
 | Node   | 24       |
 | pnpm   | latest   |
 | Bun    | latest   |
+| Python | 3.13     |
+| uv     | latest   |
 
 `mise use -g <tool>@<version>` changes it, and since the file is linked, the
 change lands in the repo: commit it or discard it. `dot check` reports tools
@@ -29,9 +31,10 @@ ones. mise reads, in order of preference:
 
 - `mise.toml`, its own file: `mise use node@22` in a project writes it.
 - `.tool-versions`, asdf's file.
-- `.nvmrc` and `.node-version`, since `idiomatic_version_file_enable_tools`
-  includes `node` in the global config. Add other tools there to read their
-  files (`.python-version`, `.terraform-version`).
+- `.nvmrc`, `.node-version` and `.python-version`, since
+  `idiomatic_version_file_enable_tools` includes `node` and `python` in the
+  global config. Add other tools there to read their files
+  (`.terraform-version`).
 
 A version a project asks for that isn't installed yet is installed the first
 time you run it.
@@ -58,3 +61,22 @@ as `.nvmrc` don't need it.
 Both are installed, and each project uses the one its lockfile shows
 (`pnpm-lock.yaml` or `bun.lock`). pnpm switches by itself to the version in a
 project's `"packageManager"` field; a project can pin Bun in its `mise.toml`.
+
+## Python and uv
+
+mise installs Python; [uv](https://docs.astral.sh/uv/) handles each
+project's dependencies and virtual environment.
+
+    uv init my-app      # a new project
+    uv add httpx        # add a dependency (creates .venv and uv.lock)
+    uv sync             # install what uv.lock lists, e.g. after cloning
+    uv run main.py      # run inside the project's environment
+
+- **The .venv activates itself.** In a folder with `uv.lock`, mise activates
+  its `.venv` when you enter and deactivates it when you leave
+  (`python.uv_venv_auto = "source"`); `python` and installed tools are the
+  project's. Run `uv sync` once after cloning to create it.
+- **One owner for Python versions.** uv uses the Python mise installed and
+  never downloads its own (`UV_PYTHON_PREFERENCE` and `UV_PYTHON_DOWNLOADS` in
+  the config's `[env]`). A project that asks for another version in
+  `.python-version` gets it from mise: run `mise install` in that folder.

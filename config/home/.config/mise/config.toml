@@ -4,7 +4,16 @@
 node = "24"
 pnpm = "latest"   # pnpm follows each project's "packageManager" field itself
 bun = "latest"
+python = "3.13"
+uv = "latest"     # a project's dependencies and .venv; Python itself comes from mise
+
+[env]
+# uv uses the Python mise installed, and never downloads its own.
+UV_PYTHON_PREFERENCE = "only-system"
+UV_PYTHON_DOWNLOADS = "never"
 
 [settings]
-# Also read other tools' version files, e.g. a project's .nvmrc.
-idiomatic_version_file_enable_tools = ["node"]
+# Also read other tools' version files: a project's .nvmrc, .python-version.
+idiomatic_version_file_enable_tools = ["node", "python"]
+# In a uv project (uv.lock), activate its .venv on entering the folder.
+python.uv_venv_auto = "source"

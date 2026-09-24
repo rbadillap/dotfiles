@@ -1,4 +1,4 @@
-# mise: versions of Node, pnpm, Bun and other tools, globally and per project
+# mise: versions of Node, pnpm, Bun, Python, uv and other tools, globally and per project
 # (https://mise.jdx.dev). Installed by `brew formula mise`.
 
 # mise config <linked>   ~/.config/mise/config.toml is a link to this repo's

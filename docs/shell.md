@@ -33,7 +33,7 @@ added and can move it into `config/shell/` or leave it:
 | File                        | Does                                                  |
 |-----------------------------|-------------------------------------------------------|
 | `config/shell/editor.zsh`   | `EDITOR` and `VISUAL`, from git's `core.editor` ([editor.md](editor.md)) |
-| `config/shell/mise.zsh`     | mise: the right Node, pnpm and Bun versions per folder ([runtimes.md](runtimes.md)) |
+| `config/shell/mise.zsh`     | mise: the right tool versions per folder, and a uv project's .venv ([runtimes.md](runtimes.md)) |
 | `config/shell/op.zsh`       | 1Password shell plugins: `gh` gets its token from 1Password |
 | `config/shell/prompt.zsh`   | Starship                                              |
 
