@@ -36,6 +36,23 @@ ones. mise reads, in order of preference:
 A version a project asks for that isn't installed yet is installed the first
 time you run it.
 
+## Everyday commands
+
+| Command                        | Does                                                  |
+|--------------------------------|-------------------------------------------------------|
+| `mise ls --current`            | versions active in this folder, and which file set each |
+| `mise use node@22`             | pin a version in this project (writes `mise.toml`)    |
+| `mise use -g node@24`          | change a global version (edits the linked config)     |
+| `mise install`                 | install what this folder's files ask for             |
+| `mise upgrade`                 | update installed tools within their pinned ranges     |
+| `mise trust`                   | allow a project's `mise.toml` (see below)             |
+| `mise doctor`                  | check mise's own setup                                |
+
+**Trust.** A `mise.toml` can set environment variables and run tasks, so mise
+only reads one from a folder you trust. The first time you enter a cloned
+project that has one, mise asks you to run `mise trust`. Version files such
+as `.nvmrc` don't need it.
+
 ## pnpm and Bun
 
 Both are installed, and each project uses the one its lockfile shows

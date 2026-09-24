@@ -11,7 +11,7 @@
       lib/               shared code, including everything that changes the system
     config/              your setup; a fork edits this and dot.conf
       *.conf             what you want: `dock visibility hidden`
-      home/              files linked into ~
+      home/              files linked into ~ (Zed's settings, mise's global versions)
       shell/             your zsh setup, one file per topic
     docs/
 
