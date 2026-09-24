@@ -55,8 +55,6 @@ protected by the system.
 The installer clones the repo over HTTPS, since a clean Mac has no SSH key
 yet. If the repo is already there, it runs `git pull` instead.
 
-> Not yet verified end to end: the repo isn't published on GitHub yet.
-
 Repos live at `~/code/<owner>/<repo>`, mirroring GitHub, with no exceptions.
 This one goes in `~/code/rbadillap/dotfiles`. A fork can use its own with
 `DOTFILES_REPO=<owner>/<repo>`.
