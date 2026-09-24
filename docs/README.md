@@ -11,7 +11,7 @@ Topics:
 
 | Document                         | Covers                                                  |
 |----------------------------------|---------------------------------------------------------|
-| [1password.md](1password.md)     | SSH agent, SSH key, commit signing, git identities      |
+| [1password.md](1password.md)     | SSH agent, SSH key, commit signing, git identities, dot.conf backup |
 | [shell.md](shell.md)             | zsh, Starship, and how `~/.zshrc` is shared with tools  |
 | [editor.md](editor.md)           | default editor and Zed settings                         |
 | [windows.md](windows.md)         | window tiling with Rectangle                            |

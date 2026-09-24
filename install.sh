@@ -28,7 +28,7 @@ Usage: install.sh [options]
 Sets up $DOTFILES_REPO on this Mac:
   1. Homebrew, which also installs the Xcode Command Line Tools (git, compilers)
   2. The repo, cloned into ~/code/$DOTFILES_REPO
-  3. dot.conf with your personal values (short wizard, or by hand)
+  3. dot.conf with your personal values (restore from 1Password, wizard, or by hand)
   4. ./dot check, then ./dot apply if you confirm
 
 Options:
@@ -104,6 +104,24 @@ getkey() {
   trap - INT TERM
 }
 
+# choose <question> <key>...: prints the key pressed, one of the given keys.
+# Enter picks the first. Other keys are ignored until a valid one is pressed.
+choose() {
+  question=$1; shift
+  printf '%s ' "$question" > /dev/tty
+  while :; do
+    key=$(getkey)
+    [ -n "$key" ] || key=$1
+    for option in "$@"; do
+      if [ "$key" = "$option" ]; then
+        echo "$key" > /dev/tty
+        printf %s "$key"
+        return 0
+      fi
+    done
+  done
+}
+
 # prompt <label> <default>: prints the answer, or the default if left empty.
 prompt() {
   printf '    %s [%s]: ' "$1" "$2" > /dev/tty
@@ -171,7 +189,7 @@ plan() {
     local)   item 1 "Get the repo" ;;
     missing) item 0 "Clone the repo" "into $(tildify "$DOTFILES_DIR"), where all repos live" ;;
   esac
-  item "$have_conf" "dot.conf" "your personal values (hostname, …): wizard or by hand"
+  item "$have_conf" "dot.conf" "your personal values: restore from 1Password, wizard, or by hand"
   if [ "$no_apply" = 1 ]; then then_apply="then stop (--no-apply)"
   elif [ "$interactive" = 1 ]; then then_apply="then ask before applying"
   else then_apply="then apply without asking (--yes)"; fi
@@ -237,9 +255,14 @@ personal_values() {
     info "dot.conf already exists; leaving it as is."
     return 0
   fi
-  if [ "$interactive" = 1 ] && ask "    Set them now with a short wizard?" y; then
-    wizard
-    return 0
+  if [ "$interactive" = 1 ]; then
+    info "dot.conf holds your personal values (hostname, git identity, …)."
+    case $(choose "    [r] restore from 1Password  [w] wizard  [m] I'll create it myself" r w m) in
+      r) if restore_conf; then return 0; fi
+         info "Continuing with the wizard instead."
+         wizard; return 0 ;;
+      w) wizard; return 0 ;;
+    esac
   fi
   info "dot.conf holds your personal values. Create it from the template and edit it:"
   echo
@@ -247,6 +270,29 @@ personal_values() {
   info "  cp dot.conf.example dot.conf"
   echo
   info "Then run ./dot check to see what would change, and ./dot apply to apply it."
+  return 1
+}
+
+# restore_conf: download the dot.conf backup from 1Password (the Document
+# "dotfiles: dot.conf", saved by `./dot apply backup`). Installs 1Password and
+# its CLI first, and waits while you sign in. Fails if you give up.
+restore_conf() {
+  step "Restoring dot.conf from 1Password"
+  run brew install --quiet --cask --adopt 1password 1password-cli
+  open -a 1Password
+  info "In 1Password: sign in, then turn on Settings → Developer →"
+  info "Integrate with 1Password CLI. Then come back here."
+  while ask "    Ready to restore?" y; do
+    if op document get "dotfiles: dot.conf" --out-file "$DOTFILES_DIR/dot.conf" --force >/dev/null 2>&1; then
+      # Same record `./dot apply backup` keeps (lib/op.sh), so check sees it as backed up.
+      state=${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles
+      mkdir -p "$state"
+      shasum -a 256 "$DOTFILES_DIR/dot.conf" | cut -d' ' -f1 > "$state/dotfiles-dot-conf.sha256"
+      info "Restored $(tildify "$DOTFILES_DIR/dot.conf")."
+      return 0
+    fi
+    warn "Couldn't read \"dotfiles: dot.conf\" from 1Password: not signed in yet, CLI integration off, or no backup."
+  done
   return 1
 }
 

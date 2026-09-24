@@ -81,7 +81,7 @@ fd 3, so commands run by a setting keep the real stdin.
     something; notes always show.
 
 **lib/<tool>.sh**, one file per tool (defaults, scutil, git, brew, ssh, gh,
-file, link, keys), is the only code that reads or changes the system.
+op, file, link, keys), is the only code that reads or changes the system.
 - Each function reads the current value and returns 0 if it matches.
 - Otherwise, in apply mode it changes it and sets `DOT_CHANGED=1`. In both
   modes it calls `changed "<what>" "<from>" "<to>" [note]`.
@@ -98,6 +98,8 @@ file, link, keys), is the only code that reads or changes the system.
   - `gh_ssh_key` in gh.sh (check reads GitHub's public key lists with curl, no
     token; apply adds keys via `gh` through 1Password, which may ask for
     Touch ID)
+  - `op_document` in op.sh (backs a file up to 1Password; check compares it
+    with a local record of the last upload, so it needs no Touch ID)
   - `link` in link.sh (symlinks a `home/` file into `~`; backs up an existing
     file instead of overwriting it)
   - `default_shortcut` in defaults.sh (a `{keyCode, modifierFlags}` shortcut, as
@@ -130,6 +132,8 @@ block.
   With no flags and no terminal it stops before changing anything. Installing
   Homebrew needs sudo; if sudo needs a password, it stops and asks the human
   to run it.
+- Restoring dot.conf writes the same record as `op_document`
+  (`~/.local/state/dotfiles/dotfiles-dot-conf.sha256`); keep the two in sync.
 - Test it with `sh install.sh --dry-run`, and `HOME=$(mktemp -d)` to simulate
   a clean machine.
 

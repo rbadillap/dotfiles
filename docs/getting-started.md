@@ -42,15 +42,17 @@ Only Apple Silicon Macs are supported, as with current Homebrew.
 ## 2. Personal values
 
 Everything personal (hostname, git identity, editor…) lives in `dot.conf`,
-which git ignores. The installer offers a short wizard that asks for each
-value in `dot.conf.example`; Enter keeps the default. Otherwise:
+which git ignores. The installer offers three ways to create it:
 
-    cp dot.conf.example dot.conf
+- **`r` restore from 1Password:** installs 1Password, waits while you sign in
+  and turn on *Settings → Developer → Integrate with 1Password CLI*, then
+  downloads your backup ([1password.md](1password.md#backup-of-dotconf)).
+- **`w` wizard:** asks for each value in `dot.conf.example`; Enter keeps the
+  default.
+- **`m` by hand:** `cp dot.conf.example dot.conf`, then edit it.
 
 One `name=value` per line, without quotes; values may contain spaces. Lines
 starting with `#` are comments. `dot` won't run without this file.
-
-Keep a copy somewhere safe (planned: 1Password): it isn't in git.
 
 ## 3. Check, then apply
 

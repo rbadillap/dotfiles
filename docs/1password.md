@@ -97,3 +97,21 @@ including repos cloned there later. To see which identity a repo uses:
 
 Signing uses the same key; the extra email joins `allowed_signers`. For
 *Verified* on GitHub, the email must be verified on your account.
+
+## Backup of dot.conf
+
+`dot.conf` isn't in git, so it's kept in 1Password as the Document
+"dotfiles: dot.conf", in your personal vault:
+
+    backup dot-conf 1password    # config/backup.sh
+
+    ./dot apply backup           # uploads dot.conf (Touch ID)
+
+`./dot check` tells you when `dot.conf` changed since the last backup,
+without Touch ID: it compares the file with a record of the last upload,
+kept in `~/.local/state/dotfiles/`.
+
+On a new Mac, the installer's **restore** option downloads it. To restore by
+hand:
+
+    op document get "dotfiles: dot.conf" --out-file dot.conf
