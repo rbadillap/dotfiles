@@ -26,7 +26,7 @@ Options:
   -h, --help   show this help
 
 Exit codes: 0 all good, 1 differences or errors, 2 bad usage.
-Full guide: docs/getting-started.md
+More: docs/dot.md, and docs/README.md for everything else
 EOF
   exit "${1:-2}"
 }

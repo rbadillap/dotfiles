@@ -22,4 +22,5 @@ Afterwards, from the repo:
     ./dot check    # what would change; changes nothing
     ./dot apply    # apply it
 
-For details, see **[docs/getting-started.md](docs/getting-started.md)**.
+Step by step: **[docs/getting-started.md](docs/getting-started.md)**. Everything
+else: [docs/](docs/README.md).

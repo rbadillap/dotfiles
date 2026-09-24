@@ -2,7 +2,7 @@
 
 `gh`, the GitHub CLI, needs a login to call GitHub's API: creating repos,
 opening pull requests, adding SSH keys. `git push` and `git pull` don't use
-it; they go over SSH with the key from 1Password (getting-started, step 5).
+it; they go over SSH with the key from 1Password ([1password.md](../1password.md)).
 
 This guide uses the **token in 1Password** way. The interactive alternative
 is at the end, for comparison.
@@ -10,7 +10,7 @@ is at the end, for comparison.
 ## Requirements
 
 - 1Password with **Integrate with 1Password CLI** turned on
-  (getting-started, step 5.2).
+  ([1password.md](../1password.md), step 2).
 - `gh` and `op` installed; `./dot apply packages` does it.
 
 ## 1. Create a token (once, ever)
@@ -46,8 +46,7 @@ Open <https://github.com/settings/personal-access-tokens/new>:
   - *Git SSH keys* (upload your SSH key for authentication)
   - *SSH signing keys* (upload it for commit signing)
 
-Picking permissions one by one is where most of the time goes (see
-*Friction*).
+Picking permissions one by one is where most of the time goes.
 
 ### Classic (fastest)
 
@@ -93,7 +92,7 @@ things:
 - It runs `source ~/.zshrc`, so the terminal you're in has the alias right
   away.
 
-With this repo's shell setup (getting-started, step 6) the command isn't
+With this repo's shell setup ([shell.md](../shell.md)) the command isn't
 needed: `shell/op.zsh` already loads `plugins.sh`. Running it anyway is
 harmless; `./dot check shell` then lists that line as a note, and you can
 delete it from `~/.zshrc`.
@@ -108,23 +107,16 @@ nothing is written to disk.
 
 ## Friction
 
-Measured on the first Mac (2026-09-23), with a fine-grained token: **about 10
-minutes**, 2FA included. Almost all of it was picking permissions by hand in
-the browser. The pre-filled classic link above should cut that part to a
-minute or two, but that hasn't been measured yet.
-
 | Criterion        | Token in 1Password                          | Interactive login |
 |------------------|---------------------------------------------|-------------------|
-| Time             | ~10 min the first time; per Mac: not yet measured | not measured |
+| Time             | ~10 min to create the token (fine-grained); per Mac: not measured | not measured |
 | Browser          | once, to create the token                   | on every Mac      |
 | 2FA              | once, when creating the token               | on every Mac, if asked |
 | Per machine      | `op plugin init gh` (the shell line comes from `./dot apply shell`) | the whole login   |
 | Expires          | as set when creating the token              | no                |
 | Secret on disk   | no                                          | in the macOS Keychain |
 
-The first-time cost is paid once; from then on each Mac only repeats
-steps 2–4. That per-Mac time is what matters most, and it gets measured on
-the next machine.
+The token is created once; each later Mac only repeats steps 2–4.
 
 ## Renewing
 

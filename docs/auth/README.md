@@ -1,8 +1,8 @@
 # Authentication
 
 Every CLI that talks to an account (GitHub, Vercel, Cloudflare, AWS…) needs
-a login, and on a new Mac all of them need it again. This folder documents
-each platform's login separately, and measures how much manual work it takes.
+a login, and on a new Mac all of them need it again. Each platform has its own
+guide here, with how much manual work its login takes.
 
 ## Two ways to log in
 
@@ -30,4 +30,4 @@ Each platform guide measures both ways with the same criteria:
 
 | Platform                 | Interactive login | Token in 1Password |
 |--------------------------|-------------------|--------------------|
-| [GitHub](github.md)      | not measured      | ~10 min once (2FA, fine-grained); per Mac: not yet measured |
+| [GitHub](github.md)      | not measured      | ~10 min once (2FA, fine-grained token); per Mac: not measured |

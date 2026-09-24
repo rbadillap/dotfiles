@@ -2,7 +2,7 @@
 
 macOS setup as code: `config/` declares settings, `./dot check|apply` compares
 them with the machine and fixes differences. Human docs: README.md (entry
-point), docs/getting-started.md (the full guide) and docs/auth/ (logins).
+point) and docs/ (index: docs/README.md).
 
 ## Rules
 
@@ -25,8 +25,11 @@ point), docs/getting-started.md (the full guide) and docs/auth/ (logins).
 - Keep it minimal: add files and folders only when needed. Update README.md
   and this file in the same change as the structure they describe.
 - README.md stays short: what this is and where to go. Details belong in
-  docs/getting-started.md.
-- Record every step taken on a clean machine in docs/getting-started.md.
+  docs/: one document per purpose, listed in docs/README.md.
+- Docs describe what exists and how it works, never how it was decided (what
+  was tried, which alternatives lost). That belongs in commit messages.
+- Record every step a clean machine needs in docs/getting-started.md, with
+  details in the topic's doc.
 
 ## Where things go
 
@@ -38,10 +41,11 @@ point), docs/getting-started.md (the full guide) and docs/auth/ (logins).
 | Install a font                    | `brew cask <name>` in `config/fonts.sh`     |
 | Put an app's config file in `~`   | the file under `home/`, mirroring its path in `~`, plus a catalog setting that calls `link` |
 | Change the shell                  | `shell/<topic>.zsh`, listed in `shell/init.zsh` |
-| Add a setting                     | function in `catalog/<topic>.sh`, line in `config/<theme>.sh`, row in the "What gets configured" table of docs/getting-started.md |
+| Add a setting                     | function in `catalog/<topic>.sh`, line in `config/<theme>.sh`, row in docs/settings.md |
 | Add a personal value (names, …)   | `dot.conf` (real) and `dot.conf.example` (placeholder) |
 | Support a new tool (defaults, git…) | new `lib/<tool>.sh`                      |
-| Document a clean-machine step     | `docs/getting-started.md`                  |
+| Document a clean-machine step     | `docs/getting-started.md`, details in the topic doc |
+| Document a topic (shell, editor…) | `docs/<topic>.md`, listed in `docs/README.md` |
 | Document a login (GitHub, Vercel…) | `docs/auth/<platform>.md`, plus its row in `docs/auth/README.md` |
 | Change what happens before the repo exists | `install.sh` |
 
