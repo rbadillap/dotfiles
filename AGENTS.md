@@ -13,6 +13,9 @@ point) and docs/getting-started.md (the full guide).
 - Never read or print private keys or tokens. Public keys come from
   1Password's agent (`ssh_pubkey`); tokens reach CLIs only through 1Password
   shell plugins.
+- Commits are signed through 1Password (Touch ID). Never bypass signing
+  (`--no-gpg-sign`, `-c commit.gpgsign=false`); if signing fails, stop and ask.
+- The repo is public. Ask before `git push`, and never rewrite pushed history.
 - Everything in this repo is written in English.
 - Keep it minimal: add files and folders only when needed. Update README.md
   and this file in the same change as the structure they describe.
