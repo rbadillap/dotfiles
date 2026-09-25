@@ -40,6 +40,15 @@ git_identity() {
   case $3 in ?*@?*.?*) ;; *) fail "git identity: not an email address: '$3'"; return ;; esac
   dir=${dir%/}/
   file=$HOME/.config/git/identities/$(printf %s "${dir#"$HOME"/}" | tr -c 'A-Za-z0-9\n' - | sed 's/-*$//')
+  # Different folders can map to the same file name (company-a, company_a):
+  # refuse rather than let one identity overwrite the other's file.
+  other=$(git config --global --name-only --get-regexp '^includeif\.gitdir:.*\.path$' 2>/dev/null |
+    while IFS= read -r key; do
+      [ "$key" = "includeif.gitdir:$dir.path" ] && continue
+      [ "$(git config --global --get "$key")" = "$file" ] && printf '%s' "$key"
+    done) || true
+  other=${other#includeif.gitdir:}
+  [ -z "$other" ] || { fail "git identity: $1 would share $(printf %s "$file" | sed "s#^$HOME#~#") with ${other%.path}; rename one of the folders"; return; }
   gitconfig -f "$file" user.name "$2"
   gitconfig -f "$file" user.email "$3"
   gitconfig "includeIf.gitdir:$dir.path" "$file"

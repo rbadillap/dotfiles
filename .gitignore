@@ -1,3 +1,4 @@
 # Personal values; see dot.toml.example
 dot.toml
+dot.toml.before-restore
 dot.toml.before-restore.*
