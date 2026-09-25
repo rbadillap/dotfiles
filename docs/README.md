@@ -15,6 +15,7 @@ Topics:
 | [shell.md](shell.md)             | zsh, Starship, and how `~/.zshrc` is shared with tools  |
 | [editor.md](editor.md)           | default editor and Zed settings                         |
 | [runtimes.md](runtimes.md)       | Node, pnpm, Bun and other versions with mise            |
+| [agents.md](agents.md)           | Claude Code: the hooks dotfiles installs, and the known issues they work around |
 | [secrets/](secrets/README.md)    | API keys and other app secrets: 1Password, Varlock and `dot secret`, one guide per provider |
 | [windows.md](windows.md)         | window tiling with Rectangle                            |
 | [auth/](auth/README.md)          | logging in to account-based CLIs, one guide per platform |
