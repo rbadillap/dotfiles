@@ -115,6 +115,7 @@ personal value in `dot.toml`:
 | App secrets (API keys, DB URLs)     | 1Password, development vault | Varlock, per process |
 | GitHub token for `gh`               | 1Password  | the `gh` shell plugin, per command ([auth/github.md](../auth/github.md)) |
 | Vercel token for `vercel`           | 1Password  | the `vercel` shell plugin, per command ([auth/vercel.md](../auth/vercel.md)) |
+| A project's Vercel OIDC token       | nowhere: issued per run, 12 hours | Varlock, through the `vercel` plugin ([auth/vercel.md](../auth/vercel.md#a-projects-oidc-token)) |
 | SSH key                             | 1Password  | the SSH agent ([1password.md](../1password.md)) |
 | `dot.toml` backup                   | 1Password  | `dot conf restore`                   |
 

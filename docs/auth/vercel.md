@@ -78,6 +78,36 @@ Linking also writes a short-lived `VERCEL_OIDC_TOKEN` into `.env.local`, in
 plain text, and has no option to skip it. If the project doesn't use Vercel's
 OIDC federation, delete that `.env.local`: deploying doesn't need it.
 
+To deploy without linking, name the project instead; nothing is written to
+the folder:
+
+    vercel deploy --project <name> --scope <team>           # a preview
+    vercel deploy --project <name> --scope <team> --prod    # production
+
+## A project's OIDC token
+
+Code that uses Vercel's OIDC federation (Vercel Blob, for example) gets its
+token from Vercel when it runs there. On this Mac, a project's code needs a
+development token, valid 12 hours:
+
+    vercel project token <name> --scope <team> --json
+
+It prints `{"token": "…"}` and saves nothing. In a project that uses
+[Varlock](../secrets/README.md), `.env.schema` issues one on each run:
+
+    # @sensitive
+    VERCEL_OIDC_TOKEN=exec(`op plugin run -- vercel project token <name> --scope <team> --json | jq -r .token`)
+
+- `op plugin run -- vercel`, not `vercel`: the plugin's `vercel` function only
+  exists in interactive zsh, and Varlock runs the command in another shell.
+  Without the plugin, `vercel` has no token and starts a login of its own.
+- The token is for the *development* environment: whatever it reaches (a Blob
+  store, for example) must be connected to the project for Development too,
+  or the request is denied.
+- Not `vercel env pull`: it writes the token into `.env.local`, and when the
+  token expires the SDKs renew it with a saved CLI login, which this setup
+  doesn't keep.
+
 ## Known limits of the plugin
 
 The plugin adds `--token` to every `vercel` command, but not every command
