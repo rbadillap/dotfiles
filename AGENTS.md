@@ -77,6 +77,7 @@ always writes its own `dot.toml`.
 | Document a clean-machine step      | docs/getting-started.md, details in the topic doc     |
 | Document a topic (shell, editor…)  | `docs/<topic>.md`, listed in docs/README.md           |
 | Document a login (GitHub, Vercel…) | `docs/auth/<platform>.md`, plus its row in docs/auth/README.md |
+| Document a project secret (GitHub token…) | `docs/secrets/<provider>.md`, plus its row in docs/secrets/README.md |
 | Change what happens before the repo exists | `install.sh`                                  |
 
 New files in `config/`, `src/settings/`, `src/lib/` and `src/commands/` are

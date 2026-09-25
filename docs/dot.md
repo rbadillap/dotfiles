@@ -13,6 +13,7 @@
 | `dot fork`         | forks a GitHub repo and clones it with an `upstream` remote |
 | `dot cd`           | goes to the dotfiles repo                                   |
 | `dot conf`         | backs up, restores or edits `dot.toml` with 1Password       |
+| `dot secret`       | stores project secrets in 1Password and prints their references |
 | `dot doctor`       | checks that dot's own requirements are in place             |
 | `dot update`       | pulls the latest dotfiles, then runs `dot check`            |
 | `dot auth status`  | shows which logins work: 1Password, GitHub, SSH, Vercel, AWS |

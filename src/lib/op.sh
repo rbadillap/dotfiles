@@ -42,3 +42,40 @@ op_document() {
   if [ "$state" = changed ]; then from="changed since the last backup"; else from="not backed up from this Mac"; fi
   changed "1Password \"$1\"" "$from" "backed up"
 }
+
+# Project secrets, for dot secret: API Credential items tagged "dotfiles" in
+# the vault set under [secrets] in dot.toml. A value only ever travels
+# through pipes, never as an argument (visible in the process list) or a file.
+
+# op_secret_ref <vault> <name>: the reference a .env.schema uses.
+op_secret_ref() { printf 'op://%s/%s/credential' "$1" "$2"; }
+
+# op_secret_exists <vault> <name>: true if the item exists. Fails on any
+# other error (not signed in, no such vault).
+op_secret_exists() {
+  err=$(op item get "$2" --vault "$1" --format json 2>&1 >/dev/null) && return 0
+  case $err in *"isn't an item"*|*"not found"*) return 1 ;; esac
+  printf '%s\n' "$err" | sed 's/^\[ERROR\] [0-9/]* [0-9:]* //' >&2
+  exit 1
+}
+
+# op_secret_add <vault> <name>: creates the item with the value on stdin.
+op_secret_add() {
+  /usr/bin/jq -Rs --arg title "$2" '{title: $title, category: "API_CREDENTIAL", tags: ["dotfiles"],
+    fields: [{id: "credential", type: "CONCEALED", label: "credential", value: .}]}' |
+    op item create --vault "$1" --format json - >/dev/null
+}
+
+# op_secret_update <vault> <name>: replaces the item's value with stdin,
+# keeping everything else in the item.
+op_secret_update() {
+  { /usr/bin/jq -Rs '{value: .}'; op item get "$2" --vault "$1" --format json; } |
+    /usr/bin/jq -s '.[0].value as $v | .[1] | (.fields[] | select(.id == "credential") | .value) = $v' |
+    op item edit "$2" --vault "$1" --format json >/dev/null
+}
+
+# op_secret_list <vault>: one line per secret, tab-separated: name, updated.
+op_secret_list() {
+  op item list --vault "$1" --tags dotfiles --categories "API Credential" --format json |
+    /usr/bin/jq -r 'sort_by(.title)[] | [.title, .updated_at[:10]] | @tsv'
+}

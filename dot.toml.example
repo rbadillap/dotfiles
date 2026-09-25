@@ -28,6 +28,10 @@ telemetry = "disable"
 # name = "Your Name"
 # email = "you@your-company.com"
 
+# Project secrets for dot secret: the 1Password vault they live in.
+# [secrets]
+# vault = "Dev"
+
 # AWS IAM Identity Center (SSO): one [aws.<org>] table per organization. With
 # account and role it's the profile <org>; each [aws.<org>.<name>] is the
 # profile <org>-<name>, in the same account unless it sets its own.
