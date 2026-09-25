@@ -80,10 +80,18 @@ OIDC federation, delete that `.env.local`: deploying doesn't need it.
 
 ## Known limits of the plugin
 
-The plugin adds `--token` to every `vercel` command, and `vercel curl` hands
-its flags to `curl`, which rejects `--token`. Request a deployment with plain
-`curl` instead. A deployment behind Vercel's protection needs a bypass token
-for that.
+The plugin adds `--token` to every `vercel` command, but not every command
+honors it:
+
+- `vercel curl` hands its flags to `curl`, which rejects `--token`. Request a
+  deployment with plain `curl` instead; one behind Vercel's protection needs
+  a bypass token for that.
+- `vercel env run` authenticates on its own: finding no saved login, it
+  starts a device login, and approving it saves a long-lived login token in
+  the CLI's config folder (`auth.json`), which this setup avoids. Don't use
+  it; if it already happened, `vercel logout`, called by the binary's path
+  (`/opt/homebrew/bin/vercel logout`) so the plugin's token isn't the one
+  revoked, removes the file and revokes that login.
 
 ## Friction
 
