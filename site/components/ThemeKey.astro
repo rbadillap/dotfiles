@@ -1,0 +1,15 @@
+---
+// The theme toggle is knowledge, not chrome (DESIGN.md v4.0): pressing D
+// switches light and dark. It presses Blume's own, hidden, toggle, so the
+// choice is saved the same way. Ignored while typing and with a modifier.
+---
+
+<script is:inline>
+  addEventListener("keydown", (e) => {
+    if (e.key !== "d" && e.key !== "D") return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    document.querySelector("[data-blume-theme-toggle]")?.click();
+  });
+</script>

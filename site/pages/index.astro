@@ -1,0 +1,179 @@
+---
+// The landing page, in the rbadillap grammar (DESIGN.md v4.0): one 560px
+// column, a spine joining each section's node, section labels in the mono
+// register, and the page closing where the symbol lands (a rule meeting a
+// dot). Its sections follow the reader's path through the docs (adopt, use,
+// extend, agents), and each ends in a link to the docs section that teaches
+// it. The mark appears once, in the header.
+import PageLayout from "blume/components/layout/PageLayout.astro";
+import data from "blume:data";
+import ThemeKey from "../components/ThemeKey.astro";
+
+const { config } = data;
+const install =
+  'sh -c "$(curl -fsSL https://raw.githubusercontent.com/rbadillap/dotfiles/main/install.sh)"';
+const title = "dot · your Mac, as code";
+// Shell braces would read as Astro expressions in the markup, so code
+// samples are strings rendered as text.
+const samples = {
+  mac: `# config/dock.conf
+dock visibility hidden
+
+$ dot check
+✓ dock visibility hidden
+~ trackpad tap-to-click true`,
+  projects: `$ dot clone vercel/next.js
+~/code/vercel/next.js
+
+$ dot secret attach app-payments PAYMENTS_KEY`,
+  extend: `dock_visibility() {
+  case $1 in
+    autohide) default com.apple.dock autohide -bool true ;;
+  esac
+  restart Dock
+}`,
+};
+const sections = [
+  {
+    label: "Fork it",
+    heading: "It's yours.",
+    body: "The engine is shared; the choices are yours. Apps, preferences and tools live in config/, and everything personal in one file git ignores.",
+    href: "/docs/get-started/install",
+    link: "Get started",
+  },
+  {
+    label: "Your Mac",
+    heading: "Your Mac, as text.",
+    body: "One line per setting. dot check shows what differs and never changes anything; dot apply fixes only that.",
+    code: samples.mac,
+    href: "/docs/your-mac/apps-and-tools",
+    link: "Your Mac",
+  },
+  {
+    label: "Your projects",
+    heading: "Every project, one command away.",
+    body: "Repos land in ~/code/owner/repo. Secrets come from 1Password when a project runs, never as files on disk.",
+    code: samples.projects,
+    href: "/docs/your-projects/clone-and-fork",
+    link: "Your projects",
+  },
+  {
+    label: "Extend",
+    heading: "A setting is one function.",
+    body: "Add what dot doesn't have. dot defaults diff helps find where macOS keeps a setting, without printing what's private.",
+    code: samples.extend,
+    href: "/docs/extend/add-a-setting",
+    link: "Extend dot",
+  },
+  {
+    label: "Agents",
+    heading: "Safe to inspect. Changes wait for you.",
+    body: "Agents run dot check freely; applying, cloning and anything with sudo need your OK. The docs ship as llms.txt and raw Markdown.",
+    href: "/docs/agents",
+    link: "Agents",
+  },
+];
+---
+
+<PageLayout
+  analytics={config.analytics}
+  banner={config.banner}
+  favicon={config.favicon}
+  fontCssVars={data.fontCssVars}
+  logo={config.logo}
+  navigation={data.navigation}
+  ogEnabled={config.og.enabled}
+  page={{ description: config.description, route: "/", title }}
+  searchEnabled={config.search.enabled}
+  site={{ description: config.description, title: config.title }}
+  siteUrl={config.site}
+  structuredDataEnabled={config.structuredData}
+  themeMode={config.theme.mode}
+>
+  <main class="mx-auto w-full max-w-[560px] px-6 pt-20 pb-24 text-(length:--text-body) leading-[1.65]">
+    <section class="fade-up">
+      <h1 class="text-(length:--text-md)">dot</h1>
+      <p class="mt-1 text-(--primary)">Your Mac, as code.</p>
+      <p class="mt-4">
+        Set it up from plain text, keep it that way, and work on your
+        projects. One command on a clean Mac; one line per setting after that.
+      </p>
+      <button
+        class="mt-8 flex w-full items-center justify-between gap-4 bg-(--muted) px-4 py-3 text-left font-mono text-(length:--text-xs)"
+        data-copy={install}
+        type="button"
+      >
+        <span class="truncate"><span class="text-muted-foreground">$ </span>sh -c "$(curl -fsSL …/install.sh)"</span>
+        <span class="shrink-0 text-(length:--text-2xs) text-muted-foreground uppercase tracking-[0.14em]" data-copy-label>Copy</span>
+      </button>
+      <p class="mt-4 flex gap-6">
+        <a class="text-(--primary) hover:underline" href="/docs/get-started/install">Get started →</a>
+        <a class="text-muted-foreground hover:text-(--primary)" href="/docs">Read the docs →</a>
+      </p>
+    </section>
+
+    <div class="mt-16 border-border border-l pl-6">
+      {sections.map((s, i) => (
+        <section class={`fade-up fade-up-${i + 1} relative pb-14`}>
+          <div class="section-label flex items-center gap-3">
+            <span class="-ml-[27px] size-[5px] shrink-0 rounded-full bg-(--primary)"></span>
+            <span class="shrink-0 font-mono text-(length:--text-2xs) text-muted-foreground uppercase tracking-[0.14em]">{s.label}</span>
+            <span class="h-px grow bg-border"></span>
+          </div>
+          <h2 class="mt-5 font-medium text-(--primary) text-(length:--text-body)">{s.heading}</h2>
+          <p class="mt-2">{s.body}</p>
+          {s.code && (
+            <pre class="mt-5 overflow-x-auto bg-(--muted) px-4 py-3 font-mono text-(length:--text-xs) leading-relaxed">{s.code}</pre>
+          )}
+          <a class="mt-4 inline-block text-(--primary) hover:underline" href={s.href}>{s.link} →</a>
+        </section>
+      ))}
+    </div>
+
+    <div class="flex items-center">
+      <span class="h-px grow bg-border"></span>
+      <span class="size-[5px] shrink-0 rounded-full bg-(--primary)"></span>
+    </div>
+  </main>
+
+  <footer class="mx-auto w-full max-w-[560px] px-6 pb-12" slot="footer">
+    <div class="flex flex-wrap justify-between gap-4 border-border border-t pt-4 font-mono text-(length:--text-2xs) text-muted-foreground uppercase tracking-[0.14em]">
+      <span>MIT · <a class="hover:text-(--primary)" href="https://github.com/rbadillap/dotfiles">rbadillap/dotfiles</a></span>
+      <span class="flex gap-4">
+        <a class="hover:text-(--primary)" href="/docs/reference/commands">Commands</a>
+        <a class="hover:text-(--primary)" href="/docs/reference/settings">Settings</a>
+        <a class="hover:text-(--primary)" href="/docs/reference/dot-toml">dot.toml</a>
+      </span>
+    </div>
+    <ThemeKey />
+  </footer>
+</PageLayout>
+
+<style is:global>
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fade-up 0.45s cubic-bezier(0.23, 1, 0.32, 1) both; }
+  .fade-up-1 { animation-delay: 60ms; }
+  .fade-up-2 { animation-delay: 120ms; }
+  .fade-up-3 { animation-delay: 180ms; }
+  .fade-up-4 { animation-delay: 240ms; }
+  .fade-up-5 { animation-delay: 300ms; }
+  @media (prefers-reduced-motion: reduce) {
+    .fade-up { animation: none; }
+  }
+</style>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+    button.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(button.dataset.copy ?? "");
+      const label = button.querySelector("[data-copy-label]");
+      if (label) {
+        label.textContent = "Copied";
+        setTimeout(() => (label.textContent = "Copy"), 1500);
+      }
+    });
+  }
+</script>

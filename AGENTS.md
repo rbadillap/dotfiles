@@ -2,8 +2,8 @@
 
 macOS setup as code. `config/*.conf` declares settings; `dot check` compares
 them with the Mac and `dot apply` fixes the differences. `dot` is the single
-entry point for everything. Human docs: README.md and docs/ (index:
-docs/README.md). Run `bin/dot --help` from the repo root; in scripts, call `dot`
+entry point for everything. Human docs: docs/, published by site/ (a Blume
+site); README.md points to them. Run `bin/dot --help` from the repo root; in scripts, call `dot`
 by its path, since the shell function only exists in interactive zsh.
 
 ## Rules
@@ -33,7 +33,7 @@ by its path, since the shell function only exists in interactive zsh.
   any line of it may hold a secret. Point to it by line number instead.
   `dot defaults diff` follows this too: its report is counts only (see
   Commands).
-- docs/agents.md lists the Claude Code hooks this repo installs and the
+- docs/06-agents/index.mdx lists the Claude Code hooks this repo installs and the
   upstream issues they work around, with links: check those issues for
   updates when you touch agent configuration.
 - Commits are signed through 1Password (Touch ID). Never bypass signing
@@ -43,11 +43,18 @@ by its path, since the shell function only exists in interactive zsh.
 - Keep it minimal: add files and folders only when needed. Update README.md
   and this file in the same change as the structure they describe.
 - README.md stays short: what this is and where to go. Details belong in
-  docs/: one document per purpose, listed in docs/README.md.
+  docs/, written for someone who uses dot, not for this repo's owner.
+- docs/ follows the reader's path: get started, your Mac, your projects,
+  extend, agents, reference. A section is a folder with a numeric prefix
+  (the order; it's dropped from the URL) and a `meta.ts` with its title.
+  Each page is `.mdx` with `title` and `description` in its frontmatter and
+  starts at `##`; code blocks are fenced with a language. Link pages by
+  relative path (`../03-your-mac/05-editor.mdx`); `pnpm --dir site exec
+  blume validate` must find no broken links.
 - Docs describe what exists and how it works, never how it was decided (what
   was tried, which alternatives lost). That belongs in commit messages.
-- Record every step a clean machine needs in docs/getting-started.md, with
-  details in the topic's doc.
+- Record every step a clean machine needs in docs/02-get-started/, with
+  details in the topic's page.
 
 ## Layout
 
@@ -62,6 +69,8 @@ by its path, since the shell function only exists in interactive zsh.
 | `config/*.conf`          | the owner's declarations (data, never executed)         |
 | `config/home/`           | files linked into `~`, mirroring their path             |
 | `config/shell/`          | the owner's zsh files, loaded by `dot init zsh`         |
+| `docs/`                  | the docs, one `.mdx` page per purpose                   |
+| `site/`                  | the docs site (Blume): config, landing page, `package.json` |
 
 `src/` is the engine. `config/` is what the owner wants on the Mac and holds
 nothing personal; `dot.toml` holds who they are (names, identities,
@@ -78,20 +87,21 @@ always writes its own `dot.toml`.
 | Install a font                     | `brew cask <name>` in `config/fonts.conf`              |
 | Add a third-party package source  | `brew tap <owner/repo>` in `config/packages.conf`, before its packages |
 | Find where macOS stores a preference | `dot defaults diff <domain>`, run by the human: it waits for a change in System Settings |
-| Add a setting                      | function in `src/settings/<topic>.sh`, line in `config/`, row in docs/settings.md |
-| Add a command                      | `src/commands/dot-<name>` (or `dot-<group>-<sub>`), row in docs/dot.md |
+| Add a setting                      | function in `src/settings/<topic>.sh`, line in `config/`, row in docs/07-reference/02-settings.mdx and in its page under docs/03-your-mac/ |
+| Add a command                      | `src/commands/dot-<name>` (or `dot-<group>-<sub>`), row in docs/07-reference/01-commands.mdx |
 | Put an app's config file in `~`    | `config/home/<path>`, plus a setting that calls `link` |
-| Add a Claude Code hook             | script in `config/home/.claude/hooks/`, `claude hook` line in `config/claude.conf`; docs/agents.md |
-| Change a language or tool version | `config/home/.config/mise/config.toml` (global); docs/runtimes.md |
+| Add a Claude Code hook             | script in `config/home/.claude/hooks/`, `claude hook` line in `config/claude.conf`; docs/06-agents/index.mdx |
+| Change a language or tool version | `config/home/.config/mise/config.toml` (global); docs/03-your-mac/06-languages.mdx |
 | Add something to the shell         | `config/shell/<topic>.zsh`                            |
 | Add a personal value (names, …)    | `dot.toml` (real) and `dot.toml.example` (placeholder) |
 | Add a personal collection (identities, organizations…) | one table each in `dot.toml`, commented out in `dot.toml.example`, and a setting that takes `$<path>.*` |
 | Show what a line refers to in `dot explain` | `explain_<topic>_<setting>` in `src/lib/<tool>.sh` |
 | Support a new system tool          | `src/lib/<tool>.sh`                                   |
-| Document a clean-machine step      | docs/getting-started.md, details in the topic doc     |
-| Document a topic (shell, editor…)  | `docs/<topic>.md`, listed in docs/README.md           |
-| Document a login (GitHub, Vercel…) | `docs/auth/<platform>.md`, plus its row in docs/auth/README.md |
-| Document a project secret (GitHub token…) | `docs/secrets/<provider>.md`, plus its row in docs/secrets/README.md |
+| Document a clean-machine step      | a page in docs/02-get-started/, details in the topic's page |
+| Document a topic (shell, editor…)  | a page in the docs/ section it belongs to             |
+| Document a login (GitHub, Vercel…) | `docs/04-your-projects/03-accounts/<platform>.mdx`, plus its row in that folder's `index.mdx` |
+| Document a project secret (GitHub token…) | `docs/04-your-projects/02-secrets/<provider>.mdx` |
+| Change the docs site or its landing page | `site/` (`blume.config.ts`, `pages/index.astro`); its look is the rbadillap brand (rbadillap/rbadillap DESIGN.md), in `site/theme.css`: copy token values verbatim, never invent one |
 | Change what happens before the repo exists | `install.sh`                                  |
 
 New files in `config/`, `src/settings/`, `src/lib/` and `src/commands/` are

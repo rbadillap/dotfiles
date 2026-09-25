@@ -1,0 +1,80 @@
+---
+title: Find where macOS stores a setting
+description: Count what a change in System Settings writes with dot defaults diff, and reveal the keys you need.
+---
+
+```text
+$ dot defaults diff com.apple.AppleMultitouchTrackpad
+dot defaults diff: reading 1 domain(s) of your user preferences…
+dot defaults diff: change one setting in System Settings, then press Enter here.
+dot defaults diff: reading them again…
+domain 1 (user preferences): 0 added, 1 changed, 0 removed
+  1  changed
+
+To see a change's key name and type, type its number. …
+> 1
+1: changed key Clicking (bool); a setting already writes it: trackpad tap-to-click
+```
+
+You name the preference domains to watch; it never reads the others.
+`--current-host` reads this Mac's preferences (`defaults -currentHost`)
+instead of your user's. Change one thing per run. It changes nothing, needs
+no password or Touch ID, and needs a terminal, since you make the change
+yourself.
+
+## What it shows, and what it doesn't
+
+- **The report** (stdout) holds counts and change numbers only: no domain or
+  key names and no values, since preferences can hold private information.
+  Error messages refer to domains by position, too.
+- **Revealing** is deliberate: type a change's number to see its key name and
+  type, on the terminal only, never on stdout. A key name can be private, so
+  read it before pasting it anywhere. Values are never shown; read the one
+  you need with `defaults read <domain> <key>`.
+- **It writes no code.** Turning a key into a setting is your step
+  ([Add a setting](./02-add-a-setting.mdx)).
+- **A failed read** of any domain stops it: nothing is compared, so a read
+  error can never look like a removed key.
+
+## Which domains to name
+
+One switch in System Settings often writes several keys, in several domains:
+tap-to-click is three, one of them per host, and three-finger drag also moves
+the three-finger swipes. Name every domain you suspect (the app's, such as
+`com.apple.dock`, and `NSGlobalDomain`), and run it once more with
+`--current-host`.
+
+- **Noise.** Apps write preferences all the time. Before asking for your
+  change, it reads twice, a few seconds apart, and ignores every key that
+  changed between them. A date that changes is ignored too: it's a
+  timestamp, never a setting. Something can still change during your step,
+  so treat each change as a candidate and confirm it by applying the setting
+  alone.
+- **Types** come from `defaults export`, not guessed from a value:
+  `defaults read` prints a boolean and the integer 1 the same way.
+- **Nested values.** A key that changed inside a dictionary or array (keyboard
+  shortcuts in `com.apple.symbolichotkeys`, say) counts once, as changed
+  inside it. `default` can't write it; such a setting needs its own lib
+  function, as Rectangle's shortcuts use `default_shortcut`.
+- **Already a setting.** Revealing a key some function in `src/settings/`
+  writes names that setting.
+
+## Nothing found
+
+The setting lives in another domain, in an app with a sandbox (whose
+preferences sit in its container under `~/Library/Containers`, out of
+reach), or isn't a preference at all: `pmset`, `scutil`, the privacy
+database, a profile.
+
+## A key that seems to do nothing
+
+A key can be written and still do nothing until you log out: System Settings
+tells running apps about a change, `defaults` doesn't. Declare it with
+`effect` in the setting, as the trackpad settings do.
+
+## Exit codes and temporary files
+
+`0` when it found changes, `1` when nothing changed or a domain couldn't be
+read, `2` on bad usage or without a terminal. Its snapshots live in a
+private temporary folder (`0700`, files `0600`), deleted when it ends,
+including on Ctrl-C; a forced kill (`kill -9`) can leave it in `$TMPDIR`.

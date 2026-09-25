@@ -1,0 +1,42 @@
+---
+title: Stay up to date
+description: Pull the latest config, see what it would change, and keep dot's own requirements healthy.
+---
+
+```sh
+dot update        # pull the repo, then show what would change
+dot apply         # apply it, when you're ready
+dot doctor        # dot's own requirements
+dot auth status   # every login dot uses
+```
+
+- **`dot update`** fast-forwards your repo from GitHub, then runs
+  `dot check` to show what the new version would change. It never applies.
+- **`dot doctor`** checks what dot itself needs: the Command Line Tools,
+  Homebrew, 1Password with its CLI and SSH agent, `gh`, Varlock, `dot.toml`
+  (errors, and values missing from it), and the shell setup. Each problem
+  comes with its fix. No Touch ID.
+- **`dot auth status`** checks each login: the 1Password CLI, `gh`, SSH to
+  GitHub, `vercel`, and each AWS organization in `dot.toml`. It asks for
+  Touch ID ([Accounts](../04-your-projects/03-accounts/index.mdx)).
+
+## Changes you make on the Mac
+
+Some apps edit their own settings files, and dot links those files from the
+repo ([Editor](../03-your-mac/05-editor.mdx)), so a change you make in the
+app shows up in `git diff`: commit it or discard it. A preference you
+change in System Settings shows up in `dot check` as a difference: put it
+back with `dot apply`, or change the line in `config/` to keep it.
+
+## Upstream improvements
+
+Your fork is a normal git repo. To bring in changes from the original, add
+it as a remote once and merge when you want:
+
+```sh
+dot cd
+git remote add upstream git@github.com:rbadillap/dotfiles.git
+git pull upstream main
+```
+
+Conflicts, if any, will be in `config/`, where your choices differ.

@@ -1,4 +1,4 @@
-# GitHub account settings. apply needs gh logged in (docs/auth/github.md).
+# GitHub account settings. apply needs gh logged in (docs/04-your-projects/03-accounts/github.mdx).
 
 # github ssh-key <user> <title>   add this 1Password SSH key (by item title) to
 # <user>'s GitHub account, for authentication and for signing. The key's title

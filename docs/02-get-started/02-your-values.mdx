@@ -1,0 +1,84 @@
+---
+title: Your values
+description: Everything personal lives in dot.toml, your name, identities and organizations, backed up to 1Password.
+---
+
+`config/` holds choices anyone could share: which apps, which preferences.
+Everything that is **yours** (your name, email, the computer's name, your
+organizations) lives in one file, `dot.toml`, which git ignores. `config/`
+refers to it, so a fork only has to write its own `dot.toml`.
+
+```toml
+hostname = "your-mac"
+editor = "zed"
+ssh_key = "GitHub"
+
+[git]
+name = "Your Name"
+email = "you@example.com"
+
+[github]
+user = "your-username"
+```
+
+`dot` won't run without it.
+
+## Create it
+
+The installer offers three ways:
+
+- **`w`, the wizard:** asks for each value in `dot.toml.example`; Enter keeps
+  the default.
+- **`r`, restore from 1Password:** on a Mac after your first one, it installs
+  1Password, waits while you sign in and turn on *Settings → Developer →
+  Integrate with 1Password CLI*, then downloads your backup (below).
+- **`m`, by hand:** `cp dot.toml.example dot.toml`, then edit it.
+
+Later, `dot conf edit` opens it in your editor.
+
+## How config/ uses it
+
+A word starting with `$` in a `config/*.conf` line is replaced by a value
+from `dot.toml`:
+
+- **A value** is `$` and its path: `$hostname`, or `$git.name` for `name`
+  under `[git]`. `system hostname $hostname` becomes
+  `system hostname your-mac`, and a value with spaces stays one value.
+- **A collection** is `$`, a table and `.*`: `$git.identity.*` hands
+  `git identities` every `[git.identity.<label>]` table, however many there
+  are, including none. Each table is one identity, organization or profile.
+
+`dot.toml.example` has the optional tables commented out, ready to copy:
+extra git identities ([Git and signing](../03-your-mac/07-git-and-signing.mdx)),
+AWS organizations ([AWS](../04-your-projects/03-accounts/aws.mdx)) and the
+vault for project secrets ([Secrets](../04-your-projects/02-secrets/index.mdx)).
+
+## The format
+
+A subset of TOML: `[table]` headers, `key = "value"` with double- or
+single-quoted strings, and `#` comments. Numbers, booleans, arrays, inline
+tables, dotted keys and multi-line strings aren't accepted; dot stops with
+the file and line of anything it can't read, so the file is always valid
+TOML.
+
+## Back it up
+
+`dot.toml` isn't in git, so it's kept in 1Password, as the Document
+"dotfiles: dot.toml" tagged `dotfiles` in your personal vault:
+
+```sh
+dot conf backup     # save it (Touch ID)
+dot conf restore    # get it back, e.g. on a new Mac
+dot conf edit       # open it in your editor
+```
+
+`dot check` tells you when `dot.toml` changed since the last backup, without
+Touch ID: it compares the file with a record of the last upload, kept in
+`~/.local/state/dotfiles/`.
+
+A Mac that hasn't restored or backed up yet doesn't replace an existing
+backup, since its `dot.toml` could be the installer's defaults: restore
+first, or use `dot conf backup --force`. `dot conf restore` likewise keeps a
+`dot.toml` that differs from the backup unless you pass `--force`, and then
+saves the old one as `dot.toml.before-restore.<date>`, a new file each time.
+Neither accepts a file dot can't read.

@@ -1,0 +1,50 @@
+---
+title: Apps and tools
+description: Install apps, fonts and command-line tools with one line each, all from Homebrew.
+---
+
+Each package is one line in a file in `config/`:
+
+```sh
+# config/apps.conf
+brew cask ghostty
+
+# config/packages.conf
+brew formula gh
+```
+
+| File                   | Holds                  | Comes with                                         |
+|------------------------|------------------------|----------------------------------------------------|
+| `config/apps.conf`     | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, WhatsApp, Rectangle, Linear |
+| `config/fonts.conf`    | fonts                  | JetBrains Mono Nerd Font                           |
+| `config/packages.conf` | command-line tools     | 1Password CLI (`op`), GitHub CLI (`gh`), Starship, Varlock, Vercel CLI |
+| `config/mise.conf`     | languages and runtimes | mise, and through it Node, pnpm, Bun, Python and uv ([Languages and versions](./06-languages.mdx)) |
+| `config/aws.conf`      | cloud                  | the AWS CLI and its profiles ([AWS](../04-your-projects/03-accounts/aws.mdx)) |
+
+Those are the original repo's choices; your fork keeps, removes or adds
+lines.
+
+## Add one
+
+Find its exact name, then add a line to the right file:
+
+```sh
+brew search <name>
+```
+
+- **`brew cask <name>`** for apps, fonts and prebuilt binaries.
+- **`brew formula <name>`** for command-line tools.
+- **`brew tap <owner/repo>`** for a third-party package source, before the
+  packages that come from it.
+
+Then `dot apply apps` (or `packages`, `fonts`). An app you already installed
+by hand is adopted, as long as it's the same version; adopting may ask for
+your password.
+
+`dot explain brew cask <name>` shows what a package is, its version, and
+whether it's installed.
+
+## Remove one
+
+Removing a line doesn't uninstall anything: dot only ever installs. Uninstall
+with `brew uninstall <name>` if you want it gone.

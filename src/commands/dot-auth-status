@@ -29,12 +29,12 @@ fi
 if login=$(ghx api user --jq .login 2>/dev/null); [ -n "$login" ]; then
   ok "GitHub CLI ($login)"
 else
-  bad "GitHub CLI" "see docs/auth/github.md"
+  bad "GitHub CLI" "see docs/04-your-projects/03-accounts/github.mdx"
 fi
 if ssh -T -o BatchMode=yes -o ConnectTimeout=10 git@github.com 2>&1 | grep -q 'successfully authenticated'; then
   ok "SSH to GitHub"
 else
-  bad "SSH to GitHub" "see docs/1password.md: SSH agent, key, and dot apply github"
+  bad "SSH to GitHub" "see docs/02-get-started/04-1password-and-github.mdx: SSH agent, key, and dot apply github"
 fi
 # Vercel, through 1Password's shell plugin when that's where its token lives.
 if command -v vercel >/dev/null; then
@@ -42,7 +42,7 @@ if command -v vercel >/dev/null; then
   if user=$(vercelx whoami 2>/dev/null | tail -1) && [ -n "$user" ]; then
     ok "Vercel CLI ($user)"
   else
-    bad "Vercel CLI" "see docs/auth/vercel.md"
+    bad "Vercel CLI" "see docs/04-your-projects/03-accounts/vercel.mdx"
   fi
 fi
 # AWS: one line per [aws.<org>] in dot.toml, tried through its own profile
@@ -62,7 +62,7 @@ for org in $(conf_tables aws); do
   elif account=$(aws sts get-caller-identity --profile "$profile" --query Account --output text 2>/dev/null); then
     ok "AWS $org ($profile, $account)"
   else
-    bad "AWS $org" "aws sso login --sso-session $org (see docs/auth/aws.md)"
+    bad "AWS $org" "aws sso login --sso-session $org (see docs/04-your-projects/03-accounts/aws.mdx)"
   fi
 done
 

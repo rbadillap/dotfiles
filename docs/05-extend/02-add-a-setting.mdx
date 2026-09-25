@@ -1,0 +1,80 @@
+---
+title: Add a setting
+description: From a change in System Settings to a line in config/, in four steps.
+---
+
+A setting is one shell function and one line in `config/`. Say you want the
+Dock to hide itself:
+
+```sh
+# config/dock.conf
+dock visibility autohide
+```
+
+## 1. Find how macOS stores it
+
+Most settings are preferences in the `defaults` system. Run
+[`dot defaults diff`](./03-find-a-setting.mdx) for the domains you suspect,
+change the setting in System Settings when it asks, and reveal the keys that
+changed. Read a key's value yourself with `defaults read <domain> <key>`.
+
+## 2. Write the function
+
+Add `<topic>_<setting>()` to `src/settings/<topic>.sh`. The comment above it
+is its documentation: the first line is the syntax, then three spaces and a
+short description. Values written as `<a|b|c>` become completion candidates.
+
+```sh
+# dock visibility <always|autohide|hidden>
+# hidden: autohide with a very long delay, so it never appears on hover.
+dock_visibility() {
+  case $1 in
+    always)   default com.apple.dock autohide -bool false
+              default_unset com.apple.dock autohide-delay ;;
+    autohide) default com.apple.dock autohide -bool true
+              default_unset com.apple.dock autohide-delay ;;
+    hidden)   default com.apple.dock autohide -bool true
+              default com.apple.dock autohide-delay -float 1000 ;;
+    *) fail "dock visibility: expected always, autohide or hidden, got '$1'"; return ;;
+  esac
+  restart Dock
+}
+```
+
+That's the real function, from `src/settings/dock.sh`.
+
+- **Validate** the value, and `fail "<message>"; return` on a bad one.
+- **Call functions from `src/lib/`**, never the system directly: `default`
+  writes a preference, and it's what makes `check` report instead of change.
+- **Declare effects** after the calls: `restart <app>` restarts an app at the
+  end of `apply`; `effect "<step>"` tells you something to do, such as log
+  out; `note "<text>"` adds information. Effects only fire when something
+  actually changed.
+- A value from `dot.toml` arrives already replaced; a whole collection
+  (`$aws.*`) arrives as a table name, read with `conf_tables` and `conf_get`.
+
+## 3. Add its line
+
+Add the line to a file in `config/`, and check how others will see it:
+
+```sh
+dot explain dock visibility
+```
+
+## 4. Try it
+
+Set it back in System Settings, run it alone, and confirm the change is
+visible:
+
+```sh
+dot apply dock visibility autohide
+dot check dock                       # must be all ✓
+```
+
+## A setting that isn't a preference
+
+When `dot defaults diff` finds nothing, the setting lives elsewhere: `pmset`,
+`scutil`, the privacy database, a profile. It needs its own
+`src/lib/<tool>.sh`, whose functions read the current value, change it in
+`apply` mode only, and report through `changed`. The repo's `AGENTS.md` has
+the exact conventions.

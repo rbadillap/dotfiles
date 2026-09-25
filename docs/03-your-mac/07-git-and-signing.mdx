@@ -1,0 +1,52 @@
+---
+title: Git and signing
+description: Your identity, signed commits with a key in 1Password, and a different identity for the repos under a folder.
+---
+
+## Your identity
+
+Your name, email and signing key are personal values, in `dot.toml`:
+
+```toml
+ssh_key = "GitHub"      # the SSH key's title in 1Password
+
+[git]
+name = "Your Name"
+email = "you@example.com"
+```
+
+```sh
+dot apply git
+```
+
+This sets them in `~/.gitconfig`, and makes git sign every commit and tag
+with the SSH key through 1Password. Setting up the key itself is part of
+[1Password and GitHub](../02-get-started/04-1password-and-github.mdx).
+
+## A different identity per folder
+
+Repos under a folder can use another name and email, say your work's. Add
+one table per identity to `dot.toml`, with any label:
+
+```toml
+[git.identity.work]
+dir = "~/code/your-company"
+name = "Your Name"
+email = "you@your-company.com"
+```
+
+`config/git.conf` applies every one of them (`git identities
+$git.identity.*`), so adding an identity doesn't touch `config/`.
+`dot apply git` writes each to `~/.config/git/identities/<folder>` and
+includes it for every repo under the folder (git's `includeIf gitdir`),
+including repos cloned there later. Two folders whose names give the same
+file (`company-a` and `company_a`) are refused rather than sharing it.
+
+To see which identity a repo uses:
+
+```sh
+git -C <repo> var GIT_AUTHOR_IDENT
+```
+
+Signing uses the same key; the extra email joins `allowed_signers`. For
+*Verified* on GitHub, the email must be verified on your account.

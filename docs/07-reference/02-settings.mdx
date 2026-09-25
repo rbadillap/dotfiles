@@ -1,0 +1,48 @@
+---
+title: Settings
+description: Every setting dot knows, with its values; dot explain prints the same list from the code.
+---
+
+Every setting is one `<topic> <setting> <value>` line in a file in `config/`.
+Change the value there, or delete the line to leave that setting alone. A
+file can mix topics (`config/windows.conf` holds `rectangle …` and
+`windows …` lines). `dot explain` prints this list from the code, with where
+`config/` uses each one.
+
+| Topic       | Setting             | Values                                           |
+|-------------|---------------------|--------------------------------------------------|
+| `aws`       | `aliases`           | `linked`: symlink to `config/home/.aws/cli/alias` (`aws whoami`) |
+| `aws`       | `sso`               | profiles in `~/.aws/config` for IAM Identity Center; from `$aws.*` ([AWS](../04-your-projects/03-accounts/aws.mdx)) |
+| `brew`      | `formula`           | a Homebrew formula (command-line tool), e.g. `gh` |
+| `brew`      | `cask`              | a Homebrew cask (app, font or binary), e.g. `1password` |
+| `brew`      | `tap`               | `owner/repo`: a third-party package source, trusted explicitly |
+| `claude`    | `hook`              | `<event> <matcher> <script>`: a Claude Code hook from `config/home/.claude/hooks/`, added to `~/.claude/settings.json` ([Agents](../06-agents/index.mdx)) |
+| `dock`      | `visibility`        | `always`, `autohide`, `hidden`                   |
+| `editor`    | `default`           | `zed`, `code`, `cursor`, `nvim`, `vim`, `nano`; from `$editor` |
+| `git`       | `name`              | any text; from `$git.name`                       |
+| `git`       | `email`             | an email address; from `$git.email`              |
+| `git`       | `signing-key`       | title of an SSH key in 1Password; from `$ssh_key` |
+| `git`       | `identity`          | `<dir> <name> <email>`: name and email for repos under `<dir>` |
+| `git`       | `identities`        | one `git identity` per table; from `$git.identity.*` ([Git and signing](../03-your-mac/07-git-and-signing.mdx)) |
+| `github`    | `ssh-key`           | `<user> <title>`: an SSH key in 1Password, added to your account for authentication and signing; from `$github.user $ssh_key` |
+| `keyboard`  | `repeat-rate`       | integer; lower is faster (System Settings stops at 2) |
+| `keyboard`  | `repeat-delay`      | integer; lower is shorter (System Settings stops at 15) |
+| `keyboard`  | `press-and-hold`    | `true` (holding a letter shows its accents), `false` (it repeats) |
+| `mise`      | `config`            | `linked`: symlink to `config/home/.config/mise/config.toml` |
+| `mise`      | `tools`             | `installed`: every tool in the global mise config |
+| `mouse`     | `speed`             | `0.0`–`3.0`                                      |
+| `mouse`     | `secondary-click`   | `right`, `left`, `off`                           |
+| `mouse`     | `natural-scrolling` | `true`, `false`; macOS applies it to the trackpad too |
+| `rectangle` | `shortcut`          | `<action> <combo>`, e.g. `first-third cmd+opt+left`; actions in `src/settings/rectangle.sh` |
+| `screenshot` | `save-to`         | `clipboard`, `desktop` (macOS default), `preview`: where ⌘⇧3 and ⌘⇧4 send it |
+| `shell`     | `init`              | `zsh`: the managed block in `~/.zshrc`           |
+| `ssh`       | `agent`             | `1password`                                      |
+| `system`    | `hostname`          | letters, digits, hyphens; sets all three macOS names (sudo) |
+| `varlock`   | `telemetry`         | `enable`, `disable`: Varlock's usage analytics; from `$varlock.telemetry` |
+| `trackpad`  | `speed`             | `0.0`–`3.0`                                      |
+| `trackpad`  | `tap-to-click`      | `true`, `false`                                  |
+| `trackpad`  | `three-finger-drag` | `true`, `false`; moves three-finger swipes to four fingers |
+| `windows`   | `native-tiling`     | `true`, `false`: macOS's own edge tiling         |
+| `zed`       | `settings`          | `linked`: symlink to `config/home/.config/zed/settings.json` |
+
+`$…` values come from `dot.toml` ([Your values](../02-get-started/02-your-values.mdx)).

@@ -1,0 +1,50 @@
+---
+title: What is dot
+description: dot sets up a Mac from plain-text config, keeps it that way, and works with you on your projects.
+---
+
+dot is a macOS setup you own as code. You describe the Mac you want in plain
+text, and one command makes the Mac match it:
+
+```sh
+dock visibility hidden
+trackpad tap-to-click true
+brew cask ghostty
+```
+
+`dot check` compares the Mac with that description and changes nothing.
+`dot apply` fixes only what differs, so running it twice is safe. Every line
+is explained by `dot explain`, and the whole engine is POSIX shell plus the
+tools macOS already has.
+
+## Two sides
+
+- **Your Mac.** System preferences, apps, command-line tools, your shell,
+  editor, language versions, git identity and signed commits, all declared in
+  `config/`. A new Mac is one installer away from yours; an old one drifts
+  back into line with `dot apply`.
+- **Your projects.** dot stays after setup. `dot clone` puts every
+  repository at `~/code/<owner>/<repo>`, and `dot secret` keeps a project's
+  secrets in 1Password, attached by reference and never written to disk.
+
+## Yours to fork
+
+The repo holds the engine (`src/`) and one person's choices (`config/`).
+You fork it, change the choices, and keep everything personal in a single
+file, `dot.toml`, that git ignores. Your fork stays yours; pulling
+improvements from upstream is a normal git merge.
+
+## Built for agents too
+
+`dot check` never changes anything and never needs a password, so an agent
+can run it freely. Anything that changes the Mac waits for you. The repo
+carries its own instructions for agents, and these docs ship as `llms.txt`
+and raw Markdown.
+
+## Where to go next
+
+- [Install](./02-get-started/01-install.mdx) it on a Mac.
+- [How dot compares](./01-compare.mdx) with chezmoi, yadm and classic
+  dotfiles repos.
+- [How it works](./05-extend/01-how-it-works.mdx), if you want to see the
+  engine first.

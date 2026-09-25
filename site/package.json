@@ -1,0 +1,13 @@
+{
+  "name": "dot-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "blume dev",
+    "build": "blume build",
+    "preview": "blume preview"
+  },
+  "devDependencies": {
+    "blume": "2.0.1"
+  }
+}

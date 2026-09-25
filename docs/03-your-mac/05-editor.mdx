@@ -1,0 +1,36 @@
+---
+title: Editor
+description: Your default editor for git and the terminal, and an editor whose settings live in your repo.
+---
+
+## Default editor
+
+Which editor you use is a personal value, in `dot.toml`:
+
+```toml
+editor = "zed"    # zed, code, cursor, nvim, vim or nano
+```
+
+`dot apply editor` sets git's `core.editor` (`zed --wait`: a GUI editor waits
+until you close the file). `config/shell/editor.zsh` exports the same command
+as `EDITOR` and `VISUAL`, so every tool that opens an editor agrees.
+
+## Settings that live in the repo
+
+Zed comes from `config/apps.conf`, and its settings live in your repo:
+
+```sh
+dot apply zed    # ~/.config/zed/settings.json → config/home/.config/zed/settings.json
+```
+
+The file is **linked**, not copied. When you change a setting in Zed, Zed
+writes it into the repo; `git diff` shows it, and you commit or discard it.
+If a settings file already exists, `apply` keeps it as
+`settings.json.backup`.
+
+Keep `settings.json` plain JSON without comments: Zed rewrites the file on
+every change and doesn't keep comments in place.
+
+The same pattern works for any app's config file: put it under
+`config/home/`, mirroring its path in your home folder, and link it
+([How it works](../05-extend/01-how-it-works.mdx#files-in-your-home-folder)).
