@@ -198,5 +198,8 @@ leave that folder in `$TMPDIR`.
 | `1`  | differences found, or something failed                             |
 | `2`  | bad usage: unknown command, flag or file, or `dot.toml` missing or invalid |
 
+`dot defaults diff` is the exception: it looks for changes, so `0` means it
+found some and `1` that nothing changed (or a domain couldn't be read).
+
 Messages go to stderr and results to stdout. Without a terminal (agents,
 logs) output is plain text; `NO_COLOR` turns colors off too.
