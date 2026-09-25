@@ -13,7 +13,7 @@ and they're free to. The repo never owns or rewrites the file:
 `shell init zsh` keeps one marked block in it.
 
     # >>> dotfiles: managed by dot apply shell
-    eval "$("/Users/you/code/<owner>/dotfiles/bin/dot" init zsh)"
+    eval "$('/Users/you/code/<owner>/dotfiles/bin/dot' init zsh)"
     # <<< dotfiles
 
 `dot check shell` lists every other line as a note, so you notice what tools

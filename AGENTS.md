@@ -192,7 +192,9 @@ tables.
     existing file instead of overwriting it)
   - Helpers that aren't checks: `ssh_pubkey` in ssh.sh (a public key from
     1Password's agent by item title, no Touch ID), `key_combo` in keys.sh
-    (`cmd+opt+left` to a key code and modifier flags), and `conf_parse`,
+    (`cmd+opt+left` to a key code and modifier flags), `shquote` in
+    shquote.sh (a value as a single-quoted literal for generated shell code),
+    and `conf_parse`,
     `conf_get` and `conf_tables` in conf.sh (dot.toml; `run.sh` keeps the
     parsed values in `DOT_CONF`)
   - For `dot secret`: `op_secret_ref`, `op_secret_exists`, `op_secret_add`,

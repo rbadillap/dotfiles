@@ -5,7 +5,8 @@
 #
 # Downloads "dotfiles: dot.toml" from 1Password (Touch ID). If you already
 # have a dot.toml that differs from the backup, it stops unless you pass
-# --force; the file it replaces is kept as dot.toml.before-restore.
+# --force; the file it replaces is kept as dot.toml.before-restore.<date>,
+# a new one each time.
 #
 # FLAGS
 #   --force   Replace a dot.toml that differs from the backup
@@ -26,10 +27,16 @@ conf_parse "$tmp" >/dev/null || { echo "dot conf restore: the backup isn't valid
 if [ -f "$conf" ] && cmp -s "$tmp" "$conf"; then
   echo "dot conf restore: dot.toml already matches the backup" >&2
 elif [ -f "$conf" ] && [ "$force" != 1 ]; then
-  echo "dot conf restore: your dot.toml differs from the backup. Run with --force to replace it (it's kept as dot.toml.before-restore)." >&2
+  echo "dot conf restore: your dot.toml differs from the backup. Run with --force to replace it (it's kept as dot.toml.before-restore.<date>)." >&2
   exit 1
 else
-  [ ! -f "$conf" ] || cp "$conf" "$conf.before-restore"
+  if [ -f "$conf" ]; then
+    # noclobber: an existing backup is never overwritten, even by --force.
+    backup=$conf.before-restore.$(date +%Y%m%d-%H%M%S)
+    (set -C; cat "$conf" > "$backup") 2>/dev/null ||
+      { echo "dot conf restore: couldn't keep your dot.toml as $(basename "$backup"); nothing changed" >&2; exit 1; }
+    echo "dot conf restore: your previous dot.toml is kept as $(basename "$backup")" >&2
+  fi
   cp "$tmp" "$conf"
   echo "dot conf restore: restored dot.toml from 1Password" >&2
 fi

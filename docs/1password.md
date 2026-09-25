@@ -125,7 +125,7 @@ A Mac that hasn't restored or backed up yet doesn't replace an existing
 backup, since its `dot.toml` could be the installer's defaults: restore first,
 or use `dot conf backup --force`. `dot conf restore` likewise keeps a
 `dot.toml` that differs from the backup unless you pass `--force`, and saves
-the old one as `dot.toml.before-restore`. Neither accepts a file `dot` can't
-read.
+the old one as `dot.toml.before-restore.<date>`, a new file each time. Neither
+accepts a file `dot` can't read.
 
 The installer's **restore** option does the same on a clean Mac.

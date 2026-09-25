@@ -8,12 +8,13 @@
 # loads your files in config/shell/. `dot apply shell` adds the line that
 # evaluates it to ~/.zshrc:
 #
-#   eval "$(/path/to/dotfiles/bin/dot init zsh)"
+#   eval "$('/path/to/dotfiles/bin/dot' init zsh)"
 set -eu
 [ "${1:-}" = zsh ] && [ $# -eq 1 ] || { echo "dot init: expected 'zsh'" >&2; echo "Run 'dot init --help' for usage." >&2; exit 2; }
+. "$DOT_ROOT/src/lib/shquote.sh"
 
 cat <<EOF
-export DOT_ROOT="$DOT_ROOT"
+export DOT_ROOT=$(shquote "$DOT_ROOT")
 
 # Homebrew: PATH, MANPATH and completions for everything it installs.
 [[ -x /opt/homebrew/bin/brew ]] && eval "\$(/opt/homebrew/bin/brew shellenv)"

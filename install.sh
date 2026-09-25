@@ -235,8 +235,12 @@ get_repo() {
   case $repo_state in
     git)
       origin=$(git -C "$DOTFILES_DIR" remote get-url origin 2>/dev/null) || origin=
+      # The whole URL, not a substring: any host could serve a path ending in the repo.
       case $origin in
-        *"$DOTFILES_REPO"*) run git -C "$DOTFILES_DIR" pull --ff-only ;;
+        "https://github.com/$DOTFILES_REPO" | "https://github.com/$DOTFILES_REPO.git" | \
+        "git@github.com:$DOTFILES_REPO" | "git@github.com:$DOTFILES_REPO.git" | \
+        "ssh://git@github.com/$DOTFILES_REPO" | "ssh://git@github.com/$DOTFILES_REPO.git")
+          run git -C "$DOTFILES_DIR" pull --ff-only ;;
         *) abort "$(tildify "$DOTFILES_DIR") is a different repo ($origin). Move it aside and rerun." ;;
       esac ;;
     local)
