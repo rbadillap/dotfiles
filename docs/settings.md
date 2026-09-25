@@ -49,7 +49,7 @@ All come from Homebrew:
 |-----------------------|------------------------|----------------------------------------------------|
 | `config/apps.conf`      | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, Rectangle |
 | `config/fonts.conf`     | fonts                  | JetBrains Mono Nerd Font                           |
-| `config/packages.conf`  | command-line tools     | 1Password CLI (`op`), GitHub CLI (`gh`), Starship, Varlock ([secrets.md](secrets.md)) |
+| `config/packages.conf`  | command-line tools     | 1Password CLI (`op`), GitHub CLI (`gh`), Starship, Varlock ([secrets.md](secrets.md)), Vercel CLI ([auth/vercel.md](auth/vercel.md)) |
 | `config/mise.conf`      | languages and runtimes | mise; through it Node 24, pnpm, Bun, Python 3.13, uv ([runtimes.md](runtimes.md)) |
 | `config/aws.conf`       | cloud                  | AWS CLI, with its SSO profiles ([auth/aws.md](auth/aws.md)) |
 

@@ -58,5 +58,6 @@ personal value in `dot.toml`:
 |-------------------------------------|------------|--------------------------------------|
 | App secrets (API keys, DB URLs)     | 1Password  | Varlock, per process                 |
 | GitHub token for `gh`               | 1Password  | the `gh` shell plugin, per command ([auth/github.md](auth/github.md)) |
+| Vercel token for `vercel`           | 1Password  | the `vercel` shell plugin, per command ([auth/vercel.md](auth/vercel.md)) |
 | SSH key                             | 1Password  | the SSH agent ([1password.md](1password.md)) |
 | `dot.toml` backup                   | 1Password  | `dot conf restore`                   |

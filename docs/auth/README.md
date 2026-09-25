@@ -33,4 +33,5 @@ Each platform guide measures both ways with the same criteria:
 | Platform                 | Interactive login | Token in 1Password |
 |--------------------------|-------------------|--------------------|
 | [GitHub](github.md)      | not measured      | ~10 min once (2FA, fine-grained token); per Mac: not measured |
+| [Vercel](vercel.md)      | not measured      | a few minutes once (token); per Mac: under a minute |
 | [AWS](aws.md)            | one browser approval per SSO session (8 h by default); no keys | not used: SSO has no long-lived secret |

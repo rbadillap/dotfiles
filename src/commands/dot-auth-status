@@ -4,9 +4,10 @@
 # Group: auth
 #
 # Checks each account this setup uses: the 1Password CLI, GitHub's CLI (gh,
-# through 1Password), SSH to GitHub (key from 1Password), and each AWS
-# organization in dot.toml (its SSO session). It asks 1Password for Touch
-# ID, like any command that uses those logins.
+# through 1Password), SSH to GitHub (key from 1Password), Vercel's CLI when
+# it's installed (through 1Password), and each AWS organization in dot.toml
+# (its SSO session). It asks 1Password for Touch ID, like any command that
+# uses those logins.
 #
 # EXIT CODES
 #   0  every login works
@@ -34,6 +35,15 @@ if ssh -T -o BatchMode=yes -o ConnectTimeout=10 git@github.com 2>&1 | grep -q 's
   ok "SSH to GitHub"
 else
   bad "SSH to GitHub" "see docs/1password.md: SSH agent, key, and dot apply github"
+fi
+# Vercel, through 1Password's shell plugin when that's where its token lives.
+if command -v vercel >/dev/null; then
+  if [ -f "$HOME/.config/op/plugins/vercel.json" ]; then vercelx() { op plugin run -- vercel "$@"; }; else vercelx() { vercel "$@"; }; fi
+  if user=$(vercelx whoami 2>/dev/null | tail -1) && [ -n "$user" ]; then
+    ok "Vercel CLI ($user)"
+  else
+    bad "Vercel CLI" "see docs/auth/vercel.md"
+  fi
 fi
 # AWS: one line per [aws.<org>] in dot.toml, tried through its own profile
 # (<org>) or else its first one (<org>-<name>).

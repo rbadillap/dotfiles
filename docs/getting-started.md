@@ -80,7 +80,8 @@ the right versions in each project ([runtimes.md](runtimes.md)).
 
 Sign in to 1Password, turn on its SSH agent, create an SSH key, log in to
 GitHub, and turn on signed commits: [1password.md](1password.md), then
-[auth/github.md](auth/github.md). `dot auth status` confirms every login
+[auth/github.md](auth/github.md). Vercel's CLI logs in the same way:
+[auth/vercel.md](auth/vercel.md). `dot auth status` confirms every login
 works.
 
 ## 6. Cloud

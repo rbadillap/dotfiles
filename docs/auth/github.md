@@ -9,11 +9,17 @@ is at the end, for comparison.
 
 ## Requirements
 
-- 1Password with **Integrate with 1Password CLI** turned on
-  ([1password.md](../1password.md), step 2).
-- `gh` and `op` installed; `dot apply packages` does it.
+1Password with **Integrate with 1Password CLI** turned on
+([1password.md](../1password.md), step 2).
 
-## 1. Create a token (once, ever)
+## 1. Install the CLI
+
+    dot apply packages    # installs what's missing: here, gh
+
+This installs `gh` and `op`, from `config/packages.conf`; what's already
+installed stays as it is. `op plugin init gh` only works once `gh` exists.
+
+## 2. Create a token (once, ever)
 
 GitHub offers two kinds of personal access token. Pick one:
 
@@ -64,7 +70,7 @@ just pick an expiration and generate:
 | `admin:public_key`      | Add your SSH key for authentication             |
 | `admin:ssh_signing_key` | Add your SSH key for commit signing             |
 
-## 2. Connect it to gh (once per Mac)
+## 3. Connect it to gh (once per Mac)
 
     op plugin init gh
 
@@ -74,14 +80,15 @@ It asks three things:
    it in your built-in personal vault (Personal, or Private on business
    accounts). On a later Mac, choose the item that already exists instead.
 2. **Scope:** choose *Use as global default on my system*, so `gh` uses this
-   token everywhere.
+   token everywhere. It's the third option: the list starts on *Prompt me
+   for each new terminal session*, so move down before pressing Enter.
 3. It finishes by printing a command to run, like this one:
 
        echo "source /Users/you/.config/op/plugins.sh" >> ~/.zshrc && source ~/.zshrc
 
-   Run it, or skip it if you use this repo's shell setup (see step 3).
+   Run it, or skip it if you use this repo's shell setup (see step 4).
 
-## 3. Activate the plugin in your shell (once per Mac)
+## 4. Activate the plugin in your shell (once per Mac)
 
 The plugin works by making `gh` an alias that goes through 1Password. That
 alias lives in `~/.config/op/plugins.sh`, and the command above does two
@@ -101,7 +108,7 @@ Then add the `dotfiles` tag, keeping the one `op` added:
 
     op item edit "GitHub Personal Access Token" --tags "1Password Shell Plugins,dotfiles"
 
-## 4. Check it
+## 5. Check it
 
     gh auth status
 
@@ -120,7 +127,7 @@ nothing is written to disk.
 | Expires          | as set when creating the token              | no                |
 | Secret on disk   | no                                          | in the macOS Keychain |
 
-The token is created once; each later Mac only repeats steps 2–4.
+The token is created once; each later Mac repeats steps 1 and 3–5.
 
 ## Renewing
 
