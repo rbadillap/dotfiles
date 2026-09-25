@@ -101,7 +101,7 @@ always writes its own `dot.toml`.
 | Document a topic (shell, editor…)  | a page in the docs/ section it belongs to             |
 | Document a login (GitHub, Vercel…) | `docs/04-your-projects/03-accounts/<platform>.mdx`, plus its row in that folder's `index.mdx` |
 | Document a project secret (GitHub token…) | `docs/04-your-projects/02-secrets/<provider>.mdx` |
-| Change the docs site or its landing page | `site/` (`blume.config.ts`, `pages/index.astro`) |
+| Change the docs site or its landing page | `site/` (`blume.config.ts`, `pages/index.astro`); its look is the rbadillap brand (rbadillap/rbadillap DESIGN.md), in `site/theme.css`: copy token values verbatim, never invent one |
 | Change what happens before the repo exists | `install.sh`                                  |
 
 New files in `config/`, `src/settings/`, `src/lib/` and `src/commands/` are

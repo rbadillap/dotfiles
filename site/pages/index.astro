@@ -1,23 +1,78 @@
 ---
-// The landing page. Its sections follow the reader's path through the docs
-// (evaluate, adopt, use, extend, agents), and each one ends in a link to the
-// docs section that teaches it.
+// The landing page, in the rbadillap grammar (DESIGN.md v4.0): one 560px
+// column, a spine joining each section's node, section labels in the mono
+// register, and the page closing where the symbol lands (a rule meeting a
+// dot). Its sections follow the reader's path through the docs (adopt, use,
+// extend, agents), and each ends in a link to the docs section that teaches
+// it. The mark appears once, in the header.
 import PageLayout from "blume/components/layout/PageLayout.astro";
 import data from "blume:data";
+import ThemeKey from "../components/ThemeKey.astro";
 
 const { config } = data;
 const install =
   'sh -c "$(curl -fsSL https://raw.githubusercontent.com/rbadillap/dotfiles/main/install.sh)"';
-const title = "dot — your Mac, as code";
-// Shell braces would read as Astro expressions in the markup, so the code
-// sample is a string rendered as text.
-const dockFunction = `dock_visibility() {
+const title = "dot · your Mac, as code";
+// Shell braces would read as Astro expressions in the markup, so code
+// samples are strings rendered as text.
+const samples = {
+  mac: `# config/dock.conf
+dock visibility hidden
+
+$ dot check
+✓ dock visibility hidden
+~ trackpad tap-to-click true`,
+  projects: `$ dot clone vercel/next.js
+~/code/vercel/next.js
+
+$ dot secret attach app-payments PAYMENTS_KEY`,
+  extend: `dock_visibility() {
   case $1 in
     autohide) default com.apple.dock autohide -bool true ;;
-    …
   esac
   restart Dock
-}`;
+}`,
+};
+const sections = [
+  {
+    label: "Fork it",
+    heading: "It's yours.",
+    body: "The engine is shared; the choices are yours. Apps, preferences and tools live in config/, and everything personal in one file git ignores.",
+    href: "/docs/get-started/install",
+    link: "Get started",
+  },
+  {
+    label: "Your Mac",
+    heading: "Your Mac, as text.",
+    body: "One line per setting. dot check shows what differs and never changes anything; dot apply fixes only that.",
+    code: samples.mac,
+    href: "/docs/your-mac/apps-and-tools",
+    link: "Your Mac",
+  },
+  {
+    label: "Your projects",
+    heading: "Every project, one command away.",
+    body: "Repos land in ~/code/owner/repo. Secrets come from 1Password when a project runs, never as files on disk.",
+    code: samples.projects,
+    href: "/docs/your-projects/clone-and-fork",
+    link: "Your projects",
+  },
+  {
+    label: "Extend",
+    heading: "A setting is one function.",
+    body: "Add what dot doesn't have. dot defaults diff helps find where macOS keeps a setting, without printing what's private.",
+    code: samples.extend,
+    href: "/docs/extend/add-a-setting",
+    link: "Extend dot",
+  },
+  {
+    label: "Agents",
+    heading: "Safe to inspect. Changes wait for you.",
+    body: "Agents run dot check freely; applying, cloning and anything with sudo need your OK. The docs ship as llms.txt and raw Markdown.",
+    href: "/docs/agents",
+    link: "Agents",
+  },
+];
 ---
 
 <PageLayout
@@ -35,133 +90,80 @@ const dockFunction = `dock_visibility() {
   structuredDataEnabled={config.structuredData}
   themeMode={config.theme.mode}
 >
-  <section class="mx-auto max-w-5xl px-6 pt-20 pb-16 sm:pt-28">
-    <h1 class="max-w-3xl text-balance font-medium text-4xl sm:text-5xl lg:text-6xl">
-      <span class="block">Your Mac,</span>
-      <span class="block text-muted-foreground">as code</span>
-    </h1>
-    <p class="mt-8 max-w-xl text-pretty text-lg text-muted-foreground">
-      Set it up from plain text, keep it that way, and work on your projects.
-      One command on a clean Mac; one line per setting after that.
-    </p>
-    <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+  <main class="mx-auto w-full max-w-[560px] px-6 pt-20 pb-24 text-(length:--text-body) leading-[1.65]">
+    <section class="fade-up">
+      <h1 class="text-(length:--text-md)">dot</h1>
+      <p class="mt-1 text-(--primary)">Your Mac, as code.</p>
+      <p class="mt-4">
+        Set it up from plain text, keep it that way, and work on your
+        projects. One command on a clean Mac; one line per setting after that.
+      </p>
       <button
-        class="group flex max-w-full items-center gap-3 rounded-lg border px-4 py-2.5 text-left font-mono text-sm hover:bg-muted"
+        class="mt-8 flex w-full items-center justify-between gap-4 bg-(--muted) px-4 py-3 text-left font-mono text-(length:--text-xs)"
         data-copy={install}
         type="button"
       >
-        <span class="text-muted-foreground">$</span>
-        <span class="truncate">sh -c "$(curl -fsSL …/install.sh)"</span>
-        <span class="text-muted-foreground text-xs group-hover:text-foreground" data-copy-label>Copy</span>
+        <span class="truncate"><span class="text-muted-foreground">$ </span>sh -c "$(curl -fsSL …/install.sh)"</span>
+        <span class="shrink-0 text-(length:--text-2xs) text-muted-foreground uppercase tracking-[0.14em]" data-copy-label>Copy</span>
       </button>
-      <a class="font-medium text-sm hover:underline" href="/docs/get-started/install">Get started →</a>
-      <a class="text-muted-foreground text-sm hover:text-foreground" href="/docs">Read the docs</a>
-    </div>
-  </section>
-
-  <div class="mx-auto grid max-w-5xl gap-24 px-6 pb-24">
-    <section>
-      <h2 class="font-medium text-2xl sm:text-3xl">Fork it. It's yours.</h2>
-      <p class="mt-3 max-w-2xl text-muted-foreground">
-        The engine is shared; the choices are yours. Everything personal lives in
-        one file that git ignores.
+      <p class="mt-4 flex gap-6">
+        <a class="text-(--primary) hover:underline" href="/docs/get-started/install">Get started →</a>
+        <a class="text-muted-foreground hover:text-(--primary)" href="/docs">Read the docs →</a>
       </p>
-      <div class="mt-8 grid gap-4 sm:grid-cols-3">
-        <div class="rounded-xl border p-5">
-          <p class="font-mono text-sm">1 · fork</p>
-          <p class="mt-2 text-muted-foreground text-sm">Your apps, preferences and tools live in <code>config/</code>.</p>
-        </div>
-        <div class="rounded-xl border p-5">
-          <p class="font-mono text-sm">2 · dot.toml</p>
-          <p class="mt-2 text-muted-foreground text-sm">Your name, identities and organizations, backed up to 1Password.</p>
-        </div>
-        <div class="rounded-xl border p-5">
-          <p class="font-mono text-sm">3 · dot apply</p>
-          <p class="mt-2 text-muted-foreground text-sm">Changes only what differs. Running it twice is safe.</p>
-        </div>
-      </div>
-      <a class="mt-6 inline-block text-sm hover:underline" href="/docs/get-started/install">Get started →</a>
     </section>
 
-    <section class="grid items-start gap-8 md:grid-cols-2">
-      <div>
-        <h2 class="font-medium text-2xl sm:text-3xl">Your Mac, as text</h2>
-        <p class="mt-3 text-muted-foreground">
-          One line per setting. <code>dot check</code> shows what differs and never
-          changes anything; <code>dot explain</code> tells you what any line does.
-        </p>
-        <a class="mt-6 inline-block text-sm hover:underline" href="/docs/your-mac/apps-and-tools">Your Mac →</a>
-      </div>
-      <pre class="overflow-x-auto rounded-xl border bg-muted/40 p-5 font-mono text-sm leading-relaxed"><span class="text-muted-foreground"># config/dock.conf</span>
-dock visibility hidden
-<span class="text-muted-foreground"># config/trackpad.conf</span>
-trackpad tap-to-click true
+    <div class="mt-16 border-border border-l pl-6">
+      {sections.map((s, i) => (
+        <section class={`fade-up fade-up-${i + 1} relative pb-14`}>
+          <div class="section-label flex items-center gap-3">
+            <span class="-ml-[27px] size-[5px] shrink-0 rounded-full bg-(--primary)"></span>
+            <span class="shrink-0 font-mono text-(length:--text-2xs) text-muted-foreground uppercase tracking-[0.14em]">{s.label}</span>
+            <span class="h-px grow bg-border"></span>
+          </div>
+          <h2 class="mt-5 font-medium text-(--primary) text-(length:--text-body)">{s.heading}</h2>
+          <p class="mt-2">{s.body}</p>
+          {s.code && (
+            <pre class="mt-5 overflow-x-auto bg-(--muted) px-4 py-3 font-mono text-(length:--text-xs) leading-relaxed">{s.code}</pre>
+          )}
+          <a class="mt-4 inline-block text-(--primary) hover:underline" href={s.href}>{s.link} →</a>
+        </section>
+      ))}
+    </div>
 
-<span class="text-muted-foreground">$ dot check</span>
-✓ dock visibility hidden
-~ trackpad tap-to-click true</pre>
-    </section>
+    <div class="flex items-center">
+      <span class="h-px grow bg-border"></span>
+      <span class="size-[5px] shrink-0 rounded-full bg-(--primary)"></span>
+    </div>
+  </main>
 
-    <section class="grid items-start gap-8 md:grid-cols-2">
-      <pre class="order-last overflow-x-auto rounded-xl border bg-muted/40 p-5 font-mono text-sm leading-relaxed md:order-first"><span class="text-muted-foreground">$</span> dot clone vercel/next.js
-<span class="text-muted-foreground">~/code/vercel/next.js</span>
-
-<span class="text-muted-foreground">$</span> dot secret attach app-payments PAYMENTS_KEY
-<span class="text-muted-foreground">PAYMENTS_KEY=op(op://Dev/app-payments/credential)</span></pre>
-      <div>
-        <h2 class="font-medium text-2xl sm:text-3xl">Every project, one command away</h2>
-        <p class="mt-3 text-muted-foreground">
-          Repos land in <code>~/code/owner/repo</code>. Secrets come from 1Password
-          when a project runs, never as files on disk.
-        </p>
-        <a class="mt-6 inline-block text-sm hover:underline" href="/docs/your-projects/clone-and-fork">Your projects →</a>
-      </div>
-    </section>
-
-    <section class="grid items-start gap-8 md:grid-cols-2">
-      <div>
-        <h2 class="font-medium text-2xl sm:text-3xl">Make it do more</h2>
-        <p class="mt-3 text-muted-foreground">
-          A setting is one shell function. <code>dot defaults diff</code> helps you
-          find where macOS keeps it, without printing what's private.
-        </p>
-        <a class="mt-6 inline-block text-sm hover:underline" href="/docs/extend/add-a-setting">Extend dot →</a>
-      </div>
-      <pre class="overflow-x-auto rounded-xl border bg-muted/40 p-5 font-mono text-sm leading-relaxed"><span class="text-muted-foreground"># src/settings/dock.sh</span>
-{dockFunction}</pre>
-    </section>
-
-    <section>
-      <h2 class="font-medium text-2xl sm:text-3xl">Built for agents too</h2>
-      <div class="mt-8 grid gap-4 sm:grid-cols-3">
-        <div class="rounded-xl border p-5 text-sm">
-          <p class="font-medium">Safe to inspect</p>
-          <p class="mt-2 text-muted-foreground"><code>dot check</code> never changes anything and never asks for a password.</p>
-        </div>
-        <div class="rounded-xl border p-5 text-sm">
-          <p class="font-medium">Changes wait for you</p>
-          <p class="mt-2 text-muted-foreground">Applying, cloning and anything with sudo need your OK.</p>
-        </div>
-        <div class="rounded-xl border p-5 text-sm">
-          <p class="font-medium">Docs for machines</p>
-          <p class="mt-2 text-muted-foreground"><code>llms.txt</code> and every page as raw Markdown.</p>
-        </div>
-      </div>
-      <a class="mt-6 inline-block text-sm hover:underline" href="/docs/agents">Agents →</a>
-    </section>
-  </div>
-
-  <footer class="border-t" slot="footer">
-    <div class="mx-auto flex max-w-5xl flex-wrap justify-between gap-4 px-6 py-8 text-muted-foreground text-sm">
-      <span>MIT · <a class="hover:text-foreground" href="https://github.com/rbadillap/dotfiles">rbadillap/dotfiles</a></span>
+  <footer class="mx-auto w-full max-w-[560px] px-6 pb-12" slot="footer">
+    <div class="flex flex-wrap justify-between gap-4 border-border border-t pt-4 font-mono text-(length:--text-2xs) text-muted-foreground uppercase tracking-[0.14em]">
+      <span>MIT · <a class="hover:text-(--primary)" href="https://github.com/rbadillap/dotfiles">rbadillap/dotfiles</a></span>
       <span class="flex gap-4">
-        <a class="hover:text-foreground" href="/docs/reference/commands">Commands</a>
-        <a class="hover:text-foreground" href="/docs/reference/settings">Settings</a>
-        <a class="hover:text-foreground" href="/docs/reference/dot-toml">dot.toml</a>
+        <a class="hover:text-(--primary)" href="/docs/reference/commands">Commands</a>
+        <a class="hover:text-(--primary)" href="/docs/reference/settings">Settings</a>
+        <a class="hover:text-(--primary)" href="/docs/reference/dot-toml">dot.toml</a>
       </span>
     </div>
+    <ThemeKey />
   </footer>
 </PageLayout>
+
+<style is:global>
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fade-up 0.45s cubic-bezier(0.23, 1, 0.32, 1) both; }
+  .fade-up-1 { animation-delay: 60ms; }
+  .fade-up-2 { animation-delay: 120ms; }
+  .fade-up-3 { animation-delay: 180ms; }
+  .fade-up-4 { animation-delay: 240ms; }
+  .fade-up-5 { animation-delay: 300ms; }
+  @media (prefers-reduced-motion: reduce) {
+    .fade-up { animation: none; }
+  }
+</style>
 
 <script>
   for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
