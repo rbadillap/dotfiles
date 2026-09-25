@@ -101,7 +101,9 @@ under a folder can use another name and email: add one table per identity to
 $git.identity.*`), so adding an identity doesn't touch `config/`.
 `dot apply git` writes each to `~/.config/git/identities/<folder>` and
 includes it for every repo under the folder (git's `includeIf gitdir`),
-including repos cloned there later. To see which identity a repo uses:
+including repos cloned there later. Two folders whose names give the same
+file (`company-a` and `company_a`) are refused rather than sharing it. To see
+which identity a repo uses:
 
     git -C <repo> var GIT_AUTHOR_IDENT
 

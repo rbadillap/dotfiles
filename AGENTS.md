@@ -29,6 +29,8 @@ by its path, since the shell function only exists in interactive zsh.
   1Password shell plugins; a project secret's value only travels through
   pipes (`dot secret`), never an argument, a file or the output. Creating or
   changing a secret's value is the human's step.
+- Output never shows the content of a file the user owns (`~/.zshrc`, say):
+  any line of it may hold a secret. Point to it by line number instead.
 - Commits are signed through 1Password (Touch ID). Never bypass signing
   (`--no-gpg-sign`, `-c commit.gpgsign=false`); if signing fails, stop and ask.
 - The repo is public. Ask before `git push`, and never rewrite pushed history.
@@ -165,6 +167,11 @@ tables.
 - Otherwise, in apply mode it changes it and sets `DOT_CHANGED=1`. In both
   modes it calls `changed "<what>" "<from>" "<to>" [note]`.
 - Mark sudo with the note `sudo` and in the function's comment.
+- A pipe returns the last command's status, so a failed query piped into
+  `jq`, `awk` or `head` reads as an empty answer. When the failure matters,
+  capture the output first (`out=$(cmd) || …`), then pipe it.
+- A value embedded in generated shell code (a path in `~/.zshrc`, say) goes
+  through `shquote`, never inside double quotes.
 - Never print directly; use `src/lib/output.sh`. `src/lib/run.sh` runs
   config files for `dot check` and `dot apply`.
 - Current functions:
