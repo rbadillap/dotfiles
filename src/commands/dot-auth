@@ -1,5 +1,5 @@
 #!/bin/sh
-# Summary: Check logins (1Password, GitHub, SSH)
+# Summary: Check logins (1Password, GitHub, SSH, Vercel, AWS)
 # Usage: dot auth <command>
 # Group: additional
 #

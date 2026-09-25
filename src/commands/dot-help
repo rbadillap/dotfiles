@@ -23,7 +23,7 @@ commands_in() {
 
 if [ $# -eq 0 ]; then
   cat <<EOF
-Set up this Mac from config/, and keep it that way.
+Set up this Mac from config/, keep it that way, and work on your projects.
 
 USAGE
   dot <command> [<subcommand>] [flags]
@@ -31,8 +31,8 @@ USAGE
 CORE COMMANDS
 $(commands_in core)
 
-REPO COMMANDS
-$(commands_in repos)
+PROJECT COMMANDS
+$(commands_in projects)
 
 ADDITIONAL COMMANDS
 $(commands_in additional)
@@ -46,6 +46,7 @@ EXAMPLES
   \$ dot apply dock
   \$ dot apply dock visibility hidden
   \$ dot clone vercel/next.js
+  \$ dot secret add myapp-payments
 
 LEARN MORE
   Use 'dot <command> --help' for more information about a command.

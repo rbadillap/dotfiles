@@ -46,11 +46,11 @@ runs it. A command's header is its documentation:
     #!/bin/sh
     # Summary: Clone a GitHub repo into ~/code/<owner>/<repo>
     # Usage: dot clone <repo>
-    # Group: repos
+    # Group: projects
     #
     # A description, then sections such as FLAGS and EXAMPLES.
 
-`dot --help` lists commands by group (`core`, `repos`, `additional`; `hidden`
+`dot --help` lists commands by group (`core`, `projects`, `additional`; `hidden`
 ones aren't listed), and `dot <command> --help` prints the header. A group
 of subcommands, such as `dot conf backup`, is `dot-conf-backup`. Completion
 comes from the same files, so a new command is one new file.

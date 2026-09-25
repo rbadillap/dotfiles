@@ -1,7 +1,7 @@
 #!/bin/sh
 # Summary: Fork a GitHub repo and clone it with an upstream remote
 # Usage: dot fork <repo>
-# Group: repos
+# Group: projects
 #
 # Forks the repo to your GitHub account, or reuses your fork if you already
 # have one (even if GitHub named it differently), clones it with dot clone,

@@ -78,6 +78,13 @@ Linking also writes a short-lived `VERCEL_OIDC_TOKEN` into `.env.local`, in
 plain text, and has no option to skip it. If the project doesn't use Vercel's
 OIDC federation, delete that `.env.local`: deploying doesn't need it.
 
+## Known limits of the plugin
+
+The plugin adds `--token` to every `vercel` command, and `vercel curl` hands
+its flags to `curl`, which rejects `--token`. Request a deployment with plain
+`curl` instead. A deployment behind Vercel's protection needs a bypass token
+for that.
+
 ## Friction
 
 | Criterion        | Token in 1Password                          | Interactive login |

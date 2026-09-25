@@ -73,8 +73,14 @@ describes any setting or line.
 
 Ghostty (from `config/apps.conf`) with zsh and Starship: [shell.md](shell.md).
 From now on `dot` works from any folder, with completion ([dot.md](dot.md)),
-and your editor is set ([editor.md](editor.md)). Node, pnpm, Bun, Python and uv are ready, with
-the right versions in each project ([runtimes.md](runtimes.md)).
+and your editor is set ([editor.md](editor.md)). Node, pnpm, Bun, Python and
+uv are ready, with the right versions in each project
+([runtimes.md](runtimes.md)).
+
+This is where `dot` becomes the command you work with: `dot clone
+<owner>/<repo>` brings a project to `~/code/<owner>/<repo>`, and `dot secret`
+gives it the secrets it needs from 1Password once the logins below are done
+([secrets/](secrets/README.md)).
 
 ## 5. 1Password and GitHub
 

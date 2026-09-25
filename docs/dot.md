@@ -4,16 +4,22 @@
 
     dot <command> [<subcommand>] [flags]
 
+It has two sides: setting up the Mac and keeping it that way, and the work
+you do on it every day, long after setup.
+
 | Command            | Does                                                        |
 |--------------------|-------------------------------------------------------------|
+| **The Mac**        |                                                             |
 | `dot check`        | compares the Mac with `config/`; changes nothing            |
 | `dot apply`        | fixes every difference, or tries one setting live           |
 | `dot explain`      | explains the settings you can use in `config/`              |
+| **Projects**       |                                                             |
 | `dot clone`        | clones a GitHub repo into `~/code/<owner>/<repo>`           |
 | `dot fork`         | forks a GitHub repo and clones it with an `upstream` remote |
+| `dot secret`       | keeps project secrets in 1Password and attaches them to a project |
+| **Additional**     |                                                             |
 | `dot cd`           | goes to the dotfiles repo                                   |
 | `dot conf`         | backs up, restores or edits `dot.toml` with 1Password       |
-| `dot secret`       | stores project secrets in 1Password and prints their references |
 | `dot doctor`       | checks that dot's own requirements are in place             |
 | `dot update`       | pulls the latest dotfiles, then runs `dot check`            |
 | `dot auth status`  | shows which logins work: 1Password, GitHub, SSH, Vercel, AWS |
@@ -105,6 +111,26 @@ it. `explain` changes nothing.
 
 In zsh, both take you to the repo, as does `dot cd`. For scripts, the only
 thing on stdout is the path: `dir=$(dot clone vercel/next.js)`.
+
+## secret
+
+    dot secret add myapp-payments                  # asks for the value, hidden
+    dot secret attach myapp-payments PAYMENTS_KEY  # from the project's folder
+    dot secret list                                # names and references, never values
+    dot secret update myapp-payments               # a new value, same reference
+
+- **add** stores the value in the development vault named under `[secrets]`
+  in `dot.toml`, as an API Credential tagged `dotfiles`, and prints its
+  reference and the command that comes next. It refuses a name that exists.
+- **attach** adds the variable to the project's `.env.schema` as a sensitive
+  reference, which Varlock resolves when the project runs. The schema itself
+  comes from `varlock init`; attach refuses one without Varlock's 1Password
+  plugin, and a variable it already has.
+- A value only travels through pipes: never a command argument, a file or
+  the output. `pbpaste | dot secret add <name>` works too.
+
+Names follow `<project>-<use>`. See [secrets/](secrets/README.md), with one
+guide per provider for creating the secret itself.
 
 ## conf
 

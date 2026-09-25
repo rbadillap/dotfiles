@@ -19,11 +19,16 @@ by its path, since the shell function only exists in interactive zsh.
   (e.g. Zed's settings). Treat unexpected diffs there as the user's changes:
   never revert them without asking.
 - 1Password items this repo creates or uses (not logins) are tagged
-  `dotfiles`. Don't pass `--vault`: `op` defaults to the built-in personal
-  vault, whatever its name (Personal, Private or Employee).
-- Never read or print private keys or tokens. Public keys come from
-  1Password's agent (`ssh_pubkey`); tokens reach CLIs only through 1Password
-  shell plugins.
+  `dotfiles`. For the repo's own items (the SSH key, the `dot.toml` backup)
+  don't pass `--vault`: `op` defaults to the built-in personal vault,
+  whatever its name (Personal, Private or Employee). Project secrets are the
+  exception: `dot secret` uses the vault named under `[secrets]` in
+  `dot.toml`.
+- Never read or print private keys, tokens or secret values. Public keys come
+  from 1Password's agent (`ssh_pubkey`); tokens reach CLIs only through
+  1Password shell plugins; a project secret's value only travels through
+  pipes (`dot secret`), never an argument, a file or the output. Creating or
+  changing a secret's value is the human's step.
 - Commits are signed through 1Password (Touch ID). Never bypass signing
   (`--no-gpg-sign`, `-c commit.gpgsign=false`); if signing fails, stop and ask.
 - The repo is public. Ask before `git push`, and never rewrite pushed history.
@@ -92,7 +97,7 @@ come from it:
     #!/bin/sh
     # Summary: One line, starting with a verb
     # Usage: dot <name> <args>          (one line per form)
-    # Group: core | repos | additional | hidden | <group> (for dot-<group>-<sub>)
+    # Group: core | projects | additional | hidden | <group> (for dot-<group>-<sub>)
     #
     # Description paragraph(s).
     #
@@ -189,6 +194,11 @@ tables.
     (`cmd+opt+left` to a key code and modifier flags), and `conf_parse`,
     `conf_get` and `conf_tables` in conf.sh (dot.toml; `run.sh` keeps the
     parsed values in `DOT_CONF`)
+  - For `dot secret`: `op_secret_ref`, `op_secret_exists`, `op_secret_add`,
+    `op_secret_update` and `op_secret_list` in op.sh (API Credential items
+    tagged `dotfiles`; add and update take the value on stdin), and in
+    secret.sh the commands' shared steps (`secret_args`, `secret_vault`,
+    `secret_read_value`, `secret_attach`)
 - `explain_<topic>_<setting> <value>...` is optional: `dot explain` prints
   what it returns under a whole line, such as a package's description and
   version (`explain_brew_formula`, `explain_brew_cask`). It only reads,
