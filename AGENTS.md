@@ -30,7 +30,8 @@ by its path, since the shell function only exists in interactive zsh.
   pipes (`dot secret`), never an argument, a file or the output. Creating or
   changing a secret's value is the human's step.
 - Output never shows the content of a file the user owns (`~/.zshrc`, say):
-  any line of it may hold a secret. Point to it by line number instead.
+  any line of it may hold a secret. Point to it by line number instead. The
+  one exception is `dot defaults diff`, narrowed under Commands.
 - docs/agents.md lists the Claude Code hooks this repo installs and the
   upstream issues they work around, with links: check those issues for
   updates when you touch agent configuration.
@@ -121,8 +122,10 @@ come from it:
   path; the zsh `dot` function from `dot init zsh` cds into it. Add a new one
   to the `case` in `src/commands/dot-init`.
 - `dot defaults diff` is the one command that prints preference values: only
-  keys that changed during the human's step, never binary data or long
-  strings, from snapshots deleted on exit. Keep it that narrow.
+  keys that changed during the human's step, never binary data, strings
+  over 40 characters or ones that look like an email address, and a path
+  in the home folder as `$HOME`; from snapshots deleted on exit. Keep it
+  that narrow.
 - Completion candidates come from `src/commands/dot-__complete`; extend it
   when a command takes arguments that can be listed.
 

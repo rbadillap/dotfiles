@@ -1,0 +1,16 @@
+#!/bin/sh
+# Summary: Find where macOS stores a setting
+# Usage: dot defaults <command>
+# Group: additional
+#
+# macOS keeps most settings as preferences (the `defaults` system). These
+# commands help turn a change in System Settings into a setting in
+# src/settings/.
+#
+# EXAMPLES
+#   $ dot defaults diff
+set -eu
+[ $# -eq 0 ] && exec "$DOT_ROOT/src/commands/dot-help" defaults
+echo "dot defaults: unknown command '$1'" >&2
+"$DOT_ROOT/src/commands/dot-help" defaults >&2
+exit 2

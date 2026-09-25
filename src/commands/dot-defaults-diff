@@ -1,0 +1,211 @@
+#!/bin/sh
+# Summary: Show which preferences a change in System Settings writes
+# Usage: dot defaults diff
+# Group: defaults
+#
+# Reads your preferences, asks you to change one setting in System Settings,
+# reads them again and prints the keys that changed as default lines, ready
+# for a function in src/settings/. Keys that change on their own are ignored.
+# Changes nothing; needs a terminal, no password or Touch ID.
+#
+# OUTPUT
+#   stdout carries only default/default_unset lines and # comments; messages
+#   go to stderr. Binary data and long strings are never shown.
+#
+# EXIT CODES
+#   0   differences printed
+#   1   nothing changed, or reading failed
+#   2   bad usage, or no terminal
+set -eu
+[ $# -eq 0 ] || { echo "dot defaults diff: takes no arguments" >&2; exit 2; }
+# The human makes the change, so there must be someone to ask.
+{ : </dev/tty; } 2>/dev/null || { echo "dot defaults diff: needs a terminal (you change the setting while it waits)" >&2; exit 2; }
+# sort and comm must agree on order.
+export LC_ALL=C
+
+say() { echo "dot defaults diff: $*" >&2; }
+
+# Preferences can hold personal data: the snapshots live in a private folder,
+# deleted however this ends.
+umask 077
+dir=$(mktemp -d) || exit 1
+trap 'rm -rf "$dir"' EXIT
+trap 'exit 130' INT TERM HUP
+
+# snapshot <name>: every user preference domain, and every per-host one, as
+# flat records: host <tab> domain <tab> path <tab> type <tab> value.
+snapshot() {
+  mkdir -p "$dir/$1/user" "$dir/$1/host"
+  { defaults domains | tr ',' '\n'; echo NSGlobalDomain; } | sed 's/^ *//; s/ *$//' | sort -u |
+    while IFS= read -r d; do
+      [ -n "$d" ] && defaults export "$d" - > "$dir/$1/user/$d.plist" 2>/dev/null || true
+    done
+  { defaults -currentHost domains | tr ',' '\n'; echo NSGlobalDomain; } | sed 's/^ *//; s/ *$//' | sort -u |
+    while IFS= read -r d; do
+      [ -n "$d" ] && defaults -currentHost export "$d" - > "$dir/$1/host/$d.plist" 2>/dev/null || true
+    done
+  # Split on "<", so each piece is one tag and the text after it: linear, and
+  # enough for the XML `defaults export` writes (text escapes its own "<").
+  # Lines are joined with \001, since awk's split also breaks on newlines.
+  find "$dir/$1" -name '*.plist' -size +0 -print0 | xargs -0 awk '
+    function flush(   n, i, parts, p, gt, tag, text, name, path, t) {
+      if (buf == "") return
+      n = split(buf, parts, "<")
+      depth = 0; pending = ""
+      for (i = 2; i <= n; i++) {
+        p = parts[i]; gt = index(p, ">")
+        tag = substr(p, 1, gt - 1); text = substr(p, gt + 1)
+        if (tag ~ /^[?!]/ || tag ~ /^plist/ || tag == "/plist") continue
+        if (tag == "key") { pending = text; continue }
+        if (tag ~ /^\//) { if (tag == "/dict" || tag == "/array") depth--; continue }
+        # A value: its name in the parent container.
+        if (depth == 0) name = ""
+        else if (kind[depth] == "dict") name = pending
+        else name = idx[depth]++
+        path = (depth <= 1) ? name : prefix[depth] ":" name
+        if (tag == "dict" || tag == "array" || tag == "dict/" || tag == "array/") {
+          t = tag; sub(/\/$/, "", t)
+          if (depth > 0) emit(path, t, "")
+          if (tag !~ /\/$/) { depth++; kind[depth] = t; idx[depth] = 0; prefix[depth] = path }
+          continue
+        }
+        if (tag == "true/" || tag == "false/") { emit(path, "bool", substr(tag, 1, length(tag) - 1)); continue }
+        t = tag; sub(/\/$/, "", t)
+        if (t == "data") gsub(/[ \t\001]/, "", text)
+        if (tag ~ /\/$/) text = ""
+        emit(path, t, text)
+      }
+      buf = ""
+    }
+    function emit(path, type, value) {
+      gsub(/\\/, "\\\\", value); gsub(/\t/, "\\t", value); gsub(/\001/, "\\n", value)
+      print host "\t" domain "\t" path "\t" type "\t" value
+    }
+    FNR == 1 {
+      flush()
+      f = FILENAME; host = (f ~ /\/host\/[^\/]*$/) ? "host" : "user"
+      sub(/^.*\//, "", f); sub(/\.plist$/, "", f); domain = f
+    }
+    { buf = buf $0 "\001" }
+    END { flush() }
+  ' > "$dir/$1.tsv"
+}
+
+# changed <a> <b>: the keys (host, domain, path) whose type or value differ.
+changed() {
+  awk -F '\t' 'NR == FNR { a[$1 FS $2 FS $3] = $4 FS $5; next }
+    { k = $1 FS $2 FS $3; if (!(k in a) || a[k] != $4 FS $5) print k; delete a[k] }
+    END { for (k in a) print k }' "$1" "$2"
+}
+
+# The keys some setting already manages, as host <tab> domain <tab> key <tab>
+# "topic setting", with whether config/ uses it.
+managed() {
+  awk '
+    /^[[:space:]]*#/ { next }
+    /^[a-z0-9_]+\(\) *\{/ { fn = $1; sub(/\(\).*/, "", fn); next }
+    fn != "" {
+      # The call may follow a case label: `always) default com.apple.dock …`.
+      for (i = 1; i <= NF && $i !~ /^default(_unset)?$/; i++) ;
+      if (i > NF) next
+      i++; host = "user"
+      if ($i == "-currentHost") { host = "host"; i++ }
+      d = $i; k = $(i + 1)
+      gsub(/"/, "", d); gsub(/"/, "", k)
+      # A domain or key held in a variable can not be read from the code.
+      if (d ~ /^\$/ || k ~ /^\$/ || d == "" || k == "") next
+      s = fn; sub(/_/, " ", s); gsub(/_/, "-", s)
+      print host "\t" d "\t" k "\t" s
+    }' "$DOT_ROOT"/src/settings/*.sh | sort -u
+}
+
+say "reading your preferences (about 15 seconds)…"
+snapshot a || { say "couldn't read preferences"; exit 1; }
+sleep 3
+snapshot b || { say "couldn't read preferences"; exit 1; }
+changed "$dir/a.tsv" "$dir/b.tsv" > "$dir/noise"
+say "change one setting in System Settings, then press Enter here."
+IFS= read -r _ </dev/tty || exit 2
+say "reading them again…"
+snapshot c || { say "couldn't read preferences"; exit 1; }
+changed "$dir/b.tsv" "$dir/c.tsv" | sort > "$dir/changed.all"
+sort "$dir/noise" | comm -23 "$dir/changed.all" - > "$dir/changed"
+[ -s "$dir/changed" ] || {
+  say "no preference changed. That setting lives somewhere else (pmset, scutil, the privacy database, a profile), or in an app's sandbox container, which this doesn't read."
+  exit 1
+}
+managed > "$dir/managed"
+grep -h -v '^[[:space:]]*#' "$DOT_ROOT"/config/*.conf | awk 'NF >= 2 { print $1 " " $2 }' | sort -u > "$dir/used"
+
+# One line per changed top-level key; nested changes become comments.
+HOME_DIR=$HOME awk -F '\t' -v OFS='\t' '
+  function unesc(s) {
+    gsub(/&lt;/, "<", s); gsub(/&gt;/, ">", s); gsub(/&quot;/, "\"", s); gsub(/&apos;/, "\047", s); gsub(/&amp;/, "\\&", s)
+    return s
+  }
+  function sq(s) { gsub(/\047/, "\047\\\047\047", s); return "\047" s "\047" }
+  # shown(type, value): how a value may appear, or "" when it must not.
+  function shown(t, v,   s, n, pad) {
+    if (t == "data") { n = length(v); while (substr(v, n, 1) == "=") { n--; pad++ } return "<data, " int((length(v) * 3 / 4)) - pad " bytes>" }
+    if (t == "dict" || t == "array") return "<" t ">"
+    if (t == "string") {
+      s = unesc(v)
+      if (index(v, "\\") || length(s) > 40) return "<string, " length(s) " characters>"
+      if (s ~ /[^ @]+@[^ @]+\.[^ @]+/) return "<string that looks like an email address>"
+      return s
+    }
+    return v
+  }
+  # literal(type, value): the value as default takes it, or "" when default can not write it.
+  function literal(t, v,   s, home) {
+    if (t == "bool") return "-bool " v
+    if (t == "integer") return "-int " v
+    if (t == "real") return "-float " v
+    if (t != "string") return ""
+    s = shown(t, v); if (s ~ /^</) return ""
+    home = ENVIRON["HOME_DIR"]
+    if (home != "" && index(s, home) == 1) {
+      s = substr(s, length(home) + 1); gsub(/[\\"$`]/, "\\\\&", s)
+      return "-string \"$HOME" s "\""
+    }
+    return "-string " sq(s)
+  }
+  FILENAME == ARGV[1] { managed[$1 FS $2 FS $3] = $4; next }
+  FILENAME == ARGV[2] { used[$0] = 1; next }
+  FILENAME == ARGV[3] { ch[$1 FS $2 FS $3] = 1; next }
+  FILENAME == ARGV[4] { old[$1 FS $2 FS $3] = $4 FS $5; next }
+  { new[$1 FS $2 FS $3] = $4 FS $5 }
+  END {
+    for (k in ch) {
+      split(k, p, FS); top = p[3]; sub(/:.*/, "", top)
+      tk = p[1] FS p[2] FS top
+      if (tk in done) continue
+      # A date that changes is a timestamp, not a setting.
+      o = (k in old) ? old[k] : ""; n = (k in new) ? new[k] : ""
+      if ((o == "" || o ~ /^date\t/) && (n == "" || n ~ /^date\t/)) continue
+      h = (p[1] == "host") ? "-currentHost " : ""
+      if (tk in managed) {
+        s = managed[tk]
+        out[p[2] FS top FS 0] = "# " h p[2] " " top ": already " ((s in used) ? "in config/" : "a setting, not in config/") ": " s
+        done[tk] = 1; continue
+      }
+      if (p[3] == top) {
+        # The key itself changed.
+        if (!(k in new)) { out[p[2] FS top FS 0] = "default_unset " h p[2] " " top; done[tk] = 1; continue }
+        split(new[k], nv, FS); lit = literal(nv[1], nv[2])
+        if (nv[1] == "dict" || nv[1] == "array") {
+          if (!(k in old)) { out[p[2] FS top FS 0] = "# " h p[2] " " top ": new " nv[1] " (default can not write it)"; done[tk] = 1 }
+          continue
+        }
+        if (lit != "") out[p[2] FS top FS 0] = "default " h p[2] " " top " " lit
+        else out[p[2] FS top FS 0] = "# " h p[2] " " top ": " shown(nv[1], nv[2])
+        done[tk] = 1; continue
+      }
+      # Inside a dictionary or array: default can not write it, so a comment.
+      split(o, ov, FS); split(n, nv, FS)
+      out[p[2] FS top FS p[3]] = "# " h p[2] " " p[3] ": " ((o == "") ? "(unset)" : shown(ov[1], ov[2])) " → " ((n == "") ? "(unset)" : shown(nv[1], nv[2]))
+    }
+    for (o in out) print o FS out[o]
+  }
+' "$dir/managed" "$dir/used" "$dir/changed" "$dir/b.tsv" "$dir/c.tsv" |
+  sort -t "$(printf '\t')" -k1,1 -k2,2 -k3,3 | cut -f4-

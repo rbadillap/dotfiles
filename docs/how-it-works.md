@@ -126,10 +126,13 @@ shows all of them.
 - **Where it looks.** Every domain `defaults domains` lists, plus
   `NSGlobalDomain`, each also per host. It reads through `defaults`, never
   the plist files, which can lag behind what System Settings just wrote.
-  System-wide preferences (`/Library/Preferences`) are left out.
+  Left out: system-wide preferences (`/Library/Preferences`), and apps with
+  a sandbox (Safari, say), whose preferences live in their container under
+  `~/Library/Containers` and aren't listed by `defaults domains`.
 - **Noise.** Apps write preferences all the time (window positions, recent
   items, counters). Before asking for your change, it takes two snapshots a
-  few seconds apart and ignores every key that changed between them.
+  few seconds apart and ignores every key that changed between them. A
+  date that changes is ignored too: it's a timestamp, never a setting.
   Something can still change during your step, so treat each line as a
   candidate: step 4 confirms which ones matter.
 - **Types.** The type (`-bool`, `-int`, `-float`, `-string`) comes from
@@ -137,11 +140,14 @@ shows all of them.
   boolean and the integer 1 the same way.
 - **Nested values.** A change inside a dictionary or array (keyboard
   shortcuts in `com.apple.symbolichotkeys`, say) is shown as a comment with
-  its path. `default` can't write it; such a setting needs its own lib
+  its path (`Nested:a`, as `plutil` and PlistBuddy write it). `default` can't write it; such a setting needs its own lib
   function, as Rectangle's shortcuts use `default_shortcut`.
-- **Nothing found.** The setting isn't a preference. It lives somewhere
-  else (`pmset`, `scutil`, the privacy database, a profile) and needs its
-  own `src/lib/<tool>.sh`.
+- **Already a setting.** A key some function in `src/settings/` writes is
+  shown as a comment naming that setting, and whether `config/` uses it.
+  Keys a function reaches through a variable aren't recognized.
+- **Nothing found.** The setting isn't a preference, or it belongs to an
+  app with a sandbox. It lives somewhere else (`pmset`, `scutil`, the
+  privacy database, a profile) and needs its own `src/lib/<tool>.sh`.
 - **A key can be written and still do nothing until you log out.** System
   Settings tells the running apps; `defaults` doesn't. Declare that with
   `effect` (see the trackpad settings).

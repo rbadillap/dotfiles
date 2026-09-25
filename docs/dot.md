@@ -156,12 +156,21 @@ See [1password.md](1password.md#backup-of-dottoml).
 ## defaults diff
 
     $ dot defaults diff
-    dot defaults diff: reading preferences…
-    dot defaults diff: change one setting in System Settings, then press Enter.
-    default com.apple.AppleMultitouchTrackpad Clicking -bool true
-    default com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
-    default -currentHost NSGlobalDomain com.apple.mouse.tapBehavior -int 1
-    # already in config/: trackpad tap-to-click
+    dot defaults diff: reading your preferences (about 15 seconds)…
+    dot defaults diff: change one setting in System Settings, then press Enter here.
+    dot defaults diff: reading them again…
+    # com.apple.AppleMultitouchTrackpad Clicking: already in config/: trackpad tap-to-click
+    # com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking: already in config/: trackpad tap-to-click
+    # -currentHost NSGlobalDomain com.apple.mouse.tapBehavior: already in config/: trackpad tap-to-click
+
+That run toggled tap-to-click, which a setting already covers. For a setting
+the repo doesn't have yet, the lines are ready to paste into a function:
+
+    default com.example.app ShowThing -bool true
+    default -currentHost com.example.app Speed -int 7
+    default com.example.app Folder -string "$HOME/Pictures/Shots"
+    default_unset com.example.app Old
+    # com.example.app Nested:a: 1 → 2
 
 It finds where macOS stores a setting, the first step of adding one
 ([how-it-works.md](how-it-works.md#adding-a-setting)). Change one thing per
@@ -170,14 +179,17 @@ terminal, since you make the change yourself.
 
 - **stdout** is only the result, valid as the body of a settings function:
   one `default` line per changed key, `default_unset` for a key that was
-  removed, and `#` comments for what `default` can't write (a nested value,
-  with its path) and for keys a setting in `config/` already manages.
-- **Values** are shown only for the keys that changed. Binary data and
-  long strings are never shown, only their type and size, since
-  preferences can hold personal data. The snapshots stay in a private
-  temporary folder and are deleted when it ends, even on Ctrl-C.
-- **Nothing changed** means the setting isn't a preference; the message
-  says where else it may live.
+  removed, and `#` comments for what `default` can't write (a value inside
+  a dictionary or array, with its path; binary data) and for keys a
+  setting already manages.
+- **Values** are shown only for the keys that changed, since preferences
+  can hold personal data. Binary data, strings longer than 40 characters
+  and strings that look like an email address are never shown, only their
+  type and size. A path in your home folder is written with `$HOME`. The
+  snapshots stay in a private temporary folder and are deleted when it
+  ends, even on Ctrl-C.
+- **Nothing changed** means the setting isn't a preference, or it belongs
+  to an app with a sandbox; the message says where else it may live.
 
 Each line is a candidate: an app may have written something during your
 step. Confirm each one by applying the setting alone.
