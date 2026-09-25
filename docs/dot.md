@@ -23,6 +23,7 @@ you do on it every day, long after setup.
 | `dot doctor`       | checks that dot's own requirements are in place             |
 | `dot update`       | pulls the latest dotfiles, then runs `dot check`            |
 | `dot auth status`  | shows which logins work: 1Password, GitHub, SSH, Vercel, AWS |
+| `dot defaults diff` | shows which preferences a change in System Settings writes |
 | `dot init zsh`     | prints the zsh setup that `~/.zshrc` loads                  |
 | `dot completion zsh` | prints the zsh completion script                          |
 
@@ -151,6 +152,35 @@ See [1password.md](1password.md#backup-of-dottoml).
 - **`dot auth status`** checks each login this setup uses: the 1Password CLI,
   `gh`, SSH to GitHub, `vercel`, and each AWS organization in `dot.toml`. It
   asks for Touch ID. See [auth/](auth/README.md).
+
+## defaults diff
+
+    $ dot defaults diff
+    dot defaults diff: reading preferences…
+    dot defaults diff: change one setting in System Settings, then press Enter.
+    default com.apple.AppleMultitouchTrackpad Clicking -bool true
+    default com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+    default -currentHost NSGlobalDomain com.apple.mouse.tapBehavior -int 1
+    # already in config/: trackpad tap-to-click
+
+It finds where macOS stores a setting, the first step of adding one
+([how-it-works.md](how-it-works.md#adding-a-setting)). Change one thing per
+run. It changes nothing, needs no password or Touch ID, and needs a
+terminal, since you make the change yourself.
+
+- **stdout** is only the result, valid as the body of a settings function:
+  one `default` line per changed key, `default_unset` for a key that was
+  removed, and `#` comments for what `default` can't write (a nested value,
+  with its path) and for keys a setting in `config/` already manages.
+- **Values** are shown only for the keys that changed. Binary data and
+  long strings are never shown, only their type and size, since
+  preferences can hold personal data. The snapshots stay in a private
+  temporary folder and are deleted when it ends, even on Ctrl-C.
+- **Nothing changed** means the setting isn't a preference; the message
+  says where else it may live.
+
+Each line is a candidate: an app may have written something during your
+step. Confirm each one by applying the setting alone.
 
 ## Exit codes
 

@@ -102,13 +102,46 @@ is always valid TOML.
 
 ## Adding a setting
 
-1. Find how macOS stores it (for example, `defaults read` before and after
-   changing it in System Settings).
+1. Find how macOS stores it: run `dot defaults diff`, change the setting in
+   System Settings when it asks, and press Enter. It prints the preferences
+   that changed, as `default` lines ready for step 2.
 2. Add a function `<topic>_<setting>()` to `src/settings/<topic>.sh`, with a
    comment giving its syntax and values (`# dock visibility <always|hidden>`).
    It validates the input and calls `src/lib/` functions.
 3. Add its line to a file in `config/`, and a row to [settings.md](settings.md).
    `dot explain <topic>` shows it as others will see it.
-4. Try it with `dot check <file>`, then `dot apply <file>`.
+4. Try it: set it back in System Settings, run it alone
+   (`dot apply <topic> <setting> <value>`), and confirm the change is
+   visible. Then `dot check <file>` must be all ✓.
 
 [AGENTS.md](../AGENTS.md) has the exact conventions.
+
+### What `dot defaults diff` finds
+
+One switch in System Settings often writes several keys, in several
+domains: tap-to-click is three, one of them per host (`-currentHost`), and
+three-finger drag also moves the three-finger swipes. `dot defaults diff`
+shows all of them.
+
+- **Where it looks.** Every domain `defaults domains` lists, plus
+  `NSGlobalDomain`, each also per host. It reads through `defaults`, never
+  the plist files, which can lag behind what System Settings just wrote.
+  System-wide preferences (`/Library/Preferences`) are left out.
+- **Noise.** Apps write preferences all the time (window positions, recent
+  items, counters). Before asking for your change, it takes two snapshots a
+  few seconds apart and ignores every key that changed between them.
+  Something can still change during your step, so treat each line as a
+  candidate: step 4 confirms which ones matter.
+- **Types.** The type (`-bool`, `-int`, `-float`, `-string`) comes from
+  `defaults export`, not guessed from the value: `defaults read` prints a
+  boolean and the integer 1 the same way.
+- **Nested values.** A change inside a dictionary or array (keyboard
+  shortcuts in `com.apple.symbolichotkeys`, say) is shown as a comment with
+  its path. `default` can't write it; such a setting needs its own lib
+  function, as Rectangle's shortcuts use `default_shortcut`.
+- **Nothing found.** The setting isn't a preference. It lives somewhere
+  else (`pmset`, `scutil`, the privacy database, a profile) and needs its
+  own `src/lib/<tool>.sh`.
+- **A key can be written and still do nothing until you log out.** System
+  Settings tells the running apps; `defaults` doesn't. Declare that with
+  `effect` (see the trackpad settings).

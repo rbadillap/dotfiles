@@ -72,6 +72,7 @@ always writes its own `dot.toml`.
 | Install a command-line tool        | `brew formula <name>` or `brew cask <name>` in `config/packages.conf` |
 | Install a font                     | `brew cask <name>` in `config/fonts.conf`              |
 | Add a third-party package source  | `brew tap <owner/repo>` in `config/packages.conf`, before its packages |
+| Find where macOS stores a preference | `dot defaults diff`, run by the human: it waits for a change in System Settings |
 | Add a setting                      | function in `src/settings/<topic>.sh`, line in `config/`, row in docs/settings.md |
 | Add a command                      | `src/commands/dot-<name>` (or `dot-<group>-<sub>`), row in docs/dot.md |
 | Put an app's config file in `~`    | `config/home/<path>`, plus a setting that calls `link` |
@@ -115,6 +116,9 @@ come from it:
 - Commands whose result is a folder (`clone`, `fork`, `cd`) print only that
   path; the zsh `dot` function from `dot init zsh` cds into it. Add a new one
   to the `case` in `src/commands/dot-init`.
+- `dot defaults diff` is the one command that prints preference values: only
+  keys that changed during the human's step, never binary data or long
+  strings, from snapshots deleted on exit. Keep it that narrow.
 - Completion candidates come from `src/commands/dot-__complete`; extend it
   when a command takes arguments that can be listed.
 
