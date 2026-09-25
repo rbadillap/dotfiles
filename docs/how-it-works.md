@@ -102,13 +102,51 @@ is always valid TOML.
 
 ## Adding a setting
 
-1. Find how macOS stores it (for example, `defaults read` before and after
-   changing it in System Settings).
+1. Find how macOS stores it: run `dot defaults diff <domain>` for the
+   domains you suspect (the app's, such as `com.apple.dock`, and
+   `NSGlobalDomain`), change the setting in System Settings when it asks,
+   and press Enter. It counts the keys that changed; reveal one to see its
+   name and type, then read its value with `defaults read`.
 2. Add a function `<topic>_<setting>()` to `src/settings/<topic>.sh`, with a
    comment giving its syntax and values (`# dock visibility <always|hidden>`).
    It validates the input and calls `src/lib/` functions.
 3. Add its line to a file in `config/`, and a row to [settings.md](settings.md).
    `dot explain <topic>` shows it as others will see it.
-4. Try it with `dot check <file>`, then `dot apply <file>`.
+4. Try it: set it back in System Settings, run it alone
+   (`dot apply <topic> <setting> <value>`), and confirm the change is
+   visible. Then `dot check <file>` must be all ✓.
 
 [AGENTS.md](../AGENTS.md) has the exact conventions.
+
+### What `dot defaults diff` finds
+
+One switch in System Settings often writes several keys, in several
+domains: tap-to-click is three, one of them per host (`-currentHost`), and
+three-finger drag also moves the three-finger swipes. Name every domain you
+suspect, and run it once more with `--current-host`.
+
+- **Where it looks.** Only the domains you name, through `defaults`, never
+  the plist files, which can lag behind what System Settings just wrote.
+  Apps with a sandbox (Safari, say) keep their preferences in their
+  container under `~/Library/Containers`, out of its reach.
+- **Noise.** Apps write preferences all the time (window positions, recent
+  items, counters). Before asking for your change, it takes two snapshots a
+  few seconds apart and ignores every key that changed between them. A
+  date that changes is ignored too: it's a timestamp, never a setting.
+  Something can still change during your step, so treat each change as a
+  candidate: step 4 confirms which ones matter.
+- **Types.** Revealed types come from `defaults export`, not guessed from a
+  value: `defaults read` prints a boolean and the integer 1 the same way.
+- **Nested values.** A key that changed inside (a dictionary or array, such
+  as keyboard shortcuts in `com.apple.symbolichotkeys`) counts once, as
+  changed inside. `default` can't write it; such a setting needs its own lib
+  function, as Rectangle's shortcuts use `default_shortcut`.
+- **Already a setting.** Revealing a key some function in `src/settings/`
+  writes names that setting. Keys a function reaches through a variable
+  aren't recognized.
+- **Nothing found.** The setting lives in another domain, in an app's
+  sandbox, or isn't a preference (`pmset`, `scutil`, the privacy database,
+  a profile) and needs its own `src/lib/<tool>.sh`.
+- **A key can be written and still do nothing until you log out.** System
+  Settings tells the running apps; `defaults` doesn't. Declare that with
+  `effect` (see the trackpad settings).

@@ -23,6 +23,7 @@ you do on it every day, long after setup.
 | `dot doctor`       | checks that dot's own requirements are in place             |
 | `dot update`       | pulls the latest dotfiles, then runs `dot check`            |
 | `dot auth status`  | shows which logins work: 1Password, GitHub, SSH, Vercel, AWS |
+| `dot defaults diff` | counts the preferences a change in System Settings writes |
 | `dot init zsh`     | prints the zsh setup that `~/.zshrc` loads                  |
 | `dot completion zsh` | prints the zsh completion script                          |
 
@@ -152,6 +153,43 @@ See [1password.md](1password.md#backup-of-dottoml).
   `gh`, SSH to GitHub, `vercel`, and each AWS organization in `dot.toml`. It
   asks for Touch ID. See [auth/](auth/README.md).
 
+## defaults diff
+
+    $ dot defaults diff com.apple.AppleMultitouchTrackpad
+    dot defaults diff: reading 1 domain(s) of your user preferences…
+    dot defaults diff: change one setting in System Settings, then press Enter here.
+    dot defaults diff: reading them again…
+    domain 1 (user preferences): 0 added, 1 changed, 0 removed
+      1  changed
+
+    To see a change's key name and type, type its number. …
+    > 1
+    1: changed key Clicking (bool); a setting already writes it: trackpad tap-to-click
+
+It helps find where macOS stores a setting, the first step of adding one
+([how-it-works.md](how-it-works.md#adding-a-setting)). You name the domains
+to watch; it never reads the others. `--current-host` reads this Mac's
+preferences (`defaults -currentHost`) instead of your user's. Change one
+thing per run. It changes nothing, needs no password or Touch ID, and needs
+a terminal, since you make the change yourself.
+
+- **The report** (stdout) holds counts and change numbers only: no domain
+  or key names and no values, since preferences can hold private
+  information. Error messages refer to domains by position, too.
+- **Revealing** is deliberate: type a change's number to see its key name
+  and type, on the terminal only, never on stdout. A key name can be
+  private, so read it before pasting it anywhere. Values are never shown;
+  read the one you need yourself with `defaults read <domain> <key>`.
+- **It writes no code.** Turning a key into a setting is your step.
+- **A failed read** of any domain stops it: nothing is compared, so a read
+  error can never look like a removed key.
+- **Nothing changed** means the setting lives in another domain, in an
+  app's sandbox, or outside preferences; the message says so.
+
+Its snapshots live in a private temporary folder (`0700`, files `0600`),
+deleted when it ends, including on Ctrl-C. A forced kill (`kill -9`) can
+leave that folder in `$TMPDIR`.
+
 ## Exit codes
 
 | Code | Meaning                                                            |
@@ -159,6 +197,9 @@ See [1password.md](1password.md#backup-of-dottoml).
 | `0`  | success: everything matches, applied, cloned                       |
 | `1`  | differences found, or something failed                             |
 | `2`  | bad usage: unknown command, flag or file, or `dot.toml` missing or invalid |
+
+`dot defaults diff` is the exception: it looks for changes, so `0` means it
+found some and `1` that nothing changed (or a domain couldn't be read).
 
 Messages go to stderr and results to stdout. Without a terminal (agents,
 logs) output is plain text; `NO_COLOR` turns colors off too.
