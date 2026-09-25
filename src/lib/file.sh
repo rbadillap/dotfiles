@@ -29,6 +29,16 @@ file_managed_block() {
     return 0
   fi
   if [ -f "$1" ] && grep -q "^$begin" "$1"; then
+    # Replacing runs from the begin marker to the end marker, so a missing,
+    # stray or repeated marker would swallow lines outside the block: refuse.
+    if ! FB_BEGIN=$begin FB_END=$end awk '
+      index($0, ENVIRON["FB_BEGIN"]) == 1 { if (seen) bad = 1; seen = open = 1; next }
+      $0 == ENVIRON["FB_END"] { if (!open) bad = 1; open = 0 }
+      END { exit bad || open }
+    ' "$1"; then
+      fail "$(printf %s "$1" | sed "s#^$HOME#~#"): its \"$begin\" block is unclosed or repeated; fix it by hand"
+      return 0
+    fi
     have="block outdated" want="block updated"
   else
     have="block missing" want="block added"

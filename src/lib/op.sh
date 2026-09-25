@@ -69,13 +69,17 @@ op_secret_add() {
 # op_secret_update <vault> <name>: replaces the item's value with stdin,
 # keeping everything else in the item.
 op_secret_update() {
-  { /usr/bin/jq -Rs '{value: .}'; op item get "$2" --vault "$1" --format json; } |
+  # Read first: in a pipe, a failed read would reach the edit as empty input.
+  # printf is a builtin, so the item never becomes a command's argument.
+  item=$(op item get "$2" --vault "$1" --format json) || return
+  { /usr/bin/jq -Rs '{value: .}'; printf '%s' "$item"; } |
     /usr/bin/jq -s '.[0].value as $v | .[1] | (.fields[] | select(.id == "credential") | .value) = $v' |
     op item edit "$2" --vault "$1" --format json >/dev/null
 }
 
 # op_secret_list <vault>: one line per secret, tab-separated: name, updated.
+# Fails when op does: an error must not read as an empty list.
 op_secret_list() {
-  op item list --vault "$1" --tags dotfiles --categories "API Credential" --format json |
-    /usr/bin/jq -r 'sort_by(.title)[] | [.title, .updated_at[:10]] | @tsv'
+  list=$(op item list --vault "$1" --tags dotfiles --categories "API Credential" --format json) || return
+  printf '%s' "$list" | /usr/bin/jq -r 'sort_by(.title)[] | [.title, .updated_at[:10]] | @tsv'
 }

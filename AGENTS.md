@@ -177,7 +177,8 @@ tables.
     owner/tap/name), and `brew_name` to validate a package name
   - `file_block` in file.sh (appends a block if missing) and
     `file_managed_block` (keeps a `# >>> name` … `# <<< name` block, replacing
-    it when it changes); neither touches the rest of the file
+    it when it changes, and refusing when a marker is missing or repeated);
+    neither touches the rest of the file
   - `gh_ssh_key` in gh.sh (check reads GitHub's public key lists with curl,
     no token; apply adds keys via `gh` through 1Password)
   - `op_document` and `op_backup_state` in op.sh (back a file up to

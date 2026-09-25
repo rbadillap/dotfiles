@@ -47,7 +47,7 @@ Before that, or from scripts, run it by path: `~/code/<owner>/dotfiles/bin/dot`.
     ~ system hostname ronny
         ComputerName: Ronny’s MacBook Pro → ronny  (sudo)
     ✓ shell init zsh
-        · not from this repo: source ~/.config/op/plugins.sh
+        · not from this repo: line 1: source …
     ! mouse secondary-click: expected right, left or off, got 'middle'
 
 | Mark     | Meaning                                                          |
