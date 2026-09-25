@@ -1,0 +1,58 @@
+---
+title: How dot compares
+description: How dot differs from chezmoi, yadm, GNU Stow and classic dotfiles repos, and when another tool fits better.
+---
+
+Most dotfiles tools manage **files**: they put your configuration files in
+place on each machine. dot manages a **Mac**: files are one part, and the
+rest is system preferences, apps, tools and logins, each checked against
+what you declared.
+
+## At a glance
+
+| | dot | chezmoi | yadm | GNU Stow | Classic repo |
+|---|---|---|---|---|---|
+| **Manages** | a Mac: preferences, apps, files, logins | files | files | files (symlinks) | files, plus scripts |
+| **Declares** | one line per setting | file templates | files in git | a folder per package | whatever the scripts do |
+| **Shows drift** | `dot check`, setting by setting | `chezmoi diff`, for files | `yadm status`, for files | no | no |
+| **Applies** | only what differs | files | files | links | reruns the scripts |
+| **Secrets** | 1Password, by reference | password managers, in templates | encrypted files | no | no |
+| **Platforms** | macOS | many | many | many | usually one |
+
+## chezmoi
+
+[chezmoi](https://www.chezmoi.io) manages dotfiles across many machines,
+with templates for the differences between them and integrations with
+password managers. Choose it if you work across Linux, macOS and Windows, or
+if your problem is mostly files that vary per machine. dot is macOS only,
+and treats preferences and apps as first-class, not as scripts.
+
+## yadm
+
+[yadm](https://yadm.io) is git for your home folder, with alternate files per
+machine, encryption and a bootstrap script. It suits people who want git to
+be the whole tool. In dot, git holds the repo, and the Mac's state is
+checked setting by setting.
+
+## GNU Stow
+
+[GNU Stow](https://www.gnu.org/software/stow/) links files from folders into
+your home folder. dot does the same for the files it owns
+(`config/home/`), and adds everything that isn't a file.
+
+## Classic dotfiles repos
+
+Repos such as mathiasbynens/dotfiles or holman/dotfiles are collections of
+files and scripts: a bootstrap script and a `.macos` script of `defaults
+write` commands, run by hand. They're great to read and borrow from. dot
+keeps the same spirit (a repo you fork and own) but declares the result
+instead of scripting the steps, so it can tell you what drifted and fix only
+that.
+
+## When dot fits
+
+- You use a Mac, and want a new one to become yours in one step.
+- You want to know when your Mac drifts from what you chose.
+- You want project secrets out of `.env` files, and logins without tokens on
+  disk.
+- You work with coding agents and want them to inspect your setup safely.

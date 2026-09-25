@@ -1,0 +1,21 @@
+---
+title: Exit codes and output
+description: What dot's exit codes mean, and where its messages and results go.
+---
+
+| Code | Meaning                                                                    |
+|------|----------------------------------------------------------------------------|
+| `0`  | success: everything matches, applied, cloned                               |
+| `1`  | differences found, or something failed                                     |
+| `2`  | bad usage: unknown command, flag or file, or `dot.toml` missing or invalid |
+
+`dot defaults diff` is the exception: it looks for changes, so `0` means it
+found some and `1` that nothing changed (or a domain couldn't be read).
+
+## Output
+
+- **Messages go to stderr, results to stdout.** A command's result, such as a
+  path from `dot clone` or a reference from `dot secret add`, is the only
+  thing on stdout, so scripts and agents can use it.
+- **Without a terminal** (agents, logs), output is plain text; `NO_COLOR`
+  turns colors off too.

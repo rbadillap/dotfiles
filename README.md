@@ -1,37 +1,33 @@
-# dotfiles
+# dot
 
-My macOS setup as code, and the command I work with every day.
+Your Mac, as code. Set it up from plain text, keep it that way, and work on
+your projects.
 
-**The Mac.** Settings are declared in plain text:
+```sh
+# config/dock.conf
+dock visibility hidden
 
-    trackpad tap-to-click true
-    dock visibility hidden
-    system hostname $hostname
+# config/trackpad.conf
+trackpad tap-to-click true
+```
 
-`dot check` shows what differs from the Mac, and `dot apply` fixes only
-that. The engine is POSIX shell; settings use macOS's own tools, plus
-Homebrew, mise, git, 1Password and `gh` where needed.
+`dot check` shows what differs from the Mac and changes nothing; `dot apply`
+fixes only that. `dot clone` puts every repository at `~/code/<owner>/<repo>`,
+and `dot secret` keeps project secrets in 1Password, never on disk. The
+engine is POSIX shell plus the tools macOS already has, and it's built for
+coding agents too ([AGENTS.md](AGENTS.md)).
 
-**The work.** `dot` stays after setup: `dot clone` puts every repository at
-`~/code/<owner>/<repo>`, and `dot secret` keeps project secrets in 1Password,
-attached to a project by reference, never as a value on disk.
+## Install
 
-`dot --help` lists every command. It's agent-friendly: agents check freely
-and ask before applying (see [AGENTS.md](AGENTS.md)).
+Fork this repo, then on a clean Mac (it shows its plan and asks before
+changing anything):
 
-## Quick start
+```sh
+DOTFILES_REPO=<you>/dotfiles sh -c "$(curl -fsSL https://raw.githubusercontent.com/<you>/dotfiles/main/install.sh)"
+```
 
-On a clean Mac (it shows its plan and asks before changing anything):
-
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/rbadillap/dotfiles/main/install.sh)"
-
-Afterwards, in a new terminal:
-
-    dot check    # what would change; changes nothing
-    dot apply    # apply it
-
-Step by step: **[docs/getting-started.md](docs/getting-started.md)**. Everything
-else: [docs/](docs/README.md).
+Step by step: [Install](docs/02-get-started/01-install.mdx). Everything else:
+[the docs](docs/index.mdx).
 
 ## License
 

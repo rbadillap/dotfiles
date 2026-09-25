@@ -2,3 +2,11 @@
 dot.toml
 dot.toml.before-restore
 dot.toml.before-restore.*
+
+# The docs site: dependencies and build output
+site/node_modules/
+site/dist/
+site/.blume/
+site/.blume-verify/
+# Local tool config (dev server launch)
+.claude/

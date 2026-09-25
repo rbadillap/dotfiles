@@ -1,0 +1,70 @@
+---
+title: How it works
+description: Your choices, what they mean, and how macOS does them, in three layers, and where everything lives.
+---
+
+## Where everything lives
+
+```text
+bin/dot              the command, dot
+install.sh           sets up a clean Mac
+dot.toml             your personal values (ignored by git); template: dot.toml.example
+src/                 the engine; you don't edit it to use dot
+  commands/          one file per command: dot-check, dot-clone…
+  settings/          one file per topic: what each setting means
+  lib/               shared code, including everything that changes the system
+config/              what you want on the Mac; nothing personal (that's dot.toml)
+  *.conf             one line per setting: dock visibility hidden
+  home/              files linked into your home folder
+  shell/             your zsh setup, one file per topic
+docs/                these docs
+site/                this site
+```
+
+## Settings: three layers
+
+```text
+config/trackpad.conf     trackpad tap-to-click true           what you want
+        ↓
+src/settings/trackpad.sh trackpad_tap_to_click()              what it means
+        ↓
+src/lib/defaults.sh      default <domain> <key> <type> <val>  how macOS does it
+```
+
+- **`config/*.conf` is data** and is never executed: one
+  `<topic> <setting> <value>` per line, and `#` starts a comment. Files group
+  lines however you like (`apps.conf` holds `brew cask …` lines). A word like
+  `$hostname` is replaced by its value from `dot.toml`
+  ([Your values](../02-get-started/02-your-values.mdx)).
+- **`src/settings/<topic>.sh` has one function per setting.** The comment
+  above it is its documentation (`dot explain` prints it); the function
+  validates the value and expands it into what the system needs.
+  Tap-to-click, for example, is three keys.
+- **`src/lib/` is the only code that reads or changes the system**
+  (`defaults`, `scutil`, `git`, `brew`, `ssh`, `gh`, `op`, `varlock`, links,
+  files), and it's where `check` and `apply` differ.
+
+The engine is POSIX shell plus tools that ship with macOS and git from the
+Command Line Tools, so it runs right after the installer.
+
+## Commands
+
+Each command is a file, `src/commands/dot-<name>`, and `dot` only finds and
+runs it. Its header is its documentation, its `--help` and its completion
+([Add a command](./04-add-a-command.mdx)).
+
+## Files in your home folder
+
+- **`config/home/` mirrors `~`.** `config/home/.config/zed/settings.json` is
+  linked to `~/.config/zed/settings.json`, so an app that edits its settings
+  writes into the repo and `git diff` shows the change. If a file is already
+  there, `apply` keeps it as `<file>.backup`.
+- **Shared files** such as `~/.zshrc` and `~/.ssh/config` are never owned by
+  the repo: dot keeps one marked block in them and leaves the rest to you and
+  your tools.
+
+## Your fork, and the engine
+
+`config/` is what changes between forks; `src/` is the engine every fork
+shares. Keeping your changes in `config/` and `dot.toml` makes merging
+improvements from upstream painless.

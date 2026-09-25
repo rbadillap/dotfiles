@@ -1,0 +1,49 @@
+---
+title: System preferences
+description: Dock, keyboard, trackpad, mouse, screenshots and the computer's name, one line each.
+---
+
+What you'd otherwise click through in System Settings is a line in
+`config/`:
+
+```sh
+# config/dock.conf
+dock visibility hidden
+
+# config/trackpad.conf
+trackpad tap-to-click true
+trackpad three-finger-drag true
+```
+
+| Setting                        | Values                                                     |
+|--------------------------------|------------------------------------------------------------|
+| `dock visibility`              | `always`, `autohide`, `hidden`                             |
+| `keyboard repeat-rate`         | a number; lower is faster (System Settings stops at 2)     |
+| `keyboard repeat-delay`        | a number; lower is shorter (System Settings stops at 15)   |
+| `keyboard press-and-hold`      | `true`: holding a letter shows its accents; `false`: it repeats |
+| `trackpad speed`               | `0.0`–`3.0`                                                |
+| `trackpad tap-to-click`        | `true`, `false`                                            |
+| `trackpad three-finger-drag`   | `true`, `false`; moves three-finger swipes to four fingers |
+| `mouse speed`                  | `0.0`–`3.0`                                                |
+| `mouse secondary-click`        | `right`, `left`, `off`                                     |
+| `mouse natural-scrolling`      | `true`, `false`; macOS applies it to the trackpad too      |
+| `screenshot save-to`           | `clipboard`, `desktop` (macOS's default), `preview`        |
+| `system hostname`              | letters, digits and hyphens; from `$hostname` in `dot.toml` |
+
+`dot explain <topic>` prints each one with its values, and the
+[settings reference](../07-reference/02-settings.mdx) has them all.
+
+## Good to know
+
+- **Some changes need a new session.** Keyboard and trackpad changes take
+  effect after you log out and back in; `apply` says so when it applies one.
+- **Some need your password.** `system hostname` sets all three of macOS's
+  names for the computer, which needs `sudo`; `check` shows it as
+  `(sudo)` and `apply` asks.
+- **Accents on a US keyboard.** With `keyboard press-and-hold true`, holding
+  a letter shows its accents. In any app, including the terminal, `⌥` `e` then
+  a vowel gives `á é í ó ú`, and `⌥` `n` then `n` gives `ñ`.
+
+## A preference dot doesn't have
+
+Add it as a setting of your own: [Add a setting](../05-extend/02-add-a-setting.mdx).

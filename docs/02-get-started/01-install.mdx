@@ -1,0 +1,79 @@
+---
+title: Install
+description: Fork the repo and run one command on a clean Mac; it shows its plan before changing anything.
+---
+
+## 1. Fork the repo
+
+Fork [rbadillap/dotfiles](https://github.com/rbadillap/dotfiles) on GitHub.
+Your fork is where your choices will live: which apps, which preferences,
+which tools. You can also try it first straight from the original repo and
+fork later.
+
+## 2. Run the installer
+
+Open Terminal on the Mac and run, with your fork's owner and name:
+
+```sh
+DOTFILES_REPO=<you>/dotfiles sh -c "$(curl -fsSL https://raw.githubusercontent.com/<you>/dotfiles/main/install.sh)"
+```
+
+Without `DOTFILES_REPO`, it installs the original repo, `rbadillap/dotfiles`.
+
+It prints a plan (each step, why it's needed, and whether it's already done)
+and changes nothing until you confirm. Questions take a single keypress:
+`y` or `n`, and Enter keeps the default. Then it:
+
+1. **Installs Homebrew**, the package manager for everything else. It asks
+   for your password once: Homebrew needs admin rights to create
+   `/opt/homebrew`.
+2. **Installs the Xcode Command Line Tools** (git, compilers, macOS SDK)
+   through Homebrew's installer, without a dialog. On a clean Mac,
+   `/usr/bin/git` is only a stub that asks to install them.
+3. **Clones your repo** over HTTPS into `~/code/<you>/dotfiles`. Every repo
+   lives at `~/code/<owner>/<repo>`, mirroring GitHub.
+4. **Creates `dot.toml`**, your personal values ([next page](./02-your-values.mdx)),
+   then runs `dot check` and asks before `dot apply`
+   ([Check and apply](./03-check-and-apply.mdx)).
+
+Every step is skipped when it's already done, so rerunning is safe; after a
+failure, it says which step failed and a rerun continues from there. Only
+Apple Silicon Macs are supported, as with current Homebrew.
+
+| Option       | Does                                              |
+|--------------|---------------------------------------------------|
+| `--dry-run`  | shows the plan and exits                          |
+| `--yes`      | no questions (also with `NONINTERACTIVE` or `CI`) |
+| `--no-apply` | stops after `dot check`                           |
+| `--help`     | usage                                             |
+
+Pass options after `--`: `sh -c "$(curl …)" -- --dry-run`. An agent runs
+`sh install.sh --yes --no-apply` and shows you the check before anything is
+applied.
+
+## 3. Open a new terminal
+
+After `apply`, open a new terminal: [Ghostty](../03-your-mac/04-shell-and-terminal.mdx)
+with zsh and Starship. From now on `dot` works from any folder, with
+completion, and your language versions are ready.
+
+## If something seems off
+
+```sh
+dot doctor
+```
+
+It checks what dot itself needs (the Command Line Tools, Homebrew,
+1Password, `gh`, `dot.toml`, the shell setup) and says how to fix each
+problem.
+
+## macOS won't let scripts do these
+
+- **Log out and back in** after keyboard or trackpad changes; `apply`
+  reminds you.
+- **Default browser:** accept the browser's "make default" prompt, or pick it
+  in *System Settings → Desktop & Dock → Default web browser*.
+- **Window tiling:** grant Rectangle Accessibility permission
+  ([Windows](../03-your-mac/03-windows.mdx)).
+- **1Password:** sign in and turn on its developer features
+  ([1Password and GitHub](./04-1password-and-github.mdx)).

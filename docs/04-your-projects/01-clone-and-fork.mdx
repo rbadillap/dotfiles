@@ -1,0 +1,46 @@
+---
+title: Clone and fork
+description: Every repository at ~/code/owner/repo, one command away, with your fork and its upstream set up.
+---
+
+```sh
+dot clone vercel/next.js                   # ~/code/vercel/next.js
+dot clone https://github.com/shadcn-ui/ui  # URLs work too
+dot fork vercel/next.js                    # your fork, in ~/code/<you>/next.js
+dot cd                                     # your dotfiles repo
+```
+
+Every repo lives at `~/code/<owner>/<repo>`, mirroring GitHub, so you always
+know where a project is. In zsh, each of these commands takes you to the
+folder.
+
+## clone
+
+- Accepts `owner/repo` and any GitHub URL form: `https://`, `git@`,
+  `ssh://`, with `.git`, `/tree/…`, `?…` or `#…`. Other hosts are refused.
+- Clones over SSH with your key from 1Password, and uses GitHub's spelling of
+  the name.
+- If the repo is already there, it only takes you to it. It never overwrites
+  a folder holding something else, and a failed clone leaves nothing behind.
+
+## fork
+
+- Forks the repo to your account, or reuses your fork, even one GitHub
+  renamed, then clones it and adds the original as `upstream`.
+- Forking your own repo just clones it.
+- Your username comes from `user` under `[github]` in `dot.toml`, and forking
+  goes through `gh` ([GitHub](./03-accounts/github.mdx)).
+- If it can't list your forks on GitHub, it stops rather than risk a
+  duplicate.
+
+## In scripts
+
+The only thing a command prints on stdout is the path, so scripts and agents
+can use it:
+
+```sh
+dir=$(~/code/<you>/dotfiles/bin/dot clone vercel/next.js)
+```
+
+Call it by its path in scripts: the `dot` shell function, which changes
+folders, only exists in interactive zsh.

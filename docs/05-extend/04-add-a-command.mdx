@@ -1,0 +1,51 @@
+---
+title: Add a command
+description: One executable file per command, whose header is its help, its place in dot --help, and its completion.
+---
+
+A command is a file, `src/commands/dot-<name>`, in POSIX sh. `dot` finds it
+by its name; there's nothing to register.
+
+```sh
+#!/bin/sh
+# Summary: Clone a GitHub repo into ~/code/<owner>/<repo>
+# Usage: dot clone <repo>
+# Group: projects
+#
+# A description, then sections such as FLAGS, EXAMPLES and EXIT CODES.
+set -eu
+```
+
+## The header is the documentation
+
+- **`Summary`** is the one line `dot --help` shows, starting with a verb.
+- **`Usage`** is one line per form.
+- **`Group`** places it in `dot --help`: `core`, `projects` or `additional`;
+  `hidden` keeps it out of the list. A subcommand's group is its parent's
+  name.
+- **The rest** is what `dot <name> --help` prints.
+
+`dot` handles `--help`, `help <name>`, unknown commands and suggestions, so a
+command never implements help itself.
+
+## Subcommands
+
+A group of subcommands, such as `dot conf backup`, is one file per
+subcommand, `dot-conf-backup`, plus `dot-conf` for the group itself.
+Completion lists the subcommands on its own.
+
+## Conventions
+
+- **Messages go to stderr**, prefixed `dot <name>:`. stdout carries only the
+  result (a path, a reference), so scripts and agents can use it.
+- **Exit codes:** `0` success, `1` failure or differences, `2` bad usage.
+- **Validate input, never overwrite, and leave nothing half-done** on
+  failure.
+- **A command whose result is a folder** (`clone`, `fork`, `cd`) prints only
+  that path; the zsh `dot` function goes there. Add a new one to the `case`
+  in `src/commands/dot-init`.
+- **Arguments that can be listed** get completion from
+  `src/commands/dot-__complete`.
+
+The repo's `AGENTS.md` has the full conventions, written for coding agents
+and just as useful for people.

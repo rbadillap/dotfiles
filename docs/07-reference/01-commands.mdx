@@ -1,0 +1,45 @@
+---
+title: Commands
+description: Every dot command, by what it's for.
+---
+
+```sh
+dot <command> [<subcommand>] [flags]
+```
+
+`dot --help` lists them, `dot <command> --help` (or `dot help <command>`)
+explains one, and a typo gets a suggestion.
+
+## Your Mac
+
+| Command       | Does                                                  |
+|---------------|-------------------------------------------------------|
+| `dot check`   | compares the Mac with `config/`; changes nothing      |
+| `dot apply`   | fixes every difference, or tries one setting live     |
+| `dot explain` | explains the settings you can use in `config/`        |
+
+See [Check and apply](../02-get-started/03-check-and-apply.mdx).
+
+## Your projects
+
+| Command      | Does                                                            |
+|--------------|-----------------------------------------------------------------|
+| `dot clone`  | clones a GitHub repo into `~/code/<owner>/<repo>`               |
+| `dot fork`   | forks a GitHub repo and clones it with an `upstream` remote     |
+| `dot secret` | keeps project secrets in 1Password and attaches them to a project: `add`, `attach`, `list`, `update` |
+
+See [Clone and fork](../04-your-projects/01-clone-and-fork.mdx) and
+[Secrets](../04-your-projects/02-secrets/index.mdx).
+
+## Additional
+
+| Command              | Does                                                  |
+|----------------------|-------------------------------------------------------|
+| `dot cd`             | goes to your dotfiles repo                            |
+| `dot conf`           | backs up, restores or edits `dot.toml` with 1Password: `backup`, `restore`, `edit` |
+| `dot doctor`         | checks that dot's own requirements are in place       |
+| `dot update`         | pulls the latest dotfiles, then runs `dot check`      |
+| `dot auth status`    | shows which logins work: 1Password, GitHub, SSH, Vercel, AWS |
+| `dot defaults diff`  | counts the preferences a change in System Settings writes |
+| `dot init zsh`       | prints the zsh setup that `~/.zshrc` loads            |
+| `dot completion zsh` | prints the zsh completion script                      |

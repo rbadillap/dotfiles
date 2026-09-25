@@ -4,7 +4,7 @@
 # Group: additional
 #
 # Logins can't be declared in config/: each account needs you once. See
-# docs/auth/ for each platform's login.
+# docs/04-your-projects/03-accounts/ for each platform's login.
 #
 # EXAMPLES
 #   $ dot auth status

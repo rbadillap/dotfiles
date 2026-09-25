@@ -1,0 +1,45 @@
+---
+title: dot.toml
+description: Every key and table dot.toml takes, and which settings use them.
+---
+
+`dot.toml` sits at the root of your repo, and git ignores it. Start from the
+template:
+
+```sh
+cp dot.toml.example dot.toml
+```
+
+## Keys
+
+| Key                  | Example           | Used by                                                   |
+|----------------------|-------------------|-----------------------------------------------------------|
+| `hostname`           | `"your-mac"`      | `system hostname`                                         |
+| `editor`             | `"zed"`           | `editor default`: `zed`, `code`, `cursor`, `nvim`, `vim` or `nano` |
+| `ssh_key`            | `"GitHub"`        | `git signing-key`, `github ssh-key`: the SSH key's title in 1Password |
+| `git.name`           | `"Your Name"`     | `git name`                                                |
+| `git.email`          | `"you@example.com"` | `git email`                                             |
+| `github.user`        | `"your-username"` | `github ssh-key`, and `dot fork` for your username        |
+| `varlock.telemetry`  | `"disable"`       | `varlock telemetry`: `enable` or `disable`                |
+
+These are the values the installer's wizard asks for, and the ones
+`dot doctor` requires.
+
+## Optional tables
+
+Commented out in `dot.toml.example`, ready to copy.
+
+| Table                   | Keys                                          | Used by |
+|-------------------------|-----------------------------------------------|---------|
+| `[git.identity.<label>]` | `dir`, `name`, `email`                       | `git identities` ([Git and signing](../03-your-mac/07-git-and-signing.mdx)) |
+| `[secrets]`             | `vault`                                       | `dot secret` ([Secrets](../04-your-projects/02-secrets/index.mdx)) |
+| `[aws.<org>]`           | `start_url`, `region`, `account`, `role`      | `aws sso`, the profile `<org>` ([AWS](../04-your-projects/03-accounts/aws.mdx)) |
+| `[aws.<org>.<name>]`    | `role`, and `account` or `region` to override | the profile `<org>-<name>` |
+
+## The format
+
+A subset of TOML: `[table]` headers, `key = "value"` with double- or
+single-quoted strings, and `#` comments. Numbers, booleans, arrays, inline
+tables, dotted keys and multi-line strings aren't accepted; dot stops with
+the file and line of anything it can't read, so the file is always valid
+TOML. Keep values as strings.

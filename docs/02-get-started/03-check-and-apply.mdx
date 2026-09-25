@@ -1,0 +1,72 @@
+---
+title: Check and apply
+description: See what differs from your config, then fix only that.
+---
+
+```sh
+dot check                           # everything in config/; changes nothing
+dot apply                           # fix every difference
+dot check dock                      # one file: config/dock.conf
+dot apply keyboard repeat-rate 1    # try one setting, not saved anywhere
+```
+
+```text
+✓ dock visibility hidden
+~ keyboard repeat-rate 2
+    NSGlobalDomain KeyRepeat: 5 → 2
+~ system hostname your-mac
+    ComputerName: Your MacBook Pro → your-mac  (sudo)
+✓ shell init zsh
+    · not from this repo: ~/.zshrc line(s) 1
+! mouse secondary-click: expected right, left or off, got 'middle'
+```
+
+| Mark     | Meaning                                                           |
+|----------|-------------------------------------------------------------------|
+| `✓`      | matches                                                           |
+| `~`      | differs; each indented line is an underlying value and its target |
+| `→`      | changed by `apply`                                                |
+| `!`      | an invalid value or a failed step; nothing changed for it         |
+| `·`      | a note: information only, never a difference                      |
+| `(sudo)` | needs your password; `apply` asks for it                          |
+
+`check` never changes anything and never asks for a password or Touch ID.
+`apply` changes only what differs, so running it twice is safe. At the end
+it restarts the apps that need it and lists anything left for you, such as
+logging out.
+
+## Try before you keep
+
+`dot apply <topic> <setting> <value>` applies one setting without saving it
+anywhere. To keep it, add the same line to a file in `config/`.
+
+## Ask what a line does
+
+```sh
+dot explain                       # every setting, and where config/ uses it
+dot explain trackpad              # one topic
+dot explain dock visibility       # one setting
+dot explain brew cask ghostty     # one line
+```
+
+The more you give, the more it says. Given a whole line, it shows the line in
+`config/` with the comment above it, and what it refers to on this Mac; for
+a package, its description, version, and whether it's installed:
+
+```text
+brew cask <name>
+    an app, font or prebuilt binary, e.g. 1password
+
+    in config/apps.conf:
+      # Terminal.
+      brew cask ghostty
+
+    ghostty: Terminal emulator that uses platform-native UI and GPU acceleration
+      https://ghostty.org/
+      version 1.3.1, installed 1.3.1
+```
+
+A line that isn't in `config/` yet is explained too, with a reminder to add
+it. `explain` changes nothing.
+
+Every setting dot knows is in the [settings reference](../07-reference/02-settings.mdx).

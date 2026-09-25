@@ -51,7 +51,7 @@ EXAMPLES
 LEARN MORE
   Use 'dot <command> --help' for more information about a command.
   Exit codes: 0 ok, 1 differences or errors, 2 bad usage.
-  Docs: $DOT_ROOT/docs/README.md
+  Docs: $DOT_ROOT/docs/index.mdx
 EOF
   exit 0
 fi

@@ -1,0 +1,59 @@
+---
+title: Shell and terminal
+description: zsh without a framework, the Starship prompt and Ghostty; your ~/.zshrc stays yours.
+---
+
+zsh (macOS's default shell) without a framework, the
+[Starship](https://starship.rs) prompt, and [Ghostty](https://ghostty.org)
+as the terminal.
+
+```sh
+dot apply packages   # installs Starship
+dot apply shell      # connects ~/.zshrc to your repo
+```
+
+## ~/.zshrc stays yours
+
+Tools such as Homebrew and 1Password ask you to append lines to `~/.zshrc`,
+and they're free to. dot never owns or rewrites the file: it keeps one marked
+block in it.
+
+```sh
+# >>> dotfiles: managed by dot apply shell
+eval "$('/Users/you/code/<you>/dotfiles/bin/dot' init zsh)"
+# <<< dotfiles
+```
+
+`dot check shell` lists every other line as a note, so you notice what tools
+added, and can move it into `config/shell/` or leave it. The note shows line
+numbers only, never their content, because a line may hold a secret:
+
+```text
+✓ shell init zsh
+    · not from this repo: ~/.zshrc line(s) 1
+```
+
+## What the block sets up
+
+1. **Homebrew:** `PATH`, `MANPATH` and completions.
+2. **dot**, as a shell function: `dot clone`, `dot fork` and `dot cd` take
+   you to the folder.
+3. **Completion** for dot: commands, config files, settings and their values.
+   `dot apply dock visibility <Tab>` offers `always autohide hidden`.
+4. **Your files** in `config/shell/`, in alphabetical order:
+
+| File                       | Does                                                  |
+|----------------------------|-------------------------------------------------------|
+| `config/shell/editor.zsh`  | `EDITOR` and `VISUAL`, from git's `core.editor` ([Editor](./05-editor.mdx)) |
+| `config/shell/mise.zsh`    | the right tool versions per folder, and a uv project's `.venv` ([Languages and versions](./06-languages.mdx)) |
+| `config/shell/op.zsh`      | 1Password shell plugins: `gh` and `vercel` get their tokens from 1Password |
+| `config/shell/prompt.zsh`  | Starship                                              |
+| `config/shell/varlock.zsh` | Varlock completion ([Secrets](../04-your-projects/02-secrets/index.mdx)) |
+
+To add something to your shell, create `config/shell/<topic>.zsh`.
+
+## Terminal and font
+
+Ghostty, from `config/apps.conf`, includes JetBrains Mono with the Nerd Font
+symbols Starship uses, so it needs no font setup. Other apps can use
+JetBrains Mono Nerd Font from `config/fonts.conf`.
