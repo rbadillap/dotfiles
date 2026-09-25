@@ -12,7 +12,9 @@ mise_config() {
 mise_tools() {
   [ "$1" = installed ] || { fail "mise tools: only 'installed' is supported, got '$1'"; return; }
   command -v mise >/dev/null 2>&1 || { fail "mise isn't installed (brew formula mise)"; return; }
-  missing=$(mise ls --global --missing 2>/dev/null | awk '{ print $1 "@" $2 }' | tr '\n' ' ')
+  # Captured before the pipe, which would hide a failed query as "nothing missing".
+  list=$(mise ls --global --missing 2>/dev/null) || { fail "mise ls failed: can't tell which tools are missing"; return; }
+  missing=$(printf '%s\n' "$list" | awk 'NF { print $1 "@" $2 }' | tr '\n' ' ')
   [ -n "$missing" ] || return 0
   if [ "$DOT_MODE" = apply ]; then
     out=$(mise install --yes 2>&1) || { fail "mise install failed: $(printf %s "$out" | tail -1)"; return; }

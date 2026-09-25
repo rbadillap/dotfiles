@@ -17,11 +17,11 @@ and they're free to. The repo never owns or rewrites the file:
     # <<< dotfiles
 
 `dot check shell` lists every other line as a note, so you notice what tools
-added and can move it into `config/shell/` or leave it. A note shows the line
-number and first word only, because the rest of a line may hold a secret:
+added and can move it into `config/shell/` or leave it. The note shows line
+numbers only, never their content, because a line may hold a secret:
 
     ✓ shell init zsh
-        · not from this repo: line 1: source …
+        · not from this repo: ~/.zshrc line(s) 1
 
 ## What `dot init zsh` sets up
 

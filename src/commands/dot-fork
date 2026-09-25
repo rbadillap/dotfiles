@@ -41,11 +41,12 @@ my_login() {
 }
 
 # fork_of <me> <owner/repo>: prints my fork of that repo, if I have one.
+# Fails when the listing does: a failed query must not read as "no fork".
 fork_of() {
   want=$(lower "$2")
-  ghx repo list "$1" --fork --limit 1000 --json nameWithOwner,parent \
-    --jq ".[] | select(((.parent.owner.login + \"/\" + .parent.name) | ascii_downcase) == \"$want\") | .nameWithOwner" |
-    head -1
+  forks=$(ghx repo list "$1" --fork --limit 1000 --json nameWithOwner,parent \
+    --jq ".[] | select(((.parent.owner.login + \"/\" + .parent.name) | ascii_downcase) == \"$want\") | .nameWithOwner") || return
+  printf '%s\n' "$forks" | head -1
 }
 
 [ $# -ge 1 ] || bad "missing <repo>"
@@ -69,7 +70,7 @@ if [ "$(lower "$owner")" = "$(lower "$me")" ]; then
   exec "$clone" "$upstream"
 fi
 
-fork=$(fork_of "$me" "$upstream")
+fork=$(fork_of "$me" "$upstream") || die "couldn't list your forks on GitHub, so it can't tell whether you have one"
 if [ -n "$fork" ]; then
   echo "dot fork: you already have a fork: $fork" >&2
 else
@@ -79,7 +80,7 @@ else
   # Forking is asynchronous, and GitHub renames the fork if the name is taken,
   # so look it up instead of assuming its name.
   for _ in 1 2 3 4 5; do
-    fork=$(fork_of "$me" "$upstream")
+    fork=$(fork_of "$me" "$upstream") || fork=
     [ -n "$fork" ] && break
     sleep 2
   done
