@@ -12,6 +12,7 @@ there, or delete a line to leave that setting alone. A file can mix topics
 | `brew`      | `formula`           | a Homebrew formula (command-line tool), e.g. `gh` |
 | `brew`      | `cask`              | a Homebrew cask (app, font or binary), e.g. `1password` |
 | `brew`      | `tap`               | `owner/repo`: a third-party package source, trusted explicitly |
+| `claude`    | `hook`              | `<event> <matcher> <script>`: a Claude Code hook from `config/home/.claude/hooks/`, added to `~/.claude/settings.json` ([agents.md](agents.md)) |
 | `dock`      | `visibility`        | `always`, `autohide`, `hidden`                   |
 | `editor`    | `default`           | `zed`, `code`, `cursor`, `nvim`, `vim`, `nano`; from `$editor` |
 | `git`       | `name`              | any text; from `$git.name`                       |
@@ -47,7 +48,7 @@ All come from Homebrew:
 
 | File                  | Holds                  | Installed                                          |
 |-----------------------|------------------------|----------------------------------------------------|
-| `config/apps.conf`      | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, Rectangle, Linear |
+| `config/apps.conf`      | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, WhatsApp, Rectangle, Linear |
 | `config/fonts.conf`     | fonts                  | JetBrains Mono Nerd Font                           |
 | `config/packages.conf`  | command-line tools     | 1Password CLI (`op`), GitHub CLI (`gh`), Starship, Varlock ([secrets/](secrets/README.md)), Vercel CLI ([auth/vercel.md](auth/vercel.md)) |
 | `config/mise.conf`      | languages and runtimes | mise; through it Node 24, pnpm, Bun, Python 3.13, uv ([runtimes.md](runtimes.md)) |

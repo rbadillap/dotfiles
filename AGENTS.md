@@ -31,6 +31,9 @@ by its path, since the shell function only exists in interactive zsh.
   changing a secret's value is the human's step.
 - Output never shows the content of a file the user owns (`~/.zshrc`, say):
   any line of it may hold a secret. Point to it by line number instead.
+- docs/agents.md lists the Claude Code hooks this repo installs and the
+  upstream issues they work around, with links: check those issues for
+  updates when you touch agent configuration.
 - Commits are signed through 1Password (Touch ID). Never bypass signing
   (`--no-gpg-sign`, `-c commit.gpgsign=false`); if signing fails, stop and ask.
 - The repo is public. Ask before `git push`, and never rewrite pushed history.
@@ -75,6 +78,7 @@ always writes its own `dot.toml`.
 | Add a setting                      | function in `src/settings/<topic>.sh`, line in `config/`, row in docs/settings.md |
 | Add a command                      | `src/commands/dot-<name>` (or `dot-<group>-<sub>`), row in docs/dot.md |
 | Put an app's config file in `~`    | `config/home/<path>`, plus a setting that calls `link` |
+| Add a Claude Code hook             | script in `config/home/.claude/hooks/`, `claude hook` line in `config/claude.conf`; docs/agents.md |
 | Change a language or tool version | `config/home/.config/mise/config.toml` (global); docs/runtimes.md |
 | Add something to the shell         | `config/shell/<topic>.zsh`                            |
 | Add a personal value (names, …)    | `dot.toml` (real) and `dot.toml.example` (placeholder) |
@@ -195,6 +199,8 @@ tables.
     existing backup unless `DOT_FORCE=1`)
   - `varlock_telemetry_state` in varlock.sh (Varlock's analytics, read from
     ~/.config/varlock/config.json)
+  - `claude_hook_entry` in claude.sh (adds a hook to ~/.claude/settings.json
+    when missing; never rewrites or removes the rest, which Claude Code edits)
   - `link` in link.sh (symlinks a `config/home/` file into `~`; backs up an
     existing file instead of overwriting it)
   - Helpers that aren't checks: `ssh_pubkey` in ssh.sh (a public key from
