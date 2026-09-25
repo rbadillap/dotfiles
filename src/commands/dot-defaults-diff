@@ -52,7 +52,7 @@ done
 # that and leaves the folder in $TMPDIR.
 umask 077
 dir=$(mktemp -d "${TMPDIR:-/tmp}/dot-defaults-diff.XXXXXX") || exit 1
-trap 'rm -rf "$dir"' EXIT
+trap 'rm -rf "${dir:?}"' EXIT
 trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 143' TERM
@@ -60,11 +60,15 @@ export LC_ALL=C   # sort and comm must agree on order
 n=0
 for d in "$@"; do n=$((n + 1)); printf '%s' "$d" > "$dir/domain.$n"; done
 
-# The reader of `defaults export`'s XML: one record per value, as
-# domain-number <tab> path <tab> type <tab> value. Split on "<", so each piece
-# is one tag and its text (text escapes its own "<"); lines are joined with
-# \001, since awk's split also breaks on newlines. Exits 1 on anything that
-# isn't a complete plist, so a bad read never looks like removed keys.
+# The reader of `defaults export`'s XML, run after `plutil -lint` has
+# validated it: one record per value, as domain-number <tab> top-level key
+# <tab> path <tab> type <tab> value. The path joins its components with \034,
+# a character XML text can't hold, so a key named "a:b" and the key "b"
+# inside "a" never meet. Split on "<", so each piece is one tag and its text
+# (text escapes its own "<"); lines are joined with \001, since awk's split
+# also breaks on newlines. It is strict as well: a closing tag must match,
+# a dictionary key must be followed by its value, and anything that isn't a
+# complete plist exits 1, so a bad read never looks like removed keys.
 cat > "$dir/flatten.awk" <<'EOF'
 { buf = buf $0 "\001" }
 END {
@@ -73,42 +77,56 @@ END {
     p = parts[i]; gt = index(p, ">")
     if (gt == 0) exit 1
     tag = substr(p, 1, gt - 1); text = substr(p, gt + 1)
-    if (tag ~ /^[?!]/ || tag ~ /^plist/) continue
-    if (tag == "/plist") { closed = 1; continue }
-    if (tag == "key") { pending = unesc(text); continue }
-    if (tag ~ /^\//) { if (tag == "/dict" || tag == "/array") depth--; if (depth < 0) exit 1; continue }
-    if (depth == 0) { if (root) exit 1; name = ""; root = 1 }
-    else if (kind[depth] == "dict") name = pending
+    if (tag ~ /^[?!]/ || tag ~ /^plist( |$)/) continue
+    # A leaf's text runs to its own closing tag, and nothing else may close it.
+    if (open != "") { if (tag != "/" open) exit 1; open = ""; continue }
+    if (tag == "/plist") { if (depth != 0 || !root) exit 1; closed = 1; continue }
+    if (closed) exit 1
+    if (tag == "key") {
+      if (depth == 0 || kind[depth] != "dict" || haskey) exit 1
+      pending = unesc(text); haskey = 1; open = "key"; continue
+    }
+    if (tag == "/dict" || tag == "/array") {
+      if (depth == 0 || tag != "/" kind[depth] || haskey) exit 1
+      depth--; continue
+    }
+    if (tag ~ /^\//) exit 1
+    # A value: its name in its container.
+    if (depth == 0) { if (root) exit 1; root = 1 }
+    else if (kind[depth] == "dict") { if (!haskey) exit 1; name = pending; haskey = 0 }
     else name = idx[depth]++
-    path = (depth <= 1) ? name : prefix[depth] ":" name
+    if (depth == 1) { top = name; path = name }
+    else if (depth > 1) { top = tops[depth]; path = prefix[depth] "\034" name }
     if (tag ~ /^(dict|array)\/?$/) {
       t = tag; sub(/\/$/, "", t)
-      if (depth > 0) emit(path, t, "")
-      if (tag !~ /\/$/) { depth++; kind[depth] = t; idx[depth] = 0; prefix[depth] = path }
+      if (depth > 0) emit(top, path, t, "")
+      if (tag !~ /\/$/) { depth++; kind[depth] = t; idx[depth] = 0; prefix[depth] = path; tops[depth] = top }
       continue
     }
-    if (tag == "true/" || tag == "false/") { emit(path, "bool", substr(tag, 1, length(tag) - 1)); continue }
+    if (depth == 0) exit 1   # the root must be a dictionary or an array
+    if (tag == "true/" || tag == "false/") { emit(top, path, "bool", substr(tag, 1, length(tag) - 1)); continue }
     if (tag !~ /^(string|integer|real|date|data)\/?$/) exit 1
     t = tag; sub(/\/$/, "", t)
-    if (tag ~ /\/$/) text = ""
+    if (tag ~ /\/$/) text = ""; else open = t
     if (t == "data") gsub(/[ \t\001]/, "", text)
-    emit(path, t, text)
+    emit(top, path, t, text)
   }
-  if (!root || !closed || depth != 0) exit 1
+  if (!root || !closed || depth != 0 || open != "") exit 1
 }
 function unesc(s) {
   gsub(/&lt;/, "<", s); gsub(/&gt;/, ">", s); gsub(/&quot;/, "\"", s); gsub(/&apos;/, "\047", s); gsub(/&amp;/, "\\&", s)
   return s
 }
-function emit(path, type, value) {
-  gsub(/\\/, "\\\\", value); gsub(/\t/, "\\t", value); gsub(/\001/, "\\n", value)
-  gsub(/\\/, "\\\\", path); gsub(/\t/, "\\t", path); gsub(/\001/, "\\n", path)
-  print dom "\t" path "\t" type "\t" value
+# esc: one line per record. Backslash first, so the escapes stay unambiguous.
+function esc(s) { gsub(/\\/, "\\\\", s); gsub(/\t/, "\\t", s); gsub(/\001/, "\\n", s); gsub(/\r/, "\\r", s); return s }
+function emit(top, path, type, value) {
+  print dom "\t" esc(top) "\t" esc(path) "\t" type "\t" esc(value)
 }
 EOF
 
 # snapshot <name> <domain>...: the domains, as records in $dir/<name>.tsv.
-# Fails if any domain can't be exported or read.
+# Fails if any domain can't be exported, isn't a valid plist (plutil, the
+# system's own parser, decides), or can't be read.
 snapshot() {
   name=$1; shift
   : > "$dir/$name.tsv"
@@ -116,16 +134,18 @@ snapshot() {
   for d in "$@"; do
     i=$((i + 1))
     defaults $host export "$d" - > "$dir/$name.plist" 2>/dev/null &&
+      plutil -lint -s "$dir/$name.plist" >/dev/null 2>&1 &&
       awk -v dom="$i" -f "$dir/flatten.awk" "$dir/$name.plist" >> "$dir/$name.tsv" ||
       { say "couldn't read domain $i; nothing was compared"; return 1; }
   done
-  rm -f "$dir/$name.plist"
+  rm -f "${dir:?}/${name:?}.plist"
 }
 
-# changed <a> <b>: the paths (domain-number <tab> path) whose type or value differ.
+# changed <a> <b>: the values (domain-number <tab> top-level key <tab> path)
+# whose type or value differ.
 changed() {
-  awk -F '\t' 'NR == FNR { a[$1 FS $2] = $3 FS $4; next }
-    { k = $1 FS $2; if (!(k in a) || a[k] != $3 FS $4) print k; delete a[k] }
+  awk -F '\t' 'NR == FNR { a[$1 FS $2 FS $3] = $4 FS $5; next }
+    { k = $1 FS $2 FS $3; if (!(k in a) || a[k] != $4 FS $5) print k; delete a[k] }
     END { for (k in a) print k }' "$1" "$2" | sort
 }
 
@@ -145,19 +165,21 @@ changed "$dir/b.tsv" "$dir/c.tsv" | comm -23 - "$dir/noise" > "$dir/changed"
 # setting. Items: number, domain-number, key, status, type before, type
 # after, changes inside (tab-separated).
 awk -F '\t' -v OFS='\t' '
-  FILENAME == ARGV[1] { ch[$1 FS $2] = 1; next }
-  FILENAME == ARGV[2] { old[$1 FS $2] = $3; next }
-  { new[$1 FS $2] = $3 }
+  FILENAME == ARGV[1] { ch[$1 FS $2 FS $3] = 1; next }
+  FILENAME == ARGV[2] { old[$1 FS $2 FS $3] = $4; next }
+  { new[$1 FS $2 FS $3] = $4 }
   END {
     for (k in ch) {
-      split(k, p, FS); top = p[2]; sub(/:.*/, "", top); tk = p[1] FS top
+      # The top-level key is its own field: never cut out of the path.
+      split(k, p, FS); tk = p[1] FS p[2]
       o = (k in old) ? old[k] : ""; nw = (k in new) ? new[k] : ""
       if ((o == "" || o == "date") && (nw == "" || nw == "date")) continue
       keys[tk] = 1
-      if (p[2] != top) inside[tk]++
+      if (p[3] != p[2]) inside[tk]++
     }
     for (tk in keys) {
-      ot = (tk in old) ? old[tk] : ""; nt = (tk in new) ? new[tk] : ""
+      split(tk, p, FS); self = tk FS p[2]
+      ot = (self in old) ? old[self] : ""; nt = (self in new) ? new[self] : ""
       st = (ot == "") ? "added" : (nt == "") ? "removed" : "changed"
       print tk, st, ot, nt, inside[tk] + 0
     }
