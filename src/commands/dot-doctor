@@ -43,7 +43,9 @@ else
   done)
   [ -z "$missing" ] && ok "dot.toml" || bad "dot.toml is missing values: $missing" "dot conf edit (see dot.toml.example)"
 fi
-grep -qF "$DOT_ROOT/bin/dot\" init zsh" "$HOME/.zshrc" 2>/dev/null && ok "Shell setup in ~/.zshrc" ||
+# The same line shell_init writes (src/settings/shell.sh).
+. "$DOT_ROOT/src/lib/shquote.sh"
+grep -qF "eval \"\$($(shquote "$DOT_ROOT/bin/dot") init zsh)\"" "$HOME/.zshrc" 2>/dev/null && ok "Shell setup in ~/.zshrc" ||
   bad "Shell setup in ~/.zshrc" "dot apply shell, then open a new terminal"
 
 echo
