@@ -47,7 +47,7 @@ All come from Homebrew:
 
 | File                  | Holds                  | Installed                                          |
 |-----------------------|------------------------|----------------------------------------------------|
-| `config/apps.conf`      | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, Rectangle |
+| `config/apps.conf`      | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, Rectangle, Linear |
 | `config/fonts.conf`     | fonts                  | JetBrains Mono Nerd Font                           |
 | `config/packages.conf`  | command-line tools     | 1Password CLI (`op`), GitHub CLI (`gh`), Starship, Varlock ([secrets/](secrets/README.md)), Vercel CLI ([auth/vercel.md](auth/vercel.md)) |
 | `config/mise.conf`      | languages and runtimes | mise; through it Node 24, pnpm, Bun, Python 3.13, uv ([runtimes.md](runtimes.md)) |

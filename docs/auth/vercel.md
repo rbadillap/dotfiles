@@ -69,6 +69,15 @@ token with `--token` for that single command; nothing is written to disk.
 If the CLI offers to upgrade itself, answer no: Homebrew installed it, so
 `brew upgrade vercel` updates it once the formula has the new version.
 
+## Linking a project folder
+
+    vercel link --yes --project <name> --scope <team>
+
+Deploying from a folder needs it linked once; the link lives in `.vercel/`.
+Linking also writes a short-lived `VERCEL_OIDC_TOKEN` into `.env.local`, in
+plain text, and has no option to skip it. If the project doesn't use Vercel's
+OIDC federation, delete that `.env.local`: deploying doesn't need it.
+
 ## Friction
 
 | Criterion        | Token in 1Password                          | Interactive login |
