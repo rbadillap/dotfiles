@@ -102,9 +102,11 @@ is always valid TOML.
 
 ## Adding a setting
 
-1. Find how macOS stores it: run `dot defaults diff`, change the setting in
-   System Settings when it asks, and press Enter. It prints the preferences
-   that changed, as `default` lines ready for step 2.
+1. Find how macOS stores it: run `dot defaults diff <domain>` for the
+   domains you suspect (the app's, such as `com.apple.dock`, and
+   `NSGlobalDomain`), change the setting in System Settings when it asks,
+   and press Enter. It counts the keys that changed; reveal one to see its
+   name and type, then read its value with `defaults read`.
 2. Add a function `<topic>_<setting>()` to `src/settings/<topic>.sh`, with a
    comment giving its syntax and values (`# dock visibility <always|hidden>`).
    It validates the input and calls `src/lib/` functions.
@@ -120,34 +122,31 @@ is always valid TOML.
 
 One switch in System Settings often writes several keys, in several
 domains: tap-to-click is three, one of them per host (`-currentHost`), and
-three-finger drag also moves the three-finger swipes. `dot defaults diff`
-shows all of them.
+three-finger drag also moves the three-finger swipes. Name every domain you
+suspect, and run it once more with `--current-host`.
 
-- **Where it looks.** Every domain `defaults domains` lists, plus
-  `NSGlobalDomain`, each also per host. It reads through `defaults`, never
+- **Where it looks.** Only the domains you name, through `defaults`, never
   the plist files, which can lag behind what System Settings just wrote.
-  Left out: system-wide preferences (`/Library/Preferences`), and apps with
-  a sandbox (Safari, say), whose preferences live in their container under
-  `~/Library/Containers` and aren't listed by `defaults domains`.
+  Apps with a sandbox (Safari, say) keep their preferences in their
+  container under `~/Library/Containers`, out of its reach.
 - **Noise.** Apps write preferences all the time (window positions, recent
   items, counters). Before asking for your change, it takes two snapshots a
   few seconds apart and ignores every key that changed between them. A
   date that changes is ignored too: it's a timestamp, never a setting.
-  Something can still change during your step, so treat each line as a
+  Something can still change during your step, so treat each change as a
   candidate: step 4 confirms which ones matter.
-- **Types.** The type (`-bool`, `-int`, `-float`, `-string`) comes from
-  `defaults export`, not guessed from the value: `defaults read` prints a
-  boolean and the integer 1 the same way.
-- **Nested values.** A change inside a dictionary or array (keyboard
-  shortcuts in `com.apple.symbolichotkeys`, say) is shown as a comment with
-  its path (`Nested:a`, as `plutil` and PlistBuddy write it). `default` can't write it; such a setting needs its own lib
+- **Types.** Revealed types come from `defaults export`, not guessed from a
+  value: `defaults read` prints a boolean and the integer 1 the same way.
+- **Nested values.** A key that changed inside (a dictionary or array, such
+  as keyboard shortcuts in `com.apple.symbolichotkeys`) counts once, as
+  changed inside. `default` can't write it; such a setting needs its own lib
   function, as Rectangle's shortcuts use `default_shortcut`.
-- **Already a setting.** A key some function in `src/settings/` writes is
-  shown as a comment naming that setting, and whether `config/` uses it.
-  Keys a function reaches through a variable aren't recognized.
-- **Nothing found.** The setting isn't a preference, or it belongs to an
-  app with a sandbox. It lives somewhere else (`pmset`, `scutil`, the
-  privacy database, a profile) and needs its own `src/lib/<tool>.sh`.
+- **Already a setting.** Revealing a key some function in `src/settings/`
+  writes names that setting. Keys a function reaches through a variable
+  aren't recognized.
+- **Nothing found.** The setting lives in another domain, in an app's
+  sandbox, or isn't a preference (`pmset`, `scutil`, the privacy database,
+  a profile) and needs its own `src/lib/<tool>.sh`.
 - **A key can be written and still do nothing until you log out.** System
   Settings tells the running apps; `defaults` doesn't. Declare that with
   `effect` (see the trackpad settings).

@@ -23,7 +23,7 @@ you do on it every day, long after setup.
 | `dot doctor`       | checks that dot's own requirements are in place             |
 | `dot update`       | pulls the latest dotfiles, then runs `dot check`            |
 | `dot auth status`  | shows which logins work: 1Password, GitHub, SSH, Vercel, AWS |
-| `dot defaults diff` | shows which preferences a change in System Settings writes |
+| `dot defaults diff` | counts the preferences a change in System Settings writes |
 | `dot init zsh`     | prints the zsh setup that `~/.zshrc` loads                  |
 | `dot completion zsh` | prints the zsh completion script                          |
 
@@ -155,44 +155,40 @@ See [1password.md](1password.md#backup-of-dottoml).
 
 ## defaults diff
 
-    $ dot defaults diff
-    dot defaults diff: reading your preferences (about 15 seconds)…
+    $ dot defaults diff com.apple.AppleMultitouchTrackpad
+    dot defaults diff: reading 1 domain(s) of your user preferences…
     dot defaults diff: change one setting in System Settings, then press Enter here.
     dot defaults diff: reading them again…
-    # com.apple.AppleMultitouchTrackpad Clicking: already in config/: trackpad tap-to-click
-    # com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking: already in config/: trackpad tap-to-click
-    # -currentHost NSGlobalDomain com.apple.mouse.tapBehavior: already in config/: trackpad tap-to-click
+    domain 1 (user preferences): 0 added, 1 changed, 0 removed
+      1  changed
 
-That run toggled tap-to-click, which a setting already covers. For a setting
-the repo doesn't have yet, the lines are ready to paste into a function:
+    To see a change's key name and type, type its number. …
+    > 1
+    1: changed key Clicking (bool); a setting already writes it: trackpad tap-to-click
 
-    default com.example.app ShowThing -bool true
-    default -currentHost com.example.app Speed -int 7
-    default com.example.app Folder -string "$HOME/Pictures/Shots"
-    default_unset com.example.app Old
-    # com.example.app Nested:a: 1 → 2
+It helps find where macOS stores a setting, the first step of adding one
+([how-it-works.md](how-it-works.md#adding-a-setting)). You name the domains
+to watch; it never reads the others. `--current-host` reads this Mac's
+preferences (`defaults -currentHost`) instead of your user's. Change one
+thing per run. It changes nothing, needs no password or Touch ID, and needs
+a terminal, since you make the change yourself.
 
-It finds where macOS stores a setting, the first step of adding one
-([how-it-works.md](how-it-works.md#adding-a-setting)). Change one thing per
-run. It changes nothing, needs no password or Touch ID, and needs a
-terminal, since you make the change yourself.
+- **The report** (stdout) holds counts and change numbers only: no domain
+  or key names and no values, since preferences can hold private
+  information. Error messages refer to domains by position, too.
+- **Revealing** is deliberate: type a change's number to see its key name
+  and type, on the terminal only, never on stdout. A key name can be
+  private, so read it before pasting it anywhere. Values are never shown;
+  read the one you need yourself with `defaults read <domain> <key>`.
+- **It writes no code.** Turning a key into a setting is your step.
+- **A failed read** of any domain stops it: nothing is compared, so a read
+  error can never look like a removed key.
+- **Nothing changed** means the setting lives in another domain, in an
+  app's sandbox, or outside preferences; the message says so.
 
-- **stdout** is only the result, valid as the body of a settings function:
-  one `default` line per changed key, `default_unset` for a key that was
-  removed, and `#` comments for what `default` can't write (a value inside
-  a dictionary or array, with its path; binary data) and for keys a
-  setting already manages.
-- **Values** are shown only for the keys that changed, since preferences
-  can hold personal data. Binary data, strings longer than 40 characters
-  and strings that look like an email address are never shown, only their
-  type and size. A path in your home folder is written with `$HOME`. The
-  snapshots stay in a private temporary folder and are deleted when it
-  ends, even on Ctrl-C.
-- **Nothing changed** means the setting isn't a preference, or it belongs
-  to an app with a sandbox; the message says where else it may live.
-
-Each line is a candidate: an app may have written something during your
-step. Confirm each one by applying the setting alone.
+Its snapshots live in a private temporary folder (`0700`, files `0600`),
+deleted when it ends, including on Ctrl-C. A forced kill (`kill -9`) can
+leave that folder in `$TMPDIR`.
 
 ## Exit codes
 

@@ -30,8 +30,9 @@ by its path, since the shell function only exists in interactive zsh.
   pipes (`dot secret`), never an argument, a file or the output. Creating or
   changing a secret's value is the human's step.
 - Output never shows the content of a file the user owns (`~/.zshrc`, say):
-  any line of it may hold a secret. Point to it by line number instead. The
-  one exception is `dot defaults diff`, narrowed under Commands.
+  any line of it may hold a secret. Point to it by line number instead.
+  `dot defaults diff` follows this too: its report is counts only (see
+  Commands).
 - docs/agents.md lists the Claude Code hooks this repo installs and the
   upstream issues they work around, with links: check those issues for
   updates when you touch agent configuration.
@@ -76,7 +77,7 @@ always writes its own `dot.toml`.
 | Install a command-line tool        | `brew formula <name>` or `brew cask <name>` in `config/packages.conf` |
 | Install a font                     | `brew cask <name>` in `config/fonts.conf`              |
 | Add a third-party package source  | `brew tap <owner/repo>` in `config/packages.conf`, before its packages |
-| Find where macOS stores a preference | `dot defaults diff`, run by the human: it waits for a change in System Settings |
+| Find where macOS stores a preference | `dot defaults diff <domain>`, run by the human: it waits for a change in System Settings |
 | Add a setting                      | function in `src/settings/<topic>.sh`, line in `config/`, row in docs/settings.md |
 | Add a command                      | `src/commands/dot-<name>` (or `dot-<group>-<sub>`), row in docs/dot.md |
 | Put an app's config file in `~`    | `config/home/<path>`, plus a setting that calls `link` |
@@ -121,11 +122,11 @@ come from it:
 - Commands whose result is a folder (`clone`, `fork`, `cd`) print only that
   path; the zsh `dot` function from `dot init zsh` cds into it. Add a new one
   to the `case` in `src/commands/dot-init`.
-- `dot defaults diff` is the one command that prints preference values: only
-  keys that changed during the human's step, never binary data, strings
-  over 40 characters or ones that look like an email address, and a path
-  in the home folder as `$HOME`; from snapshots deleted on exit. Keep it
-  that narrow.
+- `dot defaults diff` reads only the domains the human names, and its
+  report (stdout) holds counts and change numbers, never a domain, key or
+  value. A key's name and type are revealed only when the human asks, on
+  the terminal; values never. It writes no code, and any failed read stops
+  the comparison. Keep it that narrow.
 - Completion candidates come from `src/commands/dot-__complete`; extend it
   when a command takes arguments that can be listed.
 
