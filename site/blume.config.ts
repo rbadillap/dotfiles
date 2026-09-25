@@ -1,4 +1,5 @@
 import { defineConfig } from "blume";
+import { vercel } from "blume/analytics";
 
 // Code in the brand's zinc ladder (DESIGN.md v4.0: no color outside it):
 // body ink for code, muted for comments, on the ratified --muted surface.
@@ -23,6 +24,8 @@ export default defineConfig({
   // is pages/index.astro.
   basePath: "/docs",
   content: { root: "../docs" },
+  // Vercel Web Analytics: production builds on Vercel only.
+  analytics: [vercel()],
   // The rbadillap brand (DESIGN.md v4.0); tokens in theme.css.
   logo: { image: "/mark.svg", text: "dot" },
   markdown: {
