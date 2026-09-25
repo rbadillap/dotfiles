@@ -32,3 +32,7 @@ Afterwards, in a new terminal:
 
 Step by step: **[docs/getting-started.md](docs/getting-started.md)**. Everything
 else: [docs/](docs/README.md).
+
+## License
+
+[MIT](LICENSE): fork it and make it yours.
