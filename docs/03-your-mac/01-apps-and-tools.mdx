@@ -15,7 +15,7 @@ brew formula gh
 
 | File                   | Holds                  | Comes with                                         |
 |------------------------|------------------------|----------------------------------------------------|
-| `config/apps.conf`     | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, WhatsApp, Rectangle, Linear |
+| `config/apps.conf`     | apps                   | 1Password, Google Chrome, Dia, Ghostty, Zed, Discord, Slack, WhatsApp, Rectangle, Linear, and a [container runtime](#containers) |
 | `config/fonts.conf`    | fonts                  | JetBrains Mono Nerd Font                           |
 | `config/packages.conf` | command-line tools     | 1Password CLI (`op`), GitHub CLI (`gh`), Starship, Varlock, Vercel CLI |
 | `config/mise.conf`     | languages and runtimes | mise, and through it Node, pnpm, Bun, Python and uv ([Languages and versions](./06-languages.mdx)) |
@@ -43,6 +43,37 @@ your password.
 
 `dot explain brew cask <name>` shows what a package is, its version, and
 whether it's installed.
+
+## Containers
+
+One line in `config/apps.conf` picks what runs `docker` and
+`docker compose`:
+
+```sh
+containers runtime docker-desktop
+```
+
+| Value            | Installs                                               | After installing                 |
+|------------------|--------------------------------------------------------|----------------------------------|
+| `docker-desktop` | Docker Desktop; installing asks for your password      | open the app once                |
+| `orbstack`       | OrbStack                                               | open the app once                |
+| `rancher`        | Rancher Desktop                                        | open the app once and pick the `dockerd` engine |
+| `colima`         | the `colima`, `docker` and `docker-compose` formulae   | `colima start`, and the step below |
+
+The apps bring Kubernetes too. Each has its own license terms for work use;
+read them before choosing.
+
+With `colima`, `docker compose` only works once Docker knows Homebrew's
+plugin folder. Add it to `~/.docker/config.json`:
+
+```json
+{
+  "cliPluginsExtraDirs": ["/opt/homebrew/lib/docker/cli-plugins"]
+}
+```
+
+Changing the value installs the new runtime and leaves the old one
+installed, like any other package.
 
 ## Remove one
 
