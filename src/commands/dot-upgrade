@@ -1,0 +1,95 @@
+#!/bin/sh
+# Summary: Upgrade Homebrew packages and mise tools to their newest versions
+# Usage: dot upgrade [--yes]
+# Group: additional
+#
+# Refreshes Homebrew's package list, lists every Homebrew package and global
+# mise tool with a newer version, and asks before upgrading them. It covers
+# everything Homebrew installed, not only what config/ lists: exactly what
+# brew outdated shows, which leaves out most apps that update themselves
+# unless one falls behind. Pinned formulae (brew pin) stay as they are. mise
+# stays within the versions its global config asks for: node = "24" moves to
+# a newer 24, never to 25.
+#
+# Upgrading an app may ask for your password.
+#
+# FLAGS
+#   --yes   Upgrade without asking
+#
+# EXIT CODES
+#   0  upgraded, or everything was already up to date
+#   1  an upgrade failed, or upgrades are pending (declined, or no terminal
+#      to ask on and no --yes)
+#   2  bad usage
+set -eu
+yes=0
+case ${1:-} in
+  '') ;;
+  --yes) [ $# -eq 1 ] || { echo "dot upgrade: too many arguments" >&2; exit 2; }; yes=1 ;;
+  *) echo "dot upgrade: unknown argument '$1'" >&2; echo "Run 'dot upgrade --help' for usage." >&2; exit 2 ;;
+esac
+. "$DOT_ROOT/src/lib/brew.sh"
+die() { echo "dot upgrade: $1" >&2; exit 1; }
+brew=$(brew_bin) || die "Homebrew isn't installed; run install.sh first"
+[ -x /usr/bin/jq ] || die "/usr/bin/jq is missing (it comes with macOS 15 and later)"
+export HOMEBREW_NO_ENV_HINTS=1
+
+echo "dot upgrade: refreshing Homebrew's package list" >&2
+"$brew" update --quiet >&2 </dev/null || die "brew update failed"
+
+# The list is read once, and brew upgrade gets exactly its names: on its own
+# it picks more than brew outdated shows (apps that update themselves).
+out=$(HOMEBREW_NO_AUTO_UPDATE=1 "$brew" outdated --json=v2 </dev/null) || die "brew outdated failed"
+formulae=$(printf %s "$out" | /usr/bin/jq -r '.formulae[] | select(.pinned | not) | .name') &&
+  casks=$(printf %s "$out" | /usr/bin/jq -r '.casks[].name') ||
+  die "couldn't read brew outdated's answer"
+brew_plan=$(printf %s "$out" | /usr/bin/jq -r '
+  (.formulae[] | select(.pinned | not) | "brew formula \(.name)  \(.installed_versions | last) → \(.current_version)"),
+  (.casks[] | "brew cask \(.name)  \(.installed_versions | last) → \(.current_version)")') ||
+  die "couldn't read brew outdated's answer"
+
+# mise reads the folder's own config too, so it runs from $HOME: only the
+# global tools. Project versions belong to each project.
+mise_plan=
+if command -v mise >/dev/null 2>&1; then
+  out=$(cd "$HOME" && mise outdated --json 2>/dev/null </dev/null) || die "mise outdated failed"
+  mise_plan=$(printf %s "$out" | /usr/bin/jq -r '.[] | "mise \(.name)  \(.current) → \(.latest)"') ||
+    die "couldn't read mise outdated's answer"
+fi
+
+if [ -z "$brew_plan" ] && [ -z "$mise_plan" ]; then
+  echo "dot upgrade: everything is up to date" >&2
+  exit 0
+fi
+# The plan is the result: stdout.
+[ -z "$brew_plan" ] || printf '%s\n' "$brew_plan"
+[ -z "$mise_plan" ] || printf '%s\n' "$mise_plan"
+
+if [ "$yes" != 1 ]; then
+  { : </dev/tty; } 2>/dev/null ||
+    die "upgrades are pending; run it on a terminal, or with --yes"
+  printf 'Upgrade these? [y/N] ' >/dev/tty
+  IFS= read -r answer </dev/tty || answer=
+  case $answer in
+    y|Y|yes) ;;
+    *) die "nothing upgraded" ;;
+  esac
+fi
+
+# You already said yes above: --yes stops brew from asking again. Package
+# names never contain spaces, so the lists split safely.
+if [ -n "$formulae" ]; then
+  echo "dot upgrade: upgrading Homebrew formulae" >&2
+  # shellcheck disable=SC2086
+  HOMEBREW_NO_AUTO_UPDATE=1 "$brew" upgrade --yes --formula $formulae >&2 || die "brew upgrade failed; run 'brew upgrade' to see why"
+fi
+if [ -n "$casks" ]; then
+  echo "dot upgrade: upgrading Homebrew apps" >&2
+  # shellcheck disable=SC2086
+  HOMEBREW_NO_AUTO_UPDATE=1 "$brew" upgrade --yes --cask $casks >&2 || die "brew upgrade failed; run 'brew upgrade' to see why"
+fi
+if [ -n "$mise_plan" ]; then
+  echo "dot upgrade: upgrading mise tools" >&2
+  (cd "$HOME" && mise upgrade) >&2 || die "mise upgrade failed; run 'mise upgrade' in ~ to see why"
+fi
+echo "dot upgrade: done" >&2
