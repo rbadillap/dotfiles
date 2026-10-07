@@ -11,7 +11,7 @@ by its path, since the shell function only exists in interactive zsh.
 - Run `dot check` freely: it never changes anything. It never needs Touch ID
   or a password either; keep it that way when adding settings.
 - Ask before `dot apply`, before anything that uses sudo, and before any other
-  command that changes the machine (including `dot clone` and `dot fork`).
+  command that changes the machine (including `dot clone`, `dot fork` and `dot upgrade`).
 - Never commit `dot.toml`, secrets, or machine-specific values.
 - Never rewrite shared files such as `~/.zshrc`: only the marked
   `# >>> dotfiles` block belongs to the repo. Tools may append to the rest.

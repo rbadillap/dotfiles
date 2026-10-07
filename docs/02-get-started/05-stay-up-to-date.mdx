@@ -1,17 +1,20 @@
 ---
 title: Stay up to date
-description: Pull the latest config, see what it would change, and keep dot's own requirements healthy.
+description: Pull the latest config, upgrade your packages, and keep dot's own requirements healthy.
 ---
 
 ```sh
 dot update        # pull the repo, then show what would change
 dot apply         # apply it, when you're ready
+dot upgrade       # newer versions of your packages and tools
 dot doctor        # dot's own requirements
 dot auth status   # every login dot uses
 ```
 
 - **`dot update`** fast-forwards your repo from GitHub, then runs
   `dot check` to show what the new version would change. It never applies.
+- **`dot upgrade`** upgrades packages and tools to their newest versions
+  ([below](#newer-versions)).
 - **`dot doctor`** checks what dot itself needs: the Command Line Tools,
   Homebrew, 1Password with its CLI and SSH agent, `gh`, Varlock, `dot.toml`
   (errors, and values missing from it), and the shell setup. Each problem
@@ -19,6 +22,39 @@ dot auth status   # every login dot uses
 - **`dot auth status`** checks each login: the 1Password CLI, `gh`, SSH to
   GitHub, `vercel`, and each AWS organization in `dot.toml`. It asks for
   Touch ID ([Accounts](../04-your-projects/03-accounts/index.mdx)).
+
+## Newer versions
+
+`config/` says which packages you want, not which version, so a new release
+never shows up in `dot check`. `dot upgrade` takes care of that:
+
+```sh
+dot upgrade         # list what's outdated, then ask
+dot upgrade --yes   # upgrade without asking
+```
+
+It refreshes Homebrew's package list, then shows each package and tool with
+a newer version, one per line:
+
+```text
+brew formula gh  2.101.0 → 2.102.0
+brew cask slack  4.52.162 → 4.52.178
+mise uv  0.12.18 → 0.12.23
+```
+
+- **Homebrew:** everything it installed, not only what `config/` lists:
+  exactly the list `brew outdated` shows. Homebrew leaves out most apps that
+  update themselves, unless one falls behind (Chrome before its own update
+  runs). A formula you pinned with `brew pin` stays where it is. Upgrading
+  an app may ask for your password.
+- **mise:** the global tools, within the versions
+  [their config](../03-your-mac/06-languages.mdx) asks for: `node = "24"`
+  moves to a newer 24, never to 25, and the previous version stays for a
+  day before mise removes it. A project's own versions are that project's
+  business.
+
+Without a terminal to ask on and without `--yes`, it lists the upgrades and
+exits 1, changing nothing.
 
 ## Changes you make on the Mac
 
