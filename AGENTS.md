@@ -210,6 +210,8 @@ tables.
     neither touches the rest of the file
   - `gh_ssh_key` in gh.sh (check reads GitHub's public key lists with curl,
     no token; apply adds keys via `gh` through 1Password)
+    and `gh_ext` (check reads gh's extensions folder, since `gh extension
+    list` needs a login; apply installs via `gh`; never upgrades)
   - `op_document` and `op_backup_state` in op.sh (back a file up to
     1Password, tagged `dotfiles`, for `dot conf backup`; the state compares
     it with a local record of the last upload, so a full `dot check` reports
