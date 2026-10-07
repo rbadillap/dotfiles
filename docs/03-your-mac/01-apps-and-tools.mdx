@@ -75,7 +75,29 @@ plugin folder. Add it to `~/.docker/config.json`:
 Changing the value installs the new runtime and leaves the old one
 installed, like any other package.
 
+## gh extensions
+
+Extensions to the GitHub CLI are one line each, in `config/packages.conf`:
+
+```sh
+gh extension github/gh-stack
+```
+
+`dot apply packages` installs the ones that are missing, through `gh` and so
+through 1Password (Touch ID). If 1Password can't reach its app, the error
+says so: open and unlock 1Password, check that Settings › Developer ›
+Integrate with 1Password CLI is on, and apply again. `dot check` only looks
+at gh's extensions folder, so it needs neither.
+
+dot doesn't upgrade them. `gh extension list` shows what's installed and its
+version, and this upgrades them all:
+
+```sh
+gh extension upgrade --all
+```
+
 ## Remove one
 
 Removing a line doesn't uninstall anything: dot only ever installs. Uninstall
-with `brew uninstall <name>` if you want it gone.
+with `brew uninstall <name>` (or `gh extension remove <name>`) if you want it
+gone.

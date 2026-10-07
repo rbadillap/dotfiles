@@ -38,7 +38,11 @@ by its path, since the shell function only exists in interactive zsh.
   updates when you touch agent configuration.
 - Commits are signed through 1Password (Touch ID). Never bypass signing
   (`--no-gpg-sign`, `-c commit.gpgsign=false`); if signing fails, stop and ask.
-- The repo is public. Ask before `git push`, and never rewrite pushed history.
+- The repo is public. Ask before `git push`, and never rewrite pushed
+  history, with one exception: the branches of a stack of pull requests
+  (gh-stack) are rebased onto the layer below and force-pushed with
+  `--force-with-lease` by `gh stack sync`. That's how stacks work; it never
+  applies to `main` or to a branch someone else works on.
 - Everything in this repo is written in English.
 - Keep it minimal: add files and folders only when needed. Update README.md
   and this file in the same change as the structure they describe.
@@ -210,6 +214,8 @@ tables.
     neither touches the rest of the file
   - `gh_ssh_key` in gh.sh (check reads GitHub's public key lists with curl,
     no token; apply adds keys via `gh` through 1Password)
+    and `gh_ext` (check reads gh's extensions folder, since `gh extension
+    list` needs a login; apply installs via `gh`; never upgrades)
   - `op_document` and `op_backup_state` in op.sh (back a file up to
     1Password, tagged `dotfiles`, for `dot conf backup`; the state compares
     it with a local record of the last upload, so a full `dot check` reports
