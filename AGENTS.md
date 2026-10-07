@@ -38,7 +38,11 @@ by its path, since the shell function only exists in interactive zsh.
   updates when you touch agent configuration.
 - Commits are signed through 1Password (Touch ID). Never bypass signing
   (`--no-gpg-sign`, `-c commit.gpgsign=false`); if signing fails, stop and ask.
-- The repo is public. Ask before `git push`, and never rewrite pushed history.
+- The repo is public. Ask before `git push`, and never rewrite pushed
+  history, with one exception: the branches of a stack of pull requests
+  (gh-stack) are rebased onto the layer below and force-pushed with
+  `--force-with-lease` by `gh stack sync`. That's how stacks work; it never
+  applies to `main` or to a branch someone else works on.
 - Everything in this repo is written in English.
 - Keep it minimal: add files and folders only when needed. Update README.md
   and this file in the same change as the structure they describe.
