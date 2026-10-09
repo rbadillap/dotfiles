@@ -1,6 +1,6 @@
 ---
 title: System preferences
-description: Dock, keyboard, trackpad, mouse, screenshots and the computer's name, one line each.
+description: Dock, keyboard, trackpad, mouse, screenshots, font smoothing and the computer's name, one line each.
 ---
 
 What you'd otherwise click through in System Settings is a line in
@@ -29,13 +29,14 @@ trackpad three-finger-drag true
 | `mouse natural-scrolling`      | `true`, `false`; macOS applies it to the trackpad too      |
 | `screenshot save-to`           | `clipboard`, `desktop` (macOS's default), `preview`        |
 | `system hostname`              | letters, digits and hyphens; from `$hostname` in `dot.toml` |
+| `system font-smoothing`       | `on` (macOS's default), `off`: thinner, sharper text |
 
 `dot explain <topic>` prints each one with its values, and the
 [settings reference](../07-reference/02-settings.mdx) has them all.
 
 ## Good to know
 
-- **Some changes need a new session.** Keyboard and trackpad changes take
+- **Some changes need a new session.** Keyboard, trackpad and font smoothing changes take
   effect after you log out and back in; `apply` says so when it applies one.
 - **Some need your password.** `system hostname` sets all three of macOS's
   names for the computer, which needs `sudo`; `check` shows it as
@@ -43,6 +44,10 @@ trackpad three-finger-drag true
 - **Accents on a US keyboard.** With `keyboard press-and-hold true`, holding
   a letter shows its accents. In any app, including the terminal, `⌥` `e` then
   a vowel gives `á é í ó ú`, and `⌥` `n` then `n` gives `ñ`.
+- **Font smoothing.** macOS thickens every stroke of text by default. `off`
+  draws it thinner: sharpest on Retina displays, and a matter of taste on
+  others, where it can look light. It's set per Mac; an app picks it up when
+  it reopens.
 
 ## A preference dot doesn't have
 
