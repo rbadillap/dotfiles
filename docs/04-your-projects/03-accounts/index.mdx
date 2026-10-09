@@ -18,6 +18,13 @@ guide here, with how much manual work its login takes.
   only point the plugin at the existing item; there's no browser and no
   token saved on disk.
 
+Touch ID through the plugin covers one terminal session: it lasts until 10
+minutes go by without a command, 12 hours at most, and every new tab or
+window asks again. 1Password has no setting to make it last longer
+([how it works](https://www.1password.dev/cli/app-integration-security/)).
+A coding agent usually starts a new shell for each command, so each of its
+commands that goes through a plugin can ask once more.
+
 ## Friction
 
 `dot auth status` checks the logins this setup uses.
@@ -32,6 +39,7 @@ Each platform guide measures both ways with the same criteria:
 | Per machine      | Must it be repeated on every Mac?                     |
 | Expires          | Does the credential expire and need renewing?         |
 | Secret on disk   | Is a token left in a file on this Mac?                |
+| Touch ID         | How often does 1Password ask?                         |
 
 | Platform                 | Interactive login | Token in 1Password |
 |--------------------------|-------------------|--------------------|

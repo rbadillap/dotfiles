@@ -23,6 +23,15 @@ dot is built to be used by coding agents as well as people. The repo's
   private key, token or secret value; a project secret only travels through
   pipes (`dot secret`).
 
+## Touch ID
+
+Commands that reach an account through 1Password (`gh`, `vercel`,
+`dot auth status`, `dot fork`, `dot secret`, `dot conf`) ask for Touch ID once
+per terminal session. Agents usually run each command in a new shell, so a
+long task can ask many times. `AGENTS.md` tells them to batch those commands
+into one shell call; [Accounts](../04-your-projects/03-accounts/index.mdx)
+compares what each login costs.
+
 On a clean Mac, an agent runs the installer with `--yes --no-apply`: it
 installs, stops after `dot check`, and shows you what `apply` would change.
 
