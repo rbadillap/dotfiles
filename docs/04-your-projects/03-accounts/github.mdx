@@ -139,6 +139,7 @@ nothing is written to disk.
 | Per machine      | `op plugin init gh` (the shell line comes from `dot apply shell`) | the whole login   |
 | Expires          | as set when creating the token              | no                |
 | Secret on disk   | no                                          | in the macOS Keychain |
+| Touch ID         | once per terminal session (each agent command is usually one) | never |
 
 The token is created once; each later Mac repeats steps 1 and 3–5.
 

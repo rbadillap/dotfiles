@@ -152,6 +152,7 @@ honors it:
 | Per machine      | `op plugin init vercel` (the shell line comes from `dot apply shell`) | the whole login   |
 | Expires          | as set when creating the token              | when Vercel ends the session |
 | Secret on disk   | no                                          | yes, in the CLI's config folder |
+| Touch ID         | once per terminal session (each agent command is usually one) | never |
 
 The token is created once; each later Mac repeats steps 1, 3 and 4.
 

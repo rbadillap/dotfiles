@@ -28,10 +28,7 @@ die() { echo "dot fork: $*" >&2; exit 1; }
 bad() { echo "dot fork: $*" >&2; echo "Run 'dot fork --help' for usage." >&2; exit 2; }
 lower() { printf %s "$1" | tr '[:upper:]' '[:lower:]'; }
 
-# gh, through 1Password's shell plugin when that's where its token lives.
-ghx() {
-  if [ -f "$HOME/.config/op/plugins/gh.json" ]; then op plugin run -- gh "$@"; else gh "$@"; fi
-}
+. "$DOT_ROOT/src/lib/gh.sh"
 
 # my_login: your GitHub username, from dot.toml or else from gh.
 my_login() {

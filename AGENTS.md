@@ -36,6 +36,10 @@ by its path, since the shell function only exists in interactive zsh.
 - docs/06-agents/index.mdx lists the Claude Code hooks this repo installs and the
   upstream issues they work around, with links: check those issues for
   updates when you touch agent configuration.
+- Each shell you start is a new 1Password session, and every command that
+  goes through `op` (shell plugins like `gh` and `vercel`, `dot auth status`,
+  `dot fork`, `dot secret`, `dot conf`) asks for Touch ID again in a new one.
+  Batch those commands into one shell call instead of one call each.
 - Commits are signed through 1Password (Touch ID). Never bypass signing
   (`--no-gpg-sign`, `-c commit.gpgsign=false`); if signing fails, stop and ask.
 - The repo is public. Ask before `git push`, and never rewrite pushed
