@@ -29,6 +29,17 @@ DOTFILES_REPO=<you>/dotfiles sh -c "$(curl -fsSL https://raw.githubusercontent.c
 Step by step: [Install](docs/02-get-started/01-install.mdx). Everything else:
 [the docs](docs/index.mdx).
 
+## Agents
+
+Coding agents in your other projects (Claude Code, Codex, Cursor…) learn to
+use `dot` from its [skill](skills/dot/SKILL.md):
+
+```sh
+npx skills add rbadillap/dotfiles --skill dot --global
+```
+
+More in [Agents](docs/06-agents/index.mdx).
+
 ## License
 
 [MIT](LICENSE): fork it and make it yours.
