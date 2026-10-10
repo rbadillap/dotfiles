@@ -19,14 +19,14 @@ coding agents too ([AGENTS.md](AGENTS.md)).
 
 ## Install
 
-Fork this repo, then on a clean Mac (it shows its plan and asks before
-changing anything):
+On a clean Mac (it shows its plan and asks before changing anything):
 
 ```sh
-DOTFILES_REPO=<you>/dotfiles sh -c "$(curl -fsSL https://raw.githubusercontent.com/<you>/dotfiles/main/install.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/rbadillap/dotfiles/main/install.sh)"
 ```
 
-Step by step: [Install](docs/02-get-started/01-install.mdx). Everything else:
+To make the choices yours, fork it and run the same command with
+`DOTFILES_REPO=<you>/dotfiles`. Step by step: [Install](docs/02-get-started/01-install.mdx). Everything else:
 [the docs](docs/index.mdx).
 
 ## Agents
