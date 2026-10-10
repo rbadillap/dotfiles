@@ -10,8 +10,26 @@ import data from "blume:data";
 import ThemeKey from "../components/ThemeKey.astro";
 
 const { config } = data;
-const install =
-  'sh -c "$(curl -fsSL https://raw.githubusercontent.com/rbadillap/dotfiles/main/install.sh)"';
+// Two ways in, as tabs over one command: installing dot on a Mac, and the
+// skill that teaches agents in other projects to use it.
+const installs = [
+  {
+    id: "you",
+    tab: "For you",
+    command: 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/rbadillap/dotfiles/main/install.sh)"',
+    shown: 'sh -c "$(curl -fsSL …/install.sh)"',
+    href: "/docs/get-started/install",
+    link: "Get started",
+  },
+  {
+    id: "agent",
+    tab: "For your agent",
+    command: "npx skills add rbadillap/dotfiles --skill dot --global",
+    shown: "npx skills add rbadillap/dotfiles --skill dot --global",
+    href: "/docs/agents#the-dot-skill",
+    link: "The dot skill",
+  },
+];
 const title = "dot · your Mac, as code";
 // Shell braces would read as Astro expressions in the markup, so code
 // samples are strings rendered as text.
@@ -98,18 +116,36 @@ const sections = [
         Set it up from plain text, keep it that way, and work on your
         projects. One command on a clean Mac; one line per setting after that.
       </p>
-      <button
-        class="mt-8 flex w-full items-center justify-between gap-4 bg-(--muted) px-4 py-3 text-left font-mono text-(length:--text-xs)"
-        data-copy={install}
-        type="button"
-      >
-        <span class="truncate"><span class="text-muted-foreground">$ </span>sh -c "$(curl -fsSL …/install.sh)"</span>
-        <span class="shrink-0 text-(length:--text-2xs) text-muted-foreground uppercase tracking-[0.14em]" data-copy-label>Copy</span>
-      </button>
-      <p class="mt-4 flex gap-6">
-        <a class="text-(--primary) hover:underline" href="/docs/get-started/install">Get started →</a>
-        <a class="text-muted-foreground hover:text-(--primary)" href="/docs">Read the docs →</a>
-      </p>
+      <div class="mt-8 flex gap-5" role="tablist">
+        {installs.map((t, i) => (
+          <button
+            aria-controls={`install-${t.id}`}
+            aria-selected={i === 0 ? "true" : "false"}
+            class="font-mono text-(length:--text-2xs) text-muted-foreground uppercase tracking-[0.14em] hover:text-(--primary) aria-selected:text-(--primary)"
+            data-tab={t.id}
+            id={`tab-${t.id}`}
+            role="tab"
+            tabindex={i === 0 ? 0 : -1}
+            type="button"
+          >{t.tab}</button>
+        ))}
+      </div>
+      {installs.map((t, i) => (
+        <div aria-labelledby={`tab-${t.id}`} hidden={i !== 0} id={`install-${t.id}`} role="tabpanel">
+          <button
+            class="mt-3 flex w-full items-center justify-between gap-4 bg-(--muted) px-4 py-3 text-left font-mono text-(length:--text-xs)"
+            data-copy={t.command}
+            type="button"
+          >
+            <span class="truncate"><span class="text-muted-foreground">$ </span>{t.shown}</span>
+            <span class="shrink-0 text-(length:--text-2xs) text-muted-foreground uppercase tracking-[0.14em]" data-copy-label>Copy</span>
+          </button>
+          <p class="mt-4 flex gap-6">
+            <a class="text-(--primary) hover:underline" href={t.href}>{t.link} →</a>
+            <a class="text-muted-foreground hover:text-(--primary)" href="/docs">Read the docs →</a>
+          </p>
+        </div>
+      ))}
     </section>
 
     <div class="mt-16 border-border border-l pl-6">
@@ -166,6 +202,26 @@ const sections = [
 </style>
 
 <script>
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>("[role=tab][data-tab]")];
+  const select = (tab: HTMLButtonElement) => {
+    for (const t of tabs) {
+      const on = t === tab;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      const panel = document.getElementById(t.getAttribute("aria-controls") ?? "");
+      if (panel) panel.hidden = !on;
+    }
+  };
+  for (const [i, tab] of tabs.entries()) {
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      const next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+      select(next);
+      next.focus();
+    });
+  }
+
   for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
     button.addEventListener("click", async () => {
       await navigator.clipboard.writeText(button.dataset.copy ?? "");
