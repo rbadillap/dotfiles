@@ -33,9 +33,12 @@ by its path, since the shell function only exists in interactive zsh.
   any line of it may hold a secret. Point to it by line number instead.
   `dot defaults diff` follows this too: its report is counts only (see
   Commands).
-- docs/06-agents/index.mdx lists the Claude Code hooks this repo installs and the
-  upstream issues they work around, with links: check those issues for
-  updates when you touch agent configuration.
+- `skills/dot/SKILL.md` teaches agents outside this repo how to use `dot`.
+  It's a standard Agent Skill (skills.sh), so keep it agent-neutral, and
+  update it in the same change as a command or rule it describes.
+- A Claude Code hook that works around an upstream issue links that issue
+  in docs/06-agents/index.mdx: check it for updates when you touch agent
+  configuration, and remove the hook once it's fixed.
 - Each shell you start is a new 1Password session, and every command that
   goes through `op` (shell plugins like `gh` and `vercel`, `dot auth status`,
   `dot fork`, `dot secret`, `dot conf`) asks for Touch ID again in a new one.
@@ -79,6 +82,7 @@ by its path, since the shell function only exists in interactive zsh.
 | `config/shell/`          | the owner's zsh files, loaded by `dot init zsh`         |
 | `docs/`                  | the docs, one `.mdx` page per purpose                   |
 | `site/`                  | the docs site (Blume): config, landing page, `package.json` |
+| `skills/`                | Agent Skills for agents outside this repo (skills.sh layout) |
 
 `src/` is the engine. `config/` is what the owner wants on the Mac and holds
 nothing personal; `dot.toml` holds who they are (names, identities,
@@ -99,6 +103,7 @@ always writes its own `dot.toml`.
 | Add a command                      | `src/commands/dot-<name>` (or `dot-<group>-<sub>`), row in docs/07-reference/01-commands.mdx |
 | Put an app's config file in `~`    | `config/home/<path>`, plus a setting that calls `link` |
 | Add a Claude Code hook             | script in `config/home/.claude/hooks/`, `claude hook` line in `config/claude.conf`; docs/06-agents/index.mdx |
+| Teach agents elsewhere how to use dot | `skills/dot/SKILL.md`; docs/06-agents/index.mdx |
 | Change a language or tool version | `config/home/.config/mise/config.toml` (global); docs/03-your-mac/06-languages.mdx |
 | Add something to the shell         | `config/shell/<topic>.zsh`                            |
 | Add a personal value (names, …)    | `dot.toml` (real) and `dot.toml.example` (placeholder) |
