@@ -62,6 +62,12 @@ by its path, since the shell function only exists in interactive zsh.
   starts at `##`; code blocks are fenced with a language. Link pages by
   relative path (`../03-your-mac/05-editor.mdx`); `pnpm --dir site exec
   blume validate` must find no broken links.
+- Hammerspoon can control any app and runs arbitrary Lua, so use it only
+  for what can't be declared another way (today: window tiling). Its config
+  is `config/home/.hammerspoon/`: `init.lua` only loads one file per
+  automation (`windows.lua`), each linked by `hammerspoon config` and
+  reviewed like code. Values it needs come from `config/` through a setting
+  that writes a data file (like `~/.hammerspoon/tiles`), never Lua.
 - Docs describe what exists and how it works, never how it was decided (what
   was tried, which alternatives lost). That belongs in commit messages.
 - Record every step a clean machine needs in docs/02-get-started/, with
@@ -102,6 +108,8 @@ always writes its own `dot.toml`.
 | Add a setting                      | function in `src/settings/<topic>.sh`, line in `config/`, row in docs/07-reference/02-settings.mdx and in its page under docs/03-your-mac/ |
 | Add a command                      | `src/commands/dot-<name>` (or `dot-<group>-<sub>`), row in docs/07-reference/01-commands.mdx |
 | Put an app's config file in `~`    | `config/home/<path>`, plus a setting that calls `link` |
+| Tile windows (shortcut, size)      | `hammerspoon tile` in `config/windows.conf`; docs/03-your-mac/03-windows.mdx |
+| Automate something in Hammerspoon | `config/home/.hammerspoon/<name>.lua`, required from `init.lua` and linked in `hammerspoon config` |
 | Add a Claude Code hook             | script in `config/home/.claude/hooks/`, `claude hook` line in `config/claude.conf`; docs/06-agents/index.mdx |
 | Teach agents elsewhere how to use dot | `skills/dot/SKILL.md`; docs/06-agents/index.mdx |
 | Change a language or tool version | `config/home/.config/mise/config.toml` (global); docs/03-your-mac/06-languages.mdx |
@@ -210,7 +218,7 @@ tables.
 - Never print directly; use `src/lib/output.sh`. `src/lib/run.sh` runs
   config files for `dot check` and `dot apply`.
 - Current functions:
-  - `default`, `default_unset`, `default_shortcut` in defaults.sh
+  - `default` and `default_unset` in defaults.sh
   - `scutil_name` in scutil.sh (sudo)
   - `gitconfig [-f <file>]` in gitconfig.sh (global ~/.gitconfig, or another
     file such as an identity under ~/.config/git/identities/)

@@ -1,45 +1,63 @@
 ---
 title: Windows
-description: Tile windows in thirds and fourths with Rectangle, and change its shortcuts in config/.
+description: Tile windows with keyboard shortcuts through Hammerspoon, and set each shortcut's size in config/.
 ---
 
-[Rectangle](https://rectangleapp.com) tiles windows in thirds and fourths,
-which suits a wide screen. It comes from `config/apps.conf`, and its
-shortcuts live in `config/windows.conf`:
+[Hammerspoon](https://www.hammerspoon.org) tiles windows with keyboard
+shortcuts. Each shortcut puts the focused window in a range of the screen's
+width, so a wide screen can split into columns of any size. Hammerspoon
+comes from `config/apps.conf`, and the shortcuts live in
+`config/windows.conf`:
 
-| Shortcut | Window             |
-|----------|--------------------|
-| `⌘⌥←`    | left third (33%)   |
-| `⌘⌥↑`    | center third (33%) |
-| `⌘⌥→`    | right third (33%)  |
-| `⌘⇧⌥←`   | left fourth (25%)  |
-| `⌘⇧⌥↑`   | center half (50%)  |
-| `⌘⇧⌥→`   | right fourth (25%) |
+| Shortcut | Window                  |
+|----------|-------------------------|
+| `⌘⌥←`    | left, 0–25%             |
+| `⌘⌥↑`    | center, 35–75%          |
+| `⌘⌥→`    | right, 85–100%          |
+| `⌘⇧⌥←`   | left, wider: 0–30%      |
+| `⌘⇧⌥↑`   | center, wider: 30–80%   |
+| `⌘⇧⌥→`   | right, wider: 80–100%   |
+
+With shift, the three columns fill the screen side by side (30/50/20).
 
 ```sh
 dot apply windows
 ```
 
-This also turns off macOS's own edge tiling (`windows native-tiling false`),
-so the two don't compete, and restarts Rectangle to load the shortcuts.
-Sizes are fractions of the screen, so they work on any display.
+This links Hammerspoon's config into `~/.hammerspoon/`, writes the
+shortcuts to `~/.hammerspoon/tiles`, turns off macOS's own edge tiling
+(`windows native-tiling false`) so the two don't compete, and restarts
+Hammerspoon to load them. Ranges are percentages of the screen, so they work
+on any display.
 
-`⌘⌥←` and `⌘⌥→` switch tabs in Chrome, Dia and Zed; Rectangle takes them
+`⌘⌥←` and `⌘⌥→` switch tabs in Chrome, Dia and Zed; Hammerspoon takes them
 first.
 
 ## Once per Mac
 
-Rectangle needs **Accessibility** permission to move windows. Grant it when
-it asks, or in *System Settings → Privacy & Security → Accessibility*;
-macOS doesn't let scripts grant it.
+Hammerspoon needs **Accessibility** permission to move windows. Grant it
+when it asks, or in *System Settings → Privacy & Security → Accessibility*;
+macOS doesn't let scripts grant it. If you grant it after Hammerspoon
+started, choose *Reload Config* from its menu bar icon.
 
-## Change a shortcut
+## Change a shortcut or a size
 
 ```sh
-rectangle shortcut <action> <combo>
+hammerspoon tile <combo> <from>-<to>
 ```
 
-`<combo>` is modifiers and one key joined by `+`: modifiers `cmd`, `opt`,
-`ctrl`, `shift`; keys `left`, `right`, `up`, `down`, `space`, `return`, or a
-letter. For example, `rectangle shortcut first-third cmd+opt+left`. The
-actions are listed in `src/settings/rectangle.sh`.
+`<from>-<to>` is the window's range in percent of the screen's width:
+`0-30` is the left 30%, `80-100` the right 20%. `<combo>` is modifiers and
+one key joined by `+`: modifiers `cmd`, `opt`, `ctrl`, `shift`; keys `left`,
+`right`, `up`, `down`, `space`, `return`, or a letter. For example,
+`hammerspoon tile cmd+shift+opt+left 0-30`.
+
+Deleting a line leaves its shortcut in `~/.hammerspoon/tiles`: remove its
+block there by hand.
+
+## What runs in Hammerspoon
+
+Hammerspoon can control any app and runs whatever Lua its config holds, so
+it only does what can't be declared another way. Its config lives in
+`config/home/.hammerspoon/`: `init.lua` loads one file per automation
+(`windows.lua` for tiling). Review a change there like code.
