@@ -1,7 +1,7 @@
 # Keyboard combos such as cmd+shift+opt+left. Sourced by dot.
 
 # key_combo <combo>: sets KEY_CODE and KEY_FLAGS (macOS virtual key code and
-# modifier flags) for apps that store shortcuts that way. A helper, not a
+# modifier flags), validating it on the way. A helper, not a
 # check; returns 1 on an invalid combo.
 key_combo() {
   KEY_CODE= KEY_FLAGS=0

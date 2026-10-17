@@ -5,7 +5,7 @@ description: Every setting dot knows, with its values; dot explain prints the sa
 
 Every setting is one `<topic> <setting> <value>` line in a file in `config/`.
 Change the value there, or delete the line to leave that setting alone. A
-file can mix topics (`config/windows.conf` holds `rectangle …` and
+file can mix topics (`config/windows.conf` holds `hammerspoon …` and
 `windows …` lines). `dot explain` prints this list from the code, with where
 `config/` uses each one.
 
@@ -27,6 +27,8 @@ file can mix topics (`config/windows.conf` holds `rectangle …` and
 | `git`       | `identities`        | one `git identity` per table; from `$git.identity.*` ([Git and signing](../03-your-mac/07-git-and-signing.mdx)) |
 | `gh`        | `extension`         | `owner/gh-name`: a GitHub CLI extension, e.g. `github/gh-stack` ([Apps and tools](../03-your-mac/01-apps-and-tools.mdx#gh-extensions)) |
 | `github`    | `ssh-key`           | `<user> <title>`: an SSH key in 1Password, added to your account for authentication and signing; from `$github.user $ssh_key` |
+| `hammerspoon` | `config`          | `linked`: symlinks to `config/home/.hammerspoon/` (`init.lua` and the automations it loads) |
+| `hammerspoon` | `tile`            | `<combo> <from>-<to>`, e.g. `cmd+opt+left 0-25`: the shortcut puts the window in that range of the screen's width, in percent ([Windows](../03-your-mac/03-windows.mdx)) |
 | `keyboard`  | `repeat-rate`       | integer; lower is faster (System Settings stops at 2) |
 | `keyboard`  | `repeat-delay`      | integer; lower is shorter (System Settings stops at 15) |
 | `keyboard`  | `press-and-hold`    | `true` (holding a letter shows its accents), `false` (it repeats) |
@@ -35,7 +37,6 @@ file can mix topics (`config/windows.conf` holds `rectangle …` and
 | `mouse`     | `speed`             | `0.0`–`3.0`                                      |
 | `mouse`     | `secondary-click`   | `right`, `left`, `off`                           |
 | `mouse`     | `natural-scrolling` | `true`, `false`; macOS applies it to the trackpad too |
-| `rectangle` | `shortcut`          | `<action> <combo>`, e.g. `first-third cmd+opt+left`; actions in `src/settings/rectangle.sh` |
 | `screenshot` | `save-to`         | `clipboard`, `desktop` (macOS default), `preview`: where ⌘⇧3 and ⌘⇧4 send it |
 | `shell`     | `init`              | `zsh`: the managed block in `~/.zshrc`           |
 | `ssh`       | `agent`             | `1password`                                      |
