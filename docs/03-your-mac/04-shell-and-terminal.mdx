@@ -49,6 +49,7 @@ numbers only, never their content, because a line may hold a secret:
 | `config/shell/mise.zsh`    | the right tool versions per folder, and a uv project's `.venv` ([Languages and versions](./06-languages.mdx)) |
 | `config/shell/op.zsh`      | 1Password shell plugins: `gh` and `vercel` get their tokens from 1Password |
 | `config/shell/prompt.zsh`  | Starship                                              |
+| `config/shell/ssh.zsh`     | `SSH_AUTH_SOCK` is 1Password's SSH agent, so `ssh-add -L` and agent forwarding see its keys ([1Password and GitHub](../02-get-started/04-1password-and-github.mdx)) |
 | `config/shell/varlock.zsh` | Varlock completion ([Secrets](../04-your-projects/02-secrets/index.mdx)) |
 
 To add something to your shell, create `config/shell/<topic>.zsh`.
