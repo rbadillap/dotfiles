@@ -1,0 +1,91 @@
+name: apv-readme-promises
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  warnings-stay-green:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: v
+        uses: rbadillap/agent-plugins-validate@v1
+        with:
+          manifests: test-fixtures/warn/plugin.json
+      - run: |
+          echo "valid=${{ steps.v.outputs.valid }} findings=${{ steps.v.outputs.findings }}"
+          cat "${{ steps.v.outputs.report }}"
+          test "${{ steps.v.outputs.valid }}" = true
+  glob-matches:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: v
+        uses: rbadillap/agent-plugins-validate@v1
+        with:
+          manifests: test-fixtures/glob/*/plugin.json
+      - run: |
+          cat "${{ steps.v.outputs.report }}"
+          grep -q 'test-fixtures/glob/one/plugin.json' "${{ steps.v.outputs.report }}"
+  glob-matches-nothing-fails:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: v
+        continue-on-error: true
+        uses: rbadillap/agent-plugins-validate@v1
+        with:
+          manifests: test-fixtures/nothing/*/plugin.json
+      - run: |
+          echo "action outcome: ${{ steps.v.outcome }}"
+          test "${{ steps.v.outcome }}" = failure
+  url-password-masked:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: v
+        continue-on-error: true
+        uses: rbadillap/agent-plugins-validate@v1
+        with:
+          manifests: test-fixtures/secret/plugin.json
+      - run: |
+          echo "outcome=${{ steps.v.outcome }} findings=${{ steps.v.outputs.findings }}"
+          cat "${{ steps.v.outputs.report }}"
+          if grep -rq 'not-a-real-secret' "${{ steps.v.outputs.report }}"; then echo "LEAK in report"; exit 1; fi
+          grep -q 'u\*\*\*\*:n\*\*\*\*@' "${{ steps.v.outputs.report }}" && echo "masked form present"
+  unsupported-version-one-finding:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: v
+        continue-on-error: true
+        uses: rbadillap/agent-plugins-validate@v1
+        with:
+          manifests: test-fixtures/unsupported/plugin.json
+      - run: |
+          echo "outcome=${{ steps.v.outcome }} findings=${{ steps.v.outputs.findings }}"
+          cat "${{ steps.v.outputs.report }}"
+          test "${{ steps.v.outputs.findings }}" = 1
+  open-issues-on-pr-writes-nothing:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Issues before
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api "repos/$GITHUB_REPOSITORY/issues?state=all&per_page=100" --jq length > /tmp/before
+      - uses: rbadillap/agent-plugins-validate@v1
+        with:
+          open-issues: true
+          manifests: test-fixtures/glob/*/plugin.json
+      - name: Issues after (must equal before; label must not exist)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          after=$(gh api "repos/$GITHUB_REPOSITORY/issues?state=all&per_page=100" --jq length)
+          echo "before=$(cat /tmp/before) after=$after"
+          test "$after" = "$(cat /tmp/before)"
+          gh api "repos/$GITHUB_REPOSITORY/labels?per_page=100" --jq '[.[].name]' 
+          if gh api "repos/$GITHUB_REPOSITORY/labels/agent-plugins-validate" >/dev/null 2>&1; then echo "label created"; exit 1; fi
