@@ -16,6 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: rbadillap/agent-plugins-validate@v1
+        id: validate
+      - name: Show summary and report (test only)
+        if: always()
+        run: |
+          echo "--- summary ---"; cat "$GITHUB_STEP_SUMMARY"
+          echo "--- outputs: valid=${{ steps.validate.outputs.valid }} findings=${{ steps.validate.outputs.findings }}"
+          echo "--- report ---"; cat "${{ steps.validate.outputs.report }}"
   # Pushes to main: may open an issue when a valid manifest breaks.
   validate-main:
     if: github.event_name == 'push'
