@@ -9,7 +9,7 @@ concurrency:
   group: agent-plugins-validate-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  # Pull requests: read-only; open-issues does nothing there.
+  # Pull requests: read-only. open-issues does nothing on pull requests, so it is off here.
   validate-pr:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
