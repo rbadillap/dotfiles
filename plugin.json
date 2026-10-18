@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "dot",
+  "version": "1.0.0",
+  "description": "How to use dot, the command that sets up a Mac from a dotfiles repo: clone repos, keep project secrets in 1Password, check logins, install apps and change macOS preferences.",
+  "author": {
+    "name": "Ronny Badilla",
+    "url": "https://github.com/rbadillap"
+  },
+  "homepage": "https://github.com/rbadillap/dotfiles",
+  "repository": "https://github.com/rbadillap/dotfiles",
+  "license": "MIT",
+  "keywords": ["cli", "dotfiles", "macos", "1password", "secrets", "homebrew"]
+}

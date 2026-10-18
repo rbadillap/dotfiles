@@ -55,6 +55,19 @@ npx skills add rbadillap/dotfiles --skill dot --global
 It asks which agents to install it for. `npx skills update` brings in a newer
 version after you change the skill.
 
+### As an Agent Plugin
+
+The repo root is also an [Agent Plugin](https://github.com/agentplugins/agent-plugins-spec/blob/v1.0.0/spec/1.0.0.md):
+`plugin.json` names it `dot` and the spec finds the skill in `skills/dot/`
+(§6.1, §7.1). A client that installs Agent Plugins can load it from the
+repo directly.
+
+A workflow, `.github/workflows/agent-plugins.yml`, checks `plugin.json`
+against the spec with
+[agent-plugins-validate](https://github.com/rbadillap/agent-plugins-validate)
+on every pull request and every push to `main`. When a manifest that was
+valid breaks on `main`, it opens an issue, and closes it once fixed.
+
 ## Claude Code hooks
 
 Claude Code (the CLI and the desktop app's Code tab) reads

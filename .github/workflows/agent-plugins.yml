@@ -1,0 +1,30 @@
+name: agent-plugins
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: agent-plugins-validate-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  # Pull requests: read-only; open-issues does nothing there.
+  validate-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: rbadillap/agent-plugins-validate@v1
+  # Pushes to main: may open an issue when a valid manifest breaks.
+  validate-main:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: rbadillap/agent-plugins-validate@v1
+        with:
+          open-issues: true
