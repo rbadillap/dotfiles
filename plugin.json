@@ -10,5 +10,5 @@
   "homepage": "https://github.com/rbadillap/dotfiles",
   "repository": "https://github.com/rbadillap/dotfiles",
   "license": "MIT",
-  "keywords": ["dotfiles", "macos", "1password", "secrets", "homebrew"]
+  "keywords": ["cli", "dotfiles", "macos", "1password", "secrets", "homebrew"]
 }
