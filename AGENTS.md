@@ -89,6 +89,8 @@ by its path, since the shell function only exists in interactive zsh.
 | `docs/`                  | the docs, one `.mdx` page per purpose                   |
 | `site/`                  | the docs site (Blume): config, landing page, `package.json` |
 | `skills/`                | Agent Skills for agents outside this repo (skills.sh layout) |
+| `plugin.json`            | the repo as an Agent Plugin (spec 1.0.0): the `dot` skill; bump `version` when the skill changes |
+| `.github/workflows/`     | CI: `agent-plugins.yml` validates `plugin.json` |
 
 `src/` is the engine. `config/` is what the owner wants on the Mac and holds
 nothing personal; `dot.toml` holds who they are (names, identities,
