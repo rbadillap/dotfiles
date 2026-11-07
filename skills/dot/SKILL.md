@@ -81,14 +81,13 @@ A preference with no setting yet means adding one to the repo: follow its
 - A token never goes into your shell: no `GH_TOKEN=$(gh auth token)`, no
   `export` of a token, no `op read` into a variable. Your output and
   transcripts are kept on disk.
-- When a child process needs the token (a script that calls the `gh` binary
-  itself, which doesn't inherit the shell function), hand it a 1Password
-  reference and let `op run` inject it into that process only. `op run` also
-  masks the value if the process prints it:
+- A project's secrets go through its `.env.schema` (`dot secret attach`).
+  Only when a one-off script needs a secret outside that, hand it a 1Password
+  reference and let `op run` inject the value into that process only. `op run`
+  also masks the value if the process prints it:
 
   ```sh
-  GH_TOKEN="op://Personal/GitHub Personal Access Token/token" \
-    op run -- bun run scripts/some-script.ts
+  API_KEY="op://<vault>/<item>/<field>" op run -- bun run scripts/some-script.ts
   ```
 
 - The first command that goes through `op` (`gh`, `vercel`, `op run`,

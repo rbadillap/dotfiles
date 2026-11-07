@@ -34,9 +34,10 @@ into one shell call instead of counting on a prompt per call;
 costs.
 
 An agent never puts a token in its own shell, because its output is kept on
-disk. When a script it runs needs the token, the agent passes a 1Password
-reference through `op run`, which injects the value into that process only
-and masks it in the output.
+disk. A project's secrets reach it through the project's `.env.schema`
+(`dot secret attach`); for a one-off script that needs a secret outside it,
+the agent passes a 1Password reference through `op run`, which injects the
+value into that process only and masks it in the output.
 
 On a clean Mac, an agent runs the installer with `--yes --no-apply`: it
 installs, stops after `dot check`, and shows you what `apply` would change.
