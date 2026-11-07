@@ -37,9 +37,9 @@ Agents and their scripts run `gh` and `vercel` as those tools' docs say.
 The shims from `op shim` come first on PATH and run them through 1Password's
 shell plugin, so any process gets the token, only for that command; the zsh
 functions 1Password generates would only reach an interactive shell. A token
-already in the environment is used, as the tool would, since it may be
-narrower than yours (a project's own token); the shim warns unless it came
-from 1Password or the project's `.env.schema`, and `gh auth login` or `vercel login` answers
+in the environment that 1Password didn't set, such as one a cloned repo's
+`.env` loads, is ignored with a message, so a repo can't change who `gh` acts
+as; and `gh auth login` or `vercel login` answers
 that the login lives in 1Password.
 
 An agent never puts a token in its own shell, because its output is kept on

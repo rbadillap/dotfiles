@@ -5,11 +5,11 @@
 # `op plugin run`, so the token goes into that process only.
 #
 # It never reads or prints a token's value: it only tests whether one is set.
-# A token already in the environment is used, as the CLI itself would: it may
-# be narrower than the one in 1Password (a project's own token). It warns on
-# stderr unless the token's origin is known: this shim (DOT_OP_SHIM, which
-# the CLI's own children inherit), an `op` that started it directly, or the
-# nearest .env.schema, where a project declares the token it injects.
+# A token already in the environment is used only when 1Password set it: this
+# shim (DOT_OP_SHIM, which the CLI's own children inherit, or set by hand next
+# to `op run`) or an `op` that started it directly. Any other token, such as
+# one a cloned repo's .env loads, is ignored with a message on stderr, and
+# 1Password's is used instead. Without the 1Password plugin it does nothing.
 set -euf
 name=${0##*/}
 case $name in
@@ -33,29 +33,24 @@ PATH=$path
 export PATH
 real=$(command -v "$name") || { echo "dot shim: $name isn't installed" >&2; exit 127; }
 
-token=
-for var in $vars; do
-  eval "[ -z \"\${$var:-}\" ]" || { token=$var; break; }
-done
-if [ -n "$token" ]; then
-  # The project's .env.schema: the first one from here up.
-  schema= dir=$PWD
-  while :; do
-    [ -f "$dir/.env.schema" ] && { schema=$dir/.env.schema; break; }
-    [ "$dir" = / ] && break
-    dir=$(dirname "$dir")
-  done
-  parent=$(ps -o comm= -p "$PPID")
-  if [ "${DOT_OP_SHIM:-}" != "$name" ] && [ "${parent##*/}" != op ] &&
-     ! { [ -n "$schema" ] && grep -Eq "^[[:space:]]*(export[[:space:]]+)?$token=" "$schema"; }; then
-    echo "dot shim: $token is set in the environment, not by 1Password or the project's .env.schema; $name uses it." >&2
-  fi
+# No 1Password plugin for this CLI: the shim has nothing to add.
+if [ ! -f "$HOME/.config/op/plugins/$name.json" ] || ! command -v op >/dev/null; then
   exec "$real" "$@"
 fi
 
-# No 1Password plugin for this CLI, or op already ran for this process tree
-# and set no token: run the real CLI as it is, never op again.
-if [ ! -f "$HOME/.config/op/plugins/$name.json" ] || [ "${DOT_OP_SHIM:-}" = "$name" ] || ! command -v op >/dev/null; then
+token=
+for var in $vars; do
+  eval "[ -z \"\${$var:-}\" ]" || token="${token:+$token, }$var"
+done
+parent=$(ps -o comm= -p "$PPID")
+if [ -n "$token" ]; then
+  if [ "${DOT_OP_SHIM:-}" = "$name" ] || [ "${parent##*/}" = op ]; then
+    exec "$real" "$@"
+  fi
+  echo "dot shim: ignoring $token: 1Password didn't set it, so $name uses your 1Password token." >&2
+  for var in $vars; do unset "$var"; done
+elif [ "${DOT_OP_SHIM:-}" = "$name" ]; then
+  # op already ran for this process tree and set no token: never call it again.
   exec "$real" "$@"
 fi
 

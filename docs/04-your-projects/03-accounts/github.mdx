@@ -113,11 +113,17 @@ What the shim does besides that:
 
 - `gh auth login`, `logout` and `refresh` stop with a message: the login
   lives in 1Password.
-- A token already in the environment (`GH_TOKEN`, `GITHUB_TOKEN`) is used,
-  as `gh` would: a project's own token, from its `.env.schema`, is usually
-  narrower than yours. The shim warns unless the token came from 1Password or
-  is declared in the project's `.env.schema`, so a stray `export` or a loaded
-  `.env` shows up.
+- A token in the environment (`GH_TOKEN`, `GITHUB_TOKEN`) that 1Password
+  didn't set is ignored with a message, and the token from 1Password is used:
+  a cloned repo's `.env`, or a stray `export`, can't change who `gh` acts as.
+  1Password set it when `op` starts `gh` directly (`op run -- gh …`) or when
+  `DOT_OP_SHIM=gh` comes with it. Set that by hand when `op run` starts a
+  script or a shell that then runs `gh`, since `gh`'s parent isn't `op` there:
+
+  ```sh
+  DOT_OP_SHIM=gh GH_TOKEN="op://<vault>/<item>/token" op run -- sh -c 'gh …'
+  ```
+
 - Messages go to stderr, so `gh … --jq` output stays clean.
 - Without the plugin (`op plugin init gh` not run), it runs `gh` unchanged.
 
