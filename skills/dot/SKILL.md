@@ -80,8 +80,10 @@ A preference with no setting yet means adding one to the repo: follow its
   reaches that process only. Don't call `op plugin run` yourself, and don't
   run `gh auth login` or `vercel login`: their login lives in 1Password, and
   the shim says so.
-- If the shim warns that a token is set in the environment, not by
-  1Password, stop and tell the human: something put it there.
+- A token in the environment that 1Password didn't set (`GH_TOKEN`,
+  `VERCEL_TOKEN`) is ignored, and the shim says so. If you see that message,
+  tell the human: something put a token there. Never set `DOT_OP_SHIM`
+  yourself to get past it.
 - A token never goes into your shell: no `GH_TOKEN=$(gh auth token)`, no
   `export` of a token, no `op read` into a variable. Your output and
   transcripts are kept on disk.

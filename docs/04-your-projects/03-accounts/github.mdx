@@ -113,8 +113,16 @@ What the shim does besides that:
 
 - `gh auth login`, `logout` and `refresh` stop with a message: the login
   lives in 1Password.
-- A token already set in the environment (`GH_TOKEN`, `GITHUB_TOKEN`) is
-  used as `gh` would, with a warning unless it came from 1Password.
+- A token in the environment (`GH_TOKEN`, `GITHUB_TOKEN`) that 1Password
+  didn't set, such as a stray `export` or a loaded `.env`, is ignored with a
+  message, and the token from 1Password is used. To use another token on
+  purpose, set `DOT_OP_SHIM=gh` next to it:
+
+  ```sh
+  DOT_OP_SHIM=gh GH_TOKEN="op://<vault>/<item>/token" op run -- ./script.sh
+  ```
+
+- Messages go to stderr, so `gh … --jq` output stays clean.
 - Without the plugin (`op plugin init gh` not run), it runs `gh` unchanged.
 
 Then add the `dotfiles` tag, keeping the one `op` added:
