@@ -1,0 +1,65 @@
+#!/bin/sh
+# A CLI whose token lives in 1Password, for every process, not only an
+# interactive zsh. `op shim <cli>` links it as ~/.local/share/dotfiles/shims/<cli>,
+# which config/shell/op.zsh puts first on PATH. It runs the real CLI through
+# `op plugin run`, so the token goes into that process only.
+#
+# It never reads or prints a token's value: it only tests whether one is set.
+# A token already in the environment is used, as the CLI itself would, with a
+# warning unless it came from 1Password: from this shim (DOT_OP_SHIM, which
+# the CLI's own children inherit) or from an `op` that started it directly.
+set -euf
+name=${0##*/}
+case $name in
+  gh)     vars="GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN GITHUB_ENTERPRISE_TOKEN" logins="auth login|auth logout|auth refresh" ;;
+  vercel) vars="VERCEL_TOKEN" logins="login|logout" ;;
+  *) echo "dot shim: no shim for '$name'" >&2; exit 2 ;;
+esac
+
+# PATH without this shim (compared by file, so any link to it counts), so the
+# lookup below and op both find the real CLI and never this script again.
+self=$(stat -L -f %d:%i "$0")
+path=
+IFS=:
+for dir in ${PATH:-}; do
+  [ -n "$dir" ] || continue
+  [ -e "$dir/$name" ] && [ "$(stat -L -f %d:%i "$dir/$name")" = "$self" ] && continue
+  path=${path:+$path:}$dir
+done
+unset IFS
+PATH=$path
+export PATH
+real=$(command -v "$name") || { echo "dot shim: $name isn't installed" >&2; exit 127; }
+
+token=
+for var in $vars; do
+  eval "[ -z \"\${$var:-}\" ]" || token=$var
+done
+if [ -n "$token" ]; then
+  if [ "${DOT_OP_SHIM:-}" != "$name" ] && [ "$(ps -o comm= -p "$PPID")" != op ]; then
+    echo "dot shim: $token is set in the environment, not by 1Password; $name uses it" >&2
+  fi
+  exec "$real" "$@"
+fi
+
+# No 1Password plugin for this CLI, or op already ran for this process tree
+# and set no token: run the real CLI as it is, never op again.
+if [ ! -f "$HOME/.config/op/plugins/$name.json" ] || [ "${DOT_OP_SHIM:-}" = "$name" ] || ! command -v op >/dev/null; then
+  exec "$real" "$@"
+fi
+
+# Its login lives in 1Password, so the CLI's own login can't work here.
+args="$* "
+IFS='|'
+for login in $logins; do
+  case $args in "$login "*)
+    echo "dot shim: $name's login lives in 1Password (op plugin init $name); '$name $login' doesn't apply." >&2
+    echo "dot shim: check it with 'dot auth status'." >&2
+    exit 1 ;;
+  esac
+done
+unset IFS
+
+DOT_OP_SHIM=$name
+export DOT_OP_SHIM
+exec op plugin run -- "$name" "$@"

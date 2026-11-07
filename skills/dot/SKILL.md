@@ -75,9 +75,13 @@ A preference with no setting yet means adding one to the repo: follow its
 
 ## 1Password and Touch ID
 
-- Tokens reach CLIs only through 1Password shell plugins: `gh` and `vercel`
-  run as `op plugin run -- gh …`. In an interactive shell `gh` may already be
-  that plugin; in a script, call `op plugin run -- gh` explicitly.
+- Use `gh` and `vercel` as their own docs say, from any shell or script: a
+  shim first on PATH runs them through 1Password's shell plugin, so the token
+  reaches that process only. Don't call `op plugin run` yourself, and don't
+  run `gh auth login` or `vercel login`: their login lives in 1Password, and
+  the shim says so.
+- If the shim warns that a token is set in the environment, not by
+  1Password, stop and tell the human: something put it there.
 - A token never goes into your shell: no `GH_TOKEN=$(gh auth token)`, no
   `export` of a token, no `op read` into a variable. Your output and
   transcripts are kept on disk.

@@ -52,8 +52,9 @@ It asks three things:
    this token everywhere. It's the third option: the list starts on *Prompt
    me for each new terminal session*, so move down before pressing Enter.
 3. It finishes by printing a command that adds a line to `~/.zshrc`. Skip it:
-   `config/shell/op.zsh` already loads the plugins ([Shell and terminal](../../03-your-mac/04-shell-and-terminal.mdx)).
-   Open a new terminal instead, so the plugin is active.
+   `op shim vercel` puts a shim first on PATH, so every process runs
+   `vercel` through the plugin ([GitHub](./github.mdx), step 4, explains how
+   it works). Run `dot apply shell` if you haven't, and open a new terminal.
 
 If you choose another scope, 1Password saves the token but `vercel` doesn't
 use it outside that scope, and `vercel whoami` answers "Logged out". Run
@@ -114,12 +115,11 @@ It prints `{"token": "…"}` and saves nothing. In a project that uses
 
 ```sh
 # @sensitive
-VERCEL_OIDC_TOKEN=exec(`op plugin run -- vercel project token <name> --scope <team> --json | jq -r .token`)
+VERCEL_OIDC_TOKEN=exec(`vercel project token <name> --scope <team> --json | jq -r .token`)
 ```
 
-- `op plugin run -- vercel`, not `vercel`: the plugin's `vercel` function only
-  exists in interactive zsh, and Varlock runs the command in another shell.
-  Without the plugin, `vercel` has no token and starts a login of its own.
+- Varlock runs the command in another shell; the shim gives that `vercel`
+  its token too.
 - The token is for the *development* environment: whatever it reaches (a Blob
   store, for example) must be connected to the project for Development too,
   or the request is denied.
@@ -149,7 +149,7 @@ honors it:
 | Time             | a few minutes to create the token; per Mac: under a minute (`op plugin init` took 36 s) | not measured |
 | Browser          | once, to create the token                   | on every Mac      |
 | 2FA              | once, when creating the token, if asked     | on every Mac, if asked |
-| Per machine      | `op plugin init vercel` (the shell line comes from `dot apply shell`) | the whole login   |
+| Per machine      | `op plugin init vercel` (the shim comes from `dot apply shell`) | the whole login   |
 | Expires          | as set when creating the token              | when Vercel ends the session |
 | Secret on disk   | no                                          | yes, in the CLI's config folder |
 | Touch ID         | once per terminal session (each agent command is usually one) | never |

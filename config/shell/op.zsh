@@ -1,3 +1,5 @@
-# 1Password shell plugins: CLIs such as gh get their tokens from 1Password,
-# after Touch ID. `op plugin init <cli>` writes the aliases to this file.
-[[ -f ~/.config/op/plugins.sh ]] && source ~/.config/op/plugins.sh
+# 1Password shell plugins: gh and vercel get their tokens from 1Password. The
+# shims from `op shim` (config/shell.conf) come first on PATH, so every
+# process finds them; `op plugin init` also writes ~/.config/op/plugins.sh,
+# which isn't loaded: its functions would only reach this shell.
+[[ -d ~/.local/share/dotfiles/shims ]] && path=(~/.local/share/dotfiles/shims $path)
