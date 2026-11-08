@@ -48,6 +48,10 @@ Credential tagged `dotfiles`, and prints its reference,
 argument or a file, so it's not in your shell history or the process list.
 It refuses a name that already exists.
 
+Copy the value from your usual browser. A browser built into another app,
+such as an agent's, doesn't always copy to the macOS clipboard, so `pbpaste`
+can come back empty, or with something older.
+
 ```sh
 dot secret list                   # names, dates and references; never values
 dot secret update myapp-payments  # a new value, same reference
