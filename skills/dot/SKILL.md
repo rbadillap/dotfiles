@@ -37,7 +37,7 @@ Run freely (they change nothing and never ask for Touch ID):
 
 Ask first:
 
-- `dot apply`, `dot upgrade`, and anything with `sudo`.
+- `dot apply`, `dot update`, `dot upgrade`, and anything with `sudo`.
 - `dot clone` and `dot fork`: they write to `~/code` (and `fork` creates a
   repo on GitHub).
 - `dot conf restore`: it replaces `dot.toml`.
@@ -60,7 +60,7 @@ The human's step, never yours:
 | Check that a login works (1Password, GitHub, SSH, Vercel, AWS) | `dot auth status` | `gh auth login`, `vercel login` |
 | Install an app, font or command-line tool | a `brew cask <name>` or `brew formula <name>` line in the right `config/*.conf`, then `dot apply <file>` (ask) | `brew install` by hand |
 | Change a macOS preference | a line in `config/<topic>.conf` (see `dot explain <topic>`), then `dot apply <topic>` (ask) | `defaults write` by hand |
-| Pull the latest dotfiles | `dot update` (pulls, then runs `check`; never applies) | `git pull` in the repo and stopping there |
+| Pull the latest dotfiles | `dot update` (pulls, moves the live copy at `~/.local/share/dotfiles/live` to main, then runs `check`; never applies; ask first) | `git pull` in the repo and stopping there, or editing files in the live copy |
 
 A preference with no setting yet means adding one to the repo: follow its
 `AGENTS.md`.
