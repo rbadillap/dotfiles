@@ -37,7 +37,9 @@ by its path, since the shell function only exists in interactive zsh.
   whatever its name (Personal, Private or Employee). Project secrets are the
   exception: `dot secret` uses the vault named under `[secrets]` in
   `dot.toml`.
-- Never read or print private keys, tokens or secret values. Public keys come
+- Never read or print private keys, tokens or secret values. That includes
+  the service account credential in the keychain (`dotfiles-op-agents`):
+  only the shim reads it, straight into `op run`'s environment. Public keys come
   from 1Password's agent (`ssh_pubkey`); tokens reach CLIs only through
   1Password shell plugins; a project secret's value only travels through
   pipes (`dot secret`), never an argument, a file or the output. Creating or
@@ -131,6 +133,7 @@ always writes its own `dot.toml`.
 | Change a language or tool version | `config/home/.config/mise/config.toml` (global); docs/03-your-mac/06-languages.mdx |
 | Add something to the shell         | `config/shell/<topic>.zsh`                            |
 | Give every process a CLI's 1Password token | `op shim <cli>` in `config/shell.conf`; a new CLI also needs its case (token variables, login commands) in `src/shims/op-plugin` and in `op_shim` |
+| Limit what agents can do on GitHub | `agent_token` under `[github]` in `dot.toml` (a reference in the Agents vault), applied by `op agent-token gh $github.*`; the service account's credential is in the keychain (`dotfiles-op-agents`), stored by the human; docs/04-your-projects/03-accounts/github.mdx |
 | Add a personal value (names, …)    | `dot.toml` (real) and `dot.toml.example` (placeholder) |
 | Add a personal collection (identities, organizations…) | one table each in `dot.toml`, commented out in `dot.toml.example`, and a setting that takes `$<path>.*` |
 | Show what a line refers to in `dot explain` | `explain_<topic>_<setting>` in `src/lib/<tool>.sh` |

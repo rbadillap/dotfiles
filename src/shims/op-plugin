@@ -10,11 +10,22 @@
 # to `op run`) or an `op` that started it directly. Any other token, such as
 # one a cloned repo's .env loads, is ignored with a message on stderr, and
 # 1Password's is used instead. Without the 1Password plugin it does nothing.
+#
+# Which token: a person at a terminal (stdin or stderr is one, and no agent's
+# variable is set) gets the plugin's, the personal one, after 1Password's
+# approval. Anything else (an agent, a script without a terminal, launchd)
+# gets the agent token when `op agent-token` set one up: `op run` reads it
+# with a 1Password service account that can only read that vault, whose
+# credential lives in the macOS keychain (service dotfiles-op-agents), so it
+# asks no one. If any of that fails, the command fails: it never falls back
+# to the personal token or to an approval prompt.
 set -euf
+# Only this shim decides which 1Password account op uses.
+unset OP_SERVICE_ACCOUNT_TOKEN OP_CONNECT_HOST OP_CONNECT_TOKEN
 name=${0##*/}
 case $name in
-  gh)     vars="GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN GITHUB_ENTERPRISE_TOKEN" logins="auth login|auth logout|auth refresh" ;;
-  vercel) vars="VERCEL_TOKEN" logins="login|logout" ;;
+  gh)     agentvar=GH_TOKEN vars="GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN GITHUB_ENTERPRISE_TOKEN" logins="auth login|auth logout|auth refresh" ;;
+  vercel) agentvar=VERCEL_TOKEN vars="VERCEL_TOKEN" logins="login|logout" ;;
   *) echo "dot shim: no shim for '$name'" >&2; exit 2 ;;
 esac
 
@@ -47,7 +58,7 @@ if [ -n "$token" ]; then
   if [ "${DOT_OP_SHIM:-}" = "$name" ] || [ "${parent##*/}" = op ]; then
     exec "$real" "$@"
   fi
-  echo "dot shim: ignoring $token: 1Password didn't set it, so $name uses your 1Password token." >&2
+  echo "dot shim: ignoring $token: 1Password didn't set it, so $name uses one from 1Password." >&2
   for var in $vars; do unset "$var"; done
 elif [ "${DOT_OP_SHIM:-}" = "$name" ]; then
   # op already ran for this process tree and set no token: never call it again.
@@ -68,4 +79,39 @@ unset IFS
 
 DOT_OP_SHIM=$name
 export DOT_OP_SHIM
+
+# Agent tokens, once set up (`op agent-token`): a 1Password reference per
+# CLI, not a value. From then on an agent never gets the personal token: a
+# CLI without an agent token of its own fails for agents.
+tokens=$HOME/.local/share/dotfiles/agent-tokens/$name
+if [ -d "${tokens%/*}" ]; then
+  person=
+  if { [ -t 0 ] || [ -t 2 ]; } && [ -z "${AI_AGENT:-}${CLAUDECODE:-}${CODEX_SANDBOX:-}${CURSOR_AGENT:-}${GEMINI_CLI:-}" ]; then
+    person=1
+  fi
+  if [ -z "$person" ]; then
+    [ -e "$tokens" ] || {
+      echo "dot shim: no agent token for $name; agents never get your personal one. Run it from your terminal." >&2
+      exit 1
+    }
+    ref=$(grep -m 1 '^op://' "$tokens" 2>/dev/null) || {
+      echo "dot shim: no agent token reference in $tokens; not falling back to your personal token." >&2
+      exit 1
+    }
+    # The service account's credential goes only into op run's environment;
+    # env -u keeps it from $name and its children.
+    sa=$(/usr/bin/security find-generic-password -s dotfiles-op-agents -a "${USER:-$(id -un)}" -w 2>/dev/null) && [ -n "$sa" ] || {
+      echo "dot shim: no 1Password service account credential in the keychain (dotfiles-op-agents); not falling back to your personal token." >&2
+      exit 1
+    }
+    eval "$agentvar=\$ref"
+    export "$agentvar"
+    OP_SERVICE_ACCOUNT_TOKEN=$sa
+    unset sa
+    export OP_SERVICE_ACCOUNT_TOKEN
+    # op run also masks the agent token if the command prints it (gh auth token).
+    exec op run -- env -u OP_SERVICE_ACCOUNT_TOKEN "$name" "$@"
+  fi
+fi
+
 exec op plugin run -- "$name" "$@"

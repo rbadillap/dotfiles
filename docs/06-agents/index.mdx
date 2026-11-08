@@ -42,6 +42,13 @@ in the environment that 1Password didn't set, such as one a cloned repo's
 as; and `gh auth login` or `vercel login` answers
 that the login lives in 1Password.
 
+With an agent token set up ([GitHub](../04-your-projects/03-accounts/github.mdx)),
+an agent's `gh` gets a token limited to the repos it works on, never yours.
+A 1Password service account that can only read the Agents vault fetches it,
+so the agent's calls ask you nothing; if that fails, the command fails.
+`vercel`, which has no agent token, fails for agents and works only from
+your terminal.
+
 An agent never puts a token in its own shell, because its output is kept on
 disk. A project's secrets reach it through the project's `.env.schema`
 (`dot secret attach`); for a one-off script that needs a secret outside it,

@@ -14,3 +14,33 @@ op_shim() {
   lines=$(grep -n 'op/plugins\.sh' "$HOME/.zshrc" 2>/dev/null | cut -d: -f1 | paste -sd, - | sed 's/,/, /g')
   [ -z "$lines" ] || note "~/.zshrc line(s) $lines load ~/.config/op/plugins.sh, whose $1 function is a second path the shim makes unneeded: delete them"
 }
+
+# op agent-token <gh> $github.*   an agent, or any process without a person at
+# a terminal, runs gh with this token instead of the personal one, with no
+# approval prompt: agent_token under [github] in dot.toml, a 1Password
+# reference (op://Agents/<item>/<field>) to a token limited to the repos
+# agents work on. A 1Password service account that can only read that vault
+# fetches it; its credential is in the macOS keychain (service
+# dotfiles-op-agents, account $USER), stored by you. The reference is kept in
+# ~/.local/share/dotfiles/agent-tokens/gh, which the shim reads; if anything
+# fails, the command fails, never falling back to the personal token.
+op_agent_token() {
+  [ "$1" = gh ] || { fail "op agent-token: only gh is supported, got '$1'"; return; }
+  file=$HOME/.local/share/dotfiles/agent-tokens/$1
+  if ! ref=$(conf_get "$2.agent_token"); then
+    note "no agent_token under [$2] in dot.toml: agents use your personal token"
+    [ ! -e "$file" ] || note "$(printf %s "$file" | sed "s#^$HOME#~#") still sets one; delete it to stop using it"
+    return 0
+  fi
+  case $ref in
+    *[!A-Za-z0-9\ ._/:-]*) fail "op agent-token: $2.agent_token has characters a 1Password reference doesn't, got '$ref'"; return ;;
+    op://?*/?*/?*) ;;
+    *) fail "op agent-token: $2.agent_token must be op://<vault>/<item>/<field>, got '$ref'"; return ;;
+  esac
+  file_managed_block "$file" 600 "# >>> $1 agent token: managed by dot apply op
+$ref
+# <<< $1 agent token"
+  # Attributes only, never the secret: no prompt, no Touch ID.
+  /usr/bin/security find-generic-password -s dotfiles-op-agents -a "${USER:-$(id -un)}" >/dev/null 2>&1 ||
+    fail "op agent-token: no service account credential in the keychain; store it with: security add-generic-password -s dotfiles-op-agents -a \"\$USER\" -w (it asks for the value)"
+}

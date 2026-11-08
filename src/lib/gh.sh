@@ -1,10 +1,17 @@
 # GitHub account settings via gh(1). Sourced by dot.
 
-# ghx <args>: gh, through 1Password's shell plugin when that's where its token
-# lives. May ask for Touch ID.
+# ghx <args>: gh through the shim from `op shim gh`, which picks the token (an
+# agent gets the agent token); before the shim exists, through 1Password's
+# shell plugin when that's where its token lives. May ask for Touch ID.
 ghx() {
+  if [ -x "$HOME/.local/share/dotfiles/shims/gh" ]; then
+    "$HOME/.local/share/dotfiles/shims/gh" "$@"
   # `op plugin inspect` needs a terminal, so detect the plugin by its config file.
-  if [ -f "$HOME/.config/op/plugins/gh.json" ]; then DOT_OP_SHIM=gh op plugin run -- gh "$@"; else gh "$@"; fi
+  elif [ -f "$HOME/.config/op/plugins/gh.json" ]; then
+    DOT_OP_SHIM=gh op plugin run -- gh "$@"
+  else
+    gh "$@"
+  fi
 }
 
 # gh_ssh_key <user> <authentication|signing> <public key> <title>
