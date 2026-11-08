@@ -154,8 +154,11 @@ fetches it without asking anyone.
 1. Create a fine-grained token at
    [github.com/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens/new):
    *Only select repositories*, with the repos agents work on. Repository
-   permissions: Contents, Issues and Pull requests *Read and write*; Actions
-   *Read-only* (Metadata comes with it). No Administration or Workflows.
+   permissions: Issues and Pull requests *Read and write*; Contents and
+   Actions *Read-only* (Metadata comes with it). No Administration or
+   Workflows. Contents stays read-only so an agent can't merge: a token acts
+   as you, admin included. Agents push branches over SSH, open pull
+   requests, and you merge them.
 2. In 1Password, create a vault named **Agents** that holds only this token:
    an API Credential named "GitHub Agent Token", with the token in a field
    named `token` and the tag `dotfiles`.
