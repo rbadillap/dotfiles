@@ -85,6 +85,10 @@ A preference with no setting yet means adding one to the repo: follow its
   stderr; `gh` then uses the human's token from 1Password. The message is
   information, not an error. If a `gh` command needs the project's token on
   purpose, ask the human to authorize it. Never set `DOT_OP_SHIM` yourself.
+- Your `gh` may run with an agent token limited to some repos. A 403 or 404
+  on a repo outside them is that limit working: tell the human and let them
+  run it from their terminal. Never reach for their token (`op plugin run`,
+  `op read`) to get past it.
 - A token never goes into your shell: no `GH_TOKEN=$(gh auth token)`, no
   `export` of a token, no `op read` into a variable. Your output and
   transcripts are kept on disk.

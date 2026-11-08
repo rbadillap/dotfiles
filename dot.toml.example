@@ -16,6 +16,9 @@ email = "you@example.com"
 
 [github]
 user = "your-username"
+# A token limited to the repos your agents work on, as a 1Password reference:
+# agents use it instead of your personal one (op agent-token).
+# agent_token = "op://Personal/GitHub Agent Token/token"
 
 [varlock]
 # Varlock's anonymous usage analytics: enable or disable.

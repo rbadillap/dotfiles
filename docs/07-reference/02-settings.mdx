@@ -39,6 +39,7 @@ file can mix topics (`config/windows.conf` holds `hammerspoon …` and
 | `mouse`     | `natural-scrolling` | `true`, `false`; macOS applies it to the trackpad too |
 | `screenshot` | `save-to`         | `clipboard`, `desktop` (macOS default), `preview`: where ⌘⇧3 and ⌘⇧4 send it |
 | `op`        | `shim`              | `gh`, `vercel`: every process runs it through 1Password's shell plugin |
+| `op`        | `agent-token`       | `gh $github.*`: agents, and processes without a terminal, use `github.agent_token` instead of your token |
 | `shell`     | `init`              | `zsh`: the managed block in `~/.zshrc`           |
 | `ssh`       | `agent`             | `1password`                                      |
 | `system`    | `hostname`          | letters, digits, hyphens; sets all three macOS names (sudo) |

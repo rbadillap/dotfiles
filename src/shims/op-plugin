@@ -10,11 +10,17 @@
 # to `op run`) or an `op` that started it directly. Any other token, such as
 # one a cloned repo's .env loads, is ignored with a message on stderr, and
 # 1Password's is used instead. Without the 1Password plugin it does nothing.
+#
+# Which token: a person at a terminal (stdin or stderr is one, and no agent's
+# variable is set) gets the plugin's, the personal one. Anything else (an
+# agent, a script without a terminal, launchd) gets the agent token when
+# `op agent-token` set one up, through `op run`; if that fails, the command
+# fails, and it never falls back to the personal token.
 set -euf
 name=${0##*/}
 case $name in
-  gh)     vars="GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN GITHUB_ENTERPRISE_TOKEN" logins="auth login|auth logout|auth refresh" ;;
-  vercel) vars="VERCEL_TOKEN" logins="login|logout" ;;
+  gh)     agentvar=GH_TOKEN vars="GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN GITHUB_ENTERPRISE_TOKEN" logins="auth login|auth logout|auth refresh" ;;
+  vercel) agentvar=VERCEL_TOKEN vars="VERCEL_TOKEN" logins="login|logout" ;;
   *) echo "dot shim: no shim for '$name'" >&2; exit 2 ;;
 esac
 
@@ -47,7 +53,7 @@ if [ -n "$token" ]; then
   if [ "${DOT_OP_SHIM:-}" = "$name" ] || [ "${parent##*/}" = op ]; then
     exec "$real" "$@"
   fi
-  echo "dot shim: ignoring $token: 1Password didn't set it, so $name uses your 1Password token." >&2
+  echo "dot shim: ignoring $token: 1Password didn't set it, so $name uses one from 1Password." >&2
   for var in $vars; do unset "$var"; done
 elif [ "${DOT_OP_SHIM:-}" = "$name" ]; then
   # op already ran for this process tree and set no token: never call it again.
@@ -68,4 +74,24 @@ unset IFS
 
 DOT_OP_SHIM=$name
 export DOT_OP_SHIM
+
+# The agent token, when set up: a 1Password reference, not a value.
+tokens=$HOME/.local/share/dotfiles/agent-tokens/$name
+if [ -e "$tokens" ]; then
+  person=
+  if { [ -t 0 ] || [ -t 2 ]; } && [ -z "${AI_AGENT:-}${CLAUDECODE:-}${CODEX_SANDBOX:-}${CURSOR_AGENT:-}${GEMINI_CLI:-}" ]; then
+    person=1
+  fi
+  if [ -z "$person" ]; then
+    ref=$(grep -m 1 '^op://' "$tokens" 2>/dev/null) || {
+      echo "dot shim: no agent token reference in $tokens; not falling back to your personal token." >&2
+      exit 1
+    }
+    # op run also masks the value if the command prints it (gh auth token).
+    eval "$agentvar=\$ref"
+    export "$agentvar"
+    exec op run -- "$name" "$@"
+  fi
+fi
+
 exec op plugin run -- "$name" "$@"

@@ -33,6 +33,7 @@ Commented out in `dot.toml.example`, ready to copy.
 |-------------------------|-----------------------------------------------|---------|
 | `[git.identity.<label>]` | `dir`, `name`, `email`                       | `git identities` ([Git and signing](../03-your-mac/07-git-and-signing.mdx)) |
 | `[secrets]`             | `vault`                                       | `dot secret` ([Secrets](../04-your-projects/02-secrets/index.mdx)) |
+| `[github]`              | `agent_token`: a 1Password reference          | `op agent-token`: agents use it instead of your token ([GitHub](../04-your-projects/03-accounts/github.mdx)) |
 | `[aws.<org>]`           | `start_url`, `region`, `account`, `role`      | `aws sso`, the profile `<org>` ([AWS](../04-your-projects/03-accounts/aws.mdx)) |
 | `[aws.<org>.<name>]`    | `role`, and `account` or `region` to override | the profile `<org>-<name>` |
 

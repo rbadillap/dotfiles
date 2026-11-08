@@ -143,6 +143,49 @@ It asks for Touch ID, then shows you logged in to github.com with the token
 from `GH_TOKEN`. That variable is set by the plugin for that single command;
 nothing is written to disk.
 
+## 6. A token for agents (optional)
+
+Your token can do everything you can. An agent, or a script nobody watches,
+can get a second token that reaches only the repos it works on.
+
+1. Create a fine-grained token at
+   [github.com/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens/new):
+   *Only select repositories*, with the repos agents work on. Repository
+   permissions: Contents, Issues and Pull requests *Read and write*; Actions
+   *Read-only* (Metadata comes with it). No Administration or Workflows.
+2. Save it in 1Password as an API Credential named "GitHub Agent Token", in
+   your built-in personal vault, with the token in a field named `token` and
+   the tag `dotfiles`.
+3. Add its reference to `dot.toml`, under `[github]`:
+
+   ```toml
+   agent_token = "op://Personal/GitHub Agent Token/token"
+   ```
+
+4. Apply it:
+
+   ```sh
+   dot apply shell
+   ```
+
+`op agent-token gh $github.*` keeps the reference in
+`~/.local/share/dotfiles/agent-tokens/gh`. From then on, the shim picks the
+token by who runs `gh`:
+
+| Who runs `gh`                                         | Token |
+|-------------------------------------------------------|-------|
+| You, in a terminal (stdin or stderr is one)           | yours, through the plugin |
+| An agent (`AI_AGENT`, `CLAUDECODE`, `CODEX_SANDBOX`, `CURSOR_AGENT` or `GEMINI_CLI` set), even in a terminal | the agent token, through `op run` |
+| A script without a terminal, launchd                  | the agent token |
+
+If the agent token fails (the item is gone, 1Password says no), the command
+fails: it never falls back to yours. Run what needs your token, such as
+`dot apply github` or creating a repo, from your terminal.
+
+This sets a safer default, not a wall: a process that runs as you can still
+reach your token, through `op plugin run` or by editing those files, behind
+1Password's approval. The token's own limits are what GitHub enforces.
+
 ## Friction
 
 | Criterion        | Token in 1Password                          | Interactive login |
