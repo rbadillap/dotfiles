@@ -32,5 +32,5 @@ link() {
     ln -s "$src" "$target"
     DOT_CHANGED=1
   fi
-  changed "$(printf %s "$target" | sed "s#^$HOME#~#")" "$have" "link to repo $1"
+  changed "$(printf %s "$target" | sed "s#^$HOME#~#")" "$have" "link to live copy $1"
 }
