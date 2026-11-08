@@ -78,10 +78,24 @@ A preference with no setting yet means adding one to the repo: follow its
 - Tokens reach CLIs only through 1Password shell plugins: `gh` and `vercel`
   run as `op plugin run -- gh …`. In an interactive shell `gh` may already be
   that plugin; in a script, call `op plugin run -- gh` explicitly.
-- Each shell you start is a new 1Password session, and the first command in
-  it that goes through `op` (`gh`, `vercel`, `dot auth status`, `dot fork`,
-  `dot secret`, `dot conf`) asks the human for Touch ID. Batch those commands
-  into one shell call instead of one call each.
+- A token never goes into your shell: no `GH_TOKEN=$(gh auth token)`, no
+  `export` of a token, no `op read` into a variable. Your output and
+  transcripts are kept on disk.
+- A project's secrets go through its `.env.schema` (`dot secret attach`).
+  Only when a one-off script needs a secret outside that, hand it a 1Password
+  reference and let `op run` inject the value into that process only. `op run`
+  also masks the value if the process prints it:
+
+  ```sh
+  API_KEY="op://<vault>/<item>/<field>" op run -- bun run scripts/some-script.ts
+  ```
+
+- The first command that goes through `op` (`gh`, `vercel`, `op run`,
+  `dot auth status`, `dot fork`, `dot secret`, `dot conf`) may ask the human
+  to authorize the app you run in. That approval covers the app for a while,
+  not one command, so it is no proof the human saw each call. Keep `gh` calls
+  together in one shell call and don't fan them out across parallel agents.
+- If an approval times out, stop and report. Never retry in a loop.
 - Commits are signed through 1Password. Never bypass signing; if it fails,
   stop and ask.
 - Never read or print a token, private key or secret value, and never show
