@@ -12,11 +12,16 @@
 # 1Password's is used instead. Without the 1Password plugin it does nothing.
 #
 # Which token: a person at a terminal (stdin or stderr is one, and no agent's
-# variable is set) gets the plugin's, the personal one. Anything else (an
-# agent, a script without a terminal, launchd) gets the agent token when
-# `op agent-token` set one up, through `op run`; if that fails, the command
-# fails, and it never falls back to the personal token.
+# variable is set) gets the plugin's, the personal one, after 1Password's
+# approval. Anything else (an agent, a script without a terminal, launchd)
+# gets the agent token when `op agent-token` set one up: `op run` reads it
+# with a 1Password service account that can only read that vault, whose
+# credential lives in the macOS keychain (service dotfiles-op-agents), so it
+# asks no one. If any of that fails, the command fails: it never falls back
+# to the personal token or to an approval prompt.
 set -euf
+# Only this shim decides which 1Password account op uses.
+unset OP_SERVICE_ACCOUNT_TOKEN OP_CONNECT_HOST OP_CONNECT_TOKEN
 name=${0##*/}
 case $name in
   gh)     agentvar=GH_TOKEN vars="GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN GITHUB_ENTERPRISE_TOKEN" logins="auth login|auth logout|auth refresh" ;;
@@ -87,10 +92,19 @@ if [ -e "$tokens" ]; then
       echo "dot shim: no agent token reference in $tokens; not falling back to your personal token." >&2
       exit 1
     }
-    # op run also masks the value if the command prints it (gh auth token).
+    # The service account's credential goes only into op run's environment;
+    # env -u keeps it from $name and its children.
+    sa=$(/usr/bin/security find-generic-password -s dotfiles-op-agents -a "${USER:-$(id -un)}" -w 2>/dev/null) && [ -n "$sa" ] || {
+      echo "dot shim: no 1Password service account credential in the keychain (dotfiles-op-agents); not falling back to your personal token." >&2
+      exit 1
+    }
     eval "$agentvar=\$ref"
     export "$agentvar"
-    exec op run -- "$name" "$@"
+    OP_SERVICE_ACCOUNT_TOKEN=$sa
+    unset sa
+    export OP_SERVICE_ACCOUNT_TOKEN
+    # op run also masks the agent token if the command prints it (gh auth token).
+    exec op run -- env -u OP_SERVICE_ACCOUNT_TOKEN "$name" "$@"
   fi
 fi
 

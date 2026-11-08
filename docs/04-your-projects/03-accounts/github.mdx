@@ -145,46 +145,62 @@ nothing is written to disk.
 
 ## 6. A token for agents (optional)
 
-Your token can do everything you can. An agent, or a script nobody watches,
-can get a second token that reaches only the repos it works on.
+Your token can do everything you can, and an agent that goes through it asks
+for 1Password's approval on every call, until approving becomes a reflex. An
+agent, or a script nobody watches, can get a second token instead: it
+reaches only the repos agents work on, and a 1Password service account
+fetches it without asking anyone.
 
 1. Create a fine-grained token at
    [github.com/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens/new):
    *Only select repositories*, with the repos agents work on. Repository
    permissions: Contents, Issues and Pull requests *Read and write*; Actions
    *Read-only* (Metadata comes with it). No Administration or Workflows.
-2. Save it in 1Password as an API Credential named "GitHub Agent Token", in
-   your built-in personal vault, with the token in a field named `token` and
-   the tag `dotfiles`.
-3. Add its reference to `dot.toml`, under `[github]`:
+2. In 1Password, create a vault named **Agents** that holds only this token:
+   an API Credential named "GitHub Agent Token", with the token in a field
+   named `token` and the tag `dotfiles`.
+3. Create a [service account](https://developer.1password.com/docs/service-accounts/)
+   with read access to the Agents vault and nothing else, and store its
+   credential in your macOS keychain. The command asks for the value, so it
+   never lands in your shell history or on disk in the clear:
 
-   ```toml
-   agent_token = "op://Personal/GitHub Agent Token/token"
+   ```sh
+   security add-generic-password -s dotfiles-op-agents -a "$USER" -w
    ```
 
-4. Apply it:
+4. Add the token's reference to `dot.toml`, under `[github]`, and apply:
+
+   ```toml
+   agent_token = "op://Agents/GitHub Agent Token/token"
+   ```
 
    ```sh
    dot apply shell
    ```
 
 `op agent-token gh $github.*` keeps the reference in
-`~/.local/share/dotfiles/agent-tokens/gh`. From then on, the shim picks the
-token by who runs `gh`:
+`~/.local/share/dotfiles/agent-tokens/gh`, and `dot check` says when the
+keychain has no credential. From then on, the shim picks the token by who
+runs `gh`:
 
 | Who runs `gh`                                         | Token |
 |-------------------------------------------------------|-------|
-| You, in a terminal (stdin or stderr is one)           | yours, through the plugin |
-| An agent (`AI_AGENT`, `CLAUDECODE`, `CODEX_SANDBOX`, `CURSOR_AGENT` or `GEMINI_CLI` set), even in a terminal | the agent token, through `op run` |
+| You, in a terminal (stdin or stderr is one)           | yours, through the plugin, after 1Password's approval |
+| An agent (`AI_AGENT`, `CLAUDECODE`, `CODEX_SANDBOX`, `CURSOR_AGENT` or `GEMINI_CLI` set), even in a terminal | the agent token, read by the service account: no prompt |
 | A script without a terminal, launchd                  | the agent token |
 
-If the agent token fails (the item is gone, 1Password says no), the command
-fails: it never falls back to yours. Run what needs your token, such as
+The service account's credential goes only into `op run`, never into `gh`
+or what `gh` starts. If anything fails (no credential in the keychain, the
+service account or the item is gone), the command fails: it never falls back
+to your token or to an approval prompt. Run what needs your token, such as
 `dot apply github` or creating a repo, from your terminal.
 
-This sets a safer default, not a wall: a process that runs as you can still
-reach your token, through `op plugin run` or by editing those files, behind
-1Password's approval. The token's own limits are what GitHub enforces.
+This sets a safer default, not a wall. A process that runs as you can read
+the keychain item (`security` hands it over without asking) or reach your
+token through `op plugin run`. What a leaked credential reaches is what you
+gave it: the Agents vault, so the agent token, and through it the listed
+repos. If it leaks, revoke the service account and the token, and create new
+ones.
 
 ## Friction
 
