@@ -3,7 +3,9 @@
 # Usage: dot cd
 # Group: additional
 #
-# Prints the repo's path. In zsh, dot then takes you there.
+# Prints the repo's path (the working copy, not the live copy). In zsh, dot
+# then takes you there.
 set -eu
 [ $# -eq 0 ] || { echo "dot cd: takes no arguments" >&2; exit 2; }
-echo "$DOT_ROOT"
+. "$DOT_ROOT/src/lib/live.sh"
+live_repo || echo "$DOT_ROOT"

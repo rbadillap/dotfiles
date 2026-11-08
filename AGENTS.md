@@ -11,13 +11,22 @@ by its path, since the shell function only exists in interactive zsh.
 - Run `dot check` freely: it never changes anything. It never needs Touch ID
   or a password either; keep it that way when adding settings.
 - Ask before `dot apply`, before anything that uses sudo, and before any other
-  command that changes the machine (including `dot clone`, `dot fork` and `dot upgrade`).
+  command that changes the machine (including `dot clone`, `dot fork`, `dot update` and `dot upgrade`).
 - Never commit `dot.toml`, secrets, or machine-specific values.
 - Never rewrite shared files such as `~/.zshrc`: only the marked
   `# >>> dotfiles` block belongs to the repo. Tools may append to the rest.
-- Files under `config/home/` are linked into `~`, and apps edit them in place
-  (e.g. Zed's settings). Treat unexpected diffs there as the user's changes:
-  never revert them without asking.
+- What runs on the Mac comes from the live copy, `~/.local/share/dotfiles/live`
+  (`src/lib/live.sh`): a worktree of the repo at origin's main, which
+  `~/.zshrc`, every link into `~` (the shims, `config/home/`, hooks) and the
+  shell's `dot` point to. Only `dot update` moves it, forward along main. A
+  branch or unmerged change in a working copy runs nowhere: test it with that
+  copy's `bin/dot`, never by editing the live copy. Without the live copy,
+  nothing falls back to the working copy: settings that need it fail.
+- Files under `config/home/` are linked into `~` from the live copy, and apps
+  edit them in place (e.g. Zed's settings, `mise use -g`): the change lands
+  in the live copy and `dot check` names the file. Treat it as the user's
+  change: never revert it without asking; it reaches the repo through a pull
+  request.
 - 1Password items this repo creates or uses (not logins) are tagged
   `dotfiles`. For the repo's own items (the SSH key, the `dot.toml` backup)
   don't pass `--vault`: `op` defaults to the built-in personal vault,
@@ -246,8 +255,11 @@ tables.
     ~/.config/varlock/config.json)
   - `claude_hook_entry` in claude.sh (adds a hook to ~/.claude/settings.json
     when missing; never rewrites or removes the rest, which Claude Code edits)
-  - `link` in link.sh (symlinks a `config/home/` file into `~`; backs up an
-    existing file instead of overwriting it)
+  - `link` in link.sh (symlinks a `config/home/` file into `~`, pointing
+    into the live copy; backs up an existing file instead of overwriting it)
+  - `live_copy` in live.sh (the live copy exists and sits at origin's main;
+    it never moves it, `dot update` does), with `DOT_LIVE`, `live_repo`,
+    `live_target`, `live_exists` and `live_changed`
   - Helpers that aren't checks: `ssh_pubkey` in ssh.sh (a public key from
     1Password's agent by item title, no Touch ID), `key_combo` in keys.sh
     (`cmd+opt+left` to a key code and modifier flags), `shquote` in
@@ -307,4 +319,6 @@ back (Zed: plain JSON, no comments).
   `defaults delete` it.
 - Test `dot clone` and `dot fork` against a throwaway `CODE_DIR=$(mktemp -d)`,
   never ~/code.
+- Test the live copy and `dot update` with a throwaway `HOME`, a bare repo as
+  origin and a clone of it as the working copy: no network, no 1Password.
 - After an approved apply, `bin/dot check <file>` must be all ✓.

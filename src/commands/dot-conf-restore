@@ -19,7 +19,9 @@ case ${1:-} in
 esac
 . "$DOT_ROOT/src/lib/op.sh"
 . "$DOT_ROOT/src/lib/conf.sh"
+# In the live copy, dot.toml links to the working copy's: write there.
 conf=$DOT_ROOT/dot.toml
+[ ! -L "$conf" ] || conf=$(readlink "$conf")
 tmp=$(mktemp); trap 'rm -f "$tmp"' EXIT
 op document get "dotfiles: dot.toml" --out-file "$tmp" --force >/dev/null 2>&1 ||
   { echo "dot conf restore: couldn't read \"dotfiles: dot.toml\" from 1Password (signed in, CLI integration on, backup exists?)" >&2; exit 1; }

@@ -1,15 +1,77 @@
 #!/bin/sh
-# Summary: Pull the latest dotfiles, then run check
+# Summary: Pull the latest dotfiles, move the live copy to it, then run check
 # Usage: dot update
 # Group: additional
 #
-# Fast-forwards the repo from GitHub (git pull --ff-only), then runs dot check
-# to show what the new version would change. It never applies anything: run
-# dot apply when you're ready.
+# Fetches the repo from GitHub, and fast-forwards the working copy when it's
+# on main. Then it moves the live copy (~/.local/share/dotfiles/live: what
+# ~/.zshrc, the links into ~ and the gh and vercel shims run) to origin's
+# main branch, creating it the first time, and runs dot check from there to
+# show what the new version would change. It never applies anything: run dot
+# apply when you're ready.
+#
+# It leaves the live copy as it is when a file in it was changed (an app
+# writing its settings through a link, say) and main doesn't have that change
+# yet: bring it into the repo first. It also refuses when main doesn't build
+# on the live copy's commit (rewritten history).
+#
+# EXIT CODES
+#   0  the live copy is at main, and dot check found nothing to change
+#   1  it couldn't update, or dot check found differences
 set -eu
-[ $# -eq 0 ] || { echo "dot update: takes no arguments" >&2; exit 2; }
-echo "dot update: pulling $(git -C "$DOT_ROOT" remote get-url origin 2>/dev/null || echo origin)" >&2
-git -C "$DOT_ROOT" pull --ff-only >&2 ||
-  { echo "dot update: couldn't fast-forward. Commit or stash your changes (git -C $DOT_ROOT status), then retry." >&2; exit 1; }
-echo >&2
-exec "$DOT_ROOT/bin/dot" check
+
+# All of it in a function, run on the last line: moving the live copy can
+# rewrite this file while it runs.
+main() {
+  [ $# -eq 0 ] || { echo "dot update: takes no arguments" >&2; exit 2; }
+  . "$DOT_ROOT/src/lib/live.sh"
+  repo=$(live_repo) || { echo "dot update: $DOT_ROOT isn't a git repository" >&2; exit 1; }
+  echo "dot update: fetching $(git -C "$repo" remote get-url origin 2>/dev/null || echo origin)" >&2
+  git -C "$repo" fetch -q origin >&2 || { echo "dot update: couldn't fetch from origin" >&2; exit 1; }
+  want=$(live_target "$repo") || { echo "dot update: origin has no main branch" >&2; exit 1; }
+  short=$(git -C "$repo" rev-parse --short "$want")
+
+  # The working copy follows main when it's on it; anything else stays as it is.
+  if [ "$(git -C "$repo" symbolic-ref -q --short HEAD || true)" = main ]; then
+    git -C "$repo" merge -q --ff-only "$want" >/dev/null 2>&1 ||
+      echo "dot update: left the working copy as it is (local changes or commits); the live copy follows origin's main" >&2
+  fi
+
+  if [ ! -e "$DOT_LIVE" ]; then
+    mkdir -p "$(dirname "$DOT_LIVE")"
+    git -C "$repo" worktree add -q --detach "$DOT_LIVE" "$want" >&2
+    # Personal values stay in the working copy (never committed); the live copy reads them through a link.
+    ln -s "$repo/dot.toml" "$DOT_LIVE/dot.toml"
+    echo "dot update: created the live copy at ~/.local/share/dotfiles/live, at $short" >&2
+  else
+    live_exists || { echo "dot update: ~/.local/share/dotfiles/live isn't a worktree of $repo; move it away, then retry" >&2; exit 1; }
+    # A file changed in the live copy (an app saving its settings) blocks the
+    # move, unless main already has that exact content: then nothing is lost.
+    if [ -n "$(live_changed)" ]; then
+      if [ -z "$(git -C "$DOT_LIVE" ls-files --others --exclude-standard)" ] &&
+         git -C "$DOT_LIVE" diff --quiet "$want" -- $(git -C "$DOT_LIVE" diff --name-only HEAD); then
+        git -C "$DOT_LIVE" checkout -q -- .
+      else
+        echo "dot update: files changed in the live copy: $(live_changed)" >&2
+        echo "dot update: an app may have saved its settings there. To keep the change, bring it into the repo" >&2
+        echo "dot update: (git -C ~/.local/share/dotfiles/live diff | git -C $repo apply), merge it, then dot update;" >&2
+        echo "dot update: to drop it: git -C ~/.local/share/dotfiles/live checkout -- <file>." >&2
+        exit 1
+      fi
+    fi
+    have=$(git -C "$DOT_LIVE" rev-parse HEAD)
+    if [ "$have" = "$want" ]; then
+      echo "dot update: the live copy is already at $short" >&2
+    else
+      git -C "$repo" merge-base --is-ancestor "$have" "$want" ||
+        { echo "dot update: origin's main doesn't build on the live copy's commit (rewritten history?); left it at $(git -C "$repo" rev-parse --short "$have")" >&2; exit 1; }
+      count=$(git -C "$repo" rev-list --count "$have..$want")
+      git -C "$DOT_LIVE" checkout -q --detach "$want"
+      echo "dot update: moved the live copy to $short ($count new commit(s))" >&2
+    fi
+  fi
+  echo >&2
+  exec "$DOT_LIVE/bin/dot" check
+}
+
+main "$@"

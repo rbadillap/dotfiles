@@ -55,10 +55,12 @@ runs it. Its header is its documentation, its `--help` and its completion
 
 ## Files in your home folder
 
-- **`config/home/` mirrors `~`.** `config/home/.config/zed/settings.json` is
-  linked to `~/.config/zed/settings.json`, so an app that edits its settings
-  writes into the repo and `git diff` shows the change. If a file is already
-  there, `apply` keeps it as `<file>.backup`.
+- **`config/home/` mirrors `~`.** `~/.config/zed/settings.json` is a link to
+  `config/home/.config/zed/settings.json` in the
+  [live copy](../02-get-started/05-stay-up-to-date.mdx#the-live-copy), the
+  copy of your repo at main that the Mac runs, never your working copy. An
+  app that edits its settings writes there, and `dot check` names the file.
+  If a file is already in `~`, `apply` keeps it as `<file>.backup`.
 - **Shared files** such as `~/.zshrc` and `~/.ssh/config` are never owned by
   the repo: dot keeps one marked block in them and leaves the rest to you and
   your tools.

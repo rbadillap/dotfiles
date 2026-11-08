@@ -4,15 +4,16 @@ description: Pull the latest config, upgrade your packages, and keep dot's own r
 ---
 
 ```sh
-dot update        # pull the repo, then show what would change
+dot update        # pull the repo, move the live copy to it, show what would change
 dot apply         # apply it, when you're ready
 dot upgrade       # newer versions of your packages and tools
 dot doctor        # dot's own requirements
 dot auth status   # every login dot uses
 ```
 
-- **`dot update`** fast-forwards your repo from GitHub, then runs
-  `dot check` to show what the new version would change. It never applies.
+- **`dot update`** fetches your repo from GitHub, moves the
+  [live copy](#the-live-copy) to its main branch, and runs `dot check` to
+  show what the new version would change. It never applies.
 - **`dot upgrade`** upgrades packages and tools to their newest versions
   ([below](#newer-versions)).
 - **`dot doctor`** checks what dot itself needs: the Command Line Tools,
@@ -56,13 +57,36 @@ mise uv  0.12.18 → 0.12.23
 Without a terminal to ask on and without `--yes`, it lists the upgrades and
 exits 1, changing nothing.
 
+## The live copy
+
+What runs on your Mac comes from `~/.local/share/dotfiles/live`, a copy of
+your repo at its main branch on GitHub: `~/.zshrc` loads `dot` from it, and
+every file dot links into `~` (the `gh` and `vercel` shims, Zed's settings,
+Hammerspoon) points into it. Your repo is where you work: a branch you check
+out there, or a change you haven't merged, runs nowhere until it's on main
+and you run `dot update`. To try a change first, run that copy's `bin/dot`.
+
+`dot update` creates the live copy the first time and only ever moves it
+forward along main. `dot check` says when it's behind. If it's missing,
+nothing falls back to your repo: `~/.zshrc` says so, and `dot apply` stops
+at every setting that needs it until you run `bin/dot update` in the repo.
+
 ## Changes you make on the Mac
 
 Some apps edit their own settings files, and dot links those files from the
-repo ([Editor](../03-your-mac/05-editor.mdx)), so a change you make in the
-app shows up in `git diff`: commit it or discard it. A preference you
-change in System Settings shows up in `dot check` as a difference: put it
-back with `dot apply`, or change the line in `config/` to keep it.
+live copy ([Editor](../03-your-mac/05-editor.mdx)), so a change you make in
+the app lands there, and `dot check` names the file. To keep it, bring it
+into your repo and merge it:
+
+```sh
+git -C ~/.local/share/dotfiles/live diff | git -C ~/code/<you>/dotfiles apply
+```
+
+To drop it: `git -C ~/.local/share/dotfiles/live checkout -- <file>`. Until
+main has the change, `dot update` leaves the live copy where it is, so
+nothing is lost. A preference you change in System Settings shows up in
+`dot check` as a difference: put it back with `dot apply`, or change the line
+in `config/` to keep it.
 
 ## Upstream improvements
 
