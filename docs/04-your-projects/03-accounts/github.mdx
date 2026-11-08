@@ -192,6 +192,10 @@ runs `gh`:
 | An agent (`AI_AGENT`, `CLAUDECODE`, `CODEX_SANDBOX`, `CURSOR_AGENT` or `GEMINI_CLI` set), even in a terminal | the agent token, read by the service account: no prompt |
 | A script without a terminal, launchd                  | the agent token |
 
+Once an agent token exists, an agent never gets your token from any shim: a
+CLI without an agent token of its own, such as `vercel`, fails for agents
+and works only from your terminal.
+
 The service account's credential goes only into `op run`, never into `gh`
 or what `gh` starts. If anything fails (no credential in the keychain, the
 service account or the item is gone), the command fails: it never falls back
