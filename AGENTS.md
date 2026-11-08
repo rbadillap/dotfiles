@@ -22,6 +22,10 @@ by its path, since the shell function only exists in interactive zsh.
   branch or unmerged change in a working copy runs nowhere: test it with that
   copy's `bin/dot`, never by editing the live copy. Without the live copy,
   nothing falls back to the working copy: settings that need it fail.
+  It's only as safe as main: main takes changes through pull requests only
+  (a ruleset with the required checks, no force push or deletion), and
+  merging is the human's. Never push to main or merge a pull request
+  yourself.
 - Files under `config/home/` are linked into `~` from the live copy, and apps
   edit them in place (e.g. Zed's settings, `mise use -g`): the change lands
   in the live copy and `dot check` names the file. Treat it as the user's
