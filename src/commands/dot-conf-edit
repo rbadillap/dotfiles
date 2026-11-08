@@ -9,7 +9,9 @@
 set -eu
 [ $# -eq 0 ] || { echo "dot conf edit: takes no arguments" >&2; exit 2; }
 . "$DOT_ROOT/src/lib/conf.sh"
+# In the live copy, dot.toml links to the working copy's: edit that one.
 conf=$DOT_ROOT/dot.toml
+[ ! -L "$conf" ] || conf=$(readlink "$conf")
 [ -f "$conf" ] || cp "$DOT_ROOT/dot.toml.example" "$conf"
 editor=${VISUAL:-${EDITOR:-$(git config --global core.editor 2>/dev/null || echo vi)}}
 before=$(shasum -a 256 "$conf")

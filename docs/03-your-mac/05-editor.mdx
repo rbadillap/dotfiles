@@ -23,8 +23,11 @@ Zed comes from `config/apps.conf`, and its settings live in your repo:
 dot apply zed    # ~/.config/zed/settings.json → config/home/.config/zed/settings.json
 ```
 
-The file is **linked**, not copied. When you change a setting in Zed, Zed
-writes it into the repo; `git diff` shows it, and you commit or discard it.
+The file is **linked**, not copied, from the
+[live copy](../02-get-started/05-stay-up-to-date.mdx#the-live-copy) of your
+repo. When you change a setting in Zed, Zed writes it there; `dot check`
+names the file, and you bring the change into your repo or drop it
+([Changes you make on the Mac](../02-get-started/05-stay-up-to-date.mdx#changes-you-make-on-the-mac)).
 If a settings file already exists, `apply` keeps it as
 `settings.json.backup`.
 

@@ -193,7 +193,7 @@ plan() {
   if [ "$no_apply" = 1 ]; then then_apply="then stop (--no-apply)"
   elif [ "$interactive" = 1 ]; then then_apply="then ask before applying"
   else then_apply="then apply without asking (--yes)"; fi
-  item 0 "bin/dot check" "show what would change on this Mac, $then_apply"
+  item 0 "bin/dot update" "make the live copy that ~/.zshrc and the links into ~ run, then show what would change on this Mac, $then_apply"
   if [ "$have_brew" = 0 ]; then
     echo
     info "You'll be asked for your password once: Homebrew needs admin rights"
@@ -323,8 +323,10 @@ wizard() {
 
 hand_over() {
   cd "$DOTFILES_DIR"
+  # update makes the live copy (~/.local/share/dotfiles/live) at origin's
+  # main, which ~/.zshrc and the links into ~ run, then runs dot check.
   step "Checking this Mac against config/"
-  if bin/dot check; then
+  if bin/dot update; then
     info "Nothing to change."
     return 0
   fi

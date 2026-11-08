@@ -43,9 +43,12 @@ else
   done)
   [ -z "$missing" ] && ok "dot.toml" || bad "dot.toml is missing values: $missing" "dot conf edit (see dot.toml.example)"
 fi
-# The same line shell_init writes (src/settings/shell.sh).
+# The live copy, and the line shell_init writes (src/settings/shell.sh).
 . "$DOT_ROOT/src/lib/shquote.sh"
-grep -qF "eval \"\$($(shquote "$DOT_ROOT/bin/dot") init zsh)\"" "$HOME/.zshrc" 2>/dev/null && ok "Shell setup in ~/.zshrc" ||
+. "$DOT_ROOT/src/lib/live.sh"
+live_exists && ok "Live copy at ~/.local/share/dotfiles/live" ||
+  bad "Live copy at ~/.local/share/dotfiles/live" "bin/dot update in the repo"
+grep -qF "eval \"\$($(shquote "$DOT_LIVE/bin/dot") init zsh)\"" "$HOME/.zshrc" 2>/dev/null && ok "Shell setup in ~/.zshrc" ||
   bad "Shell setup in ~/.zshrc" "dot apply shell, then open a new terminal"
 
 echo

@@ -20,9 +20,13 @@ block in it.
 
 ```sh
 # >>> dotfiles: managed by dot apply shell
-eval "$('/Users/you/code/<you>/dotfiles/bin/dot' init zsh)"
+if [ -x '/Users/you/.local/share/dotfiles/live/bin/dot' ]; then eval "$('/Users/you/.local/share/dotfiles/live/bin/dot' init zsh)"; else echo 'dotfiles: no live copy at ~/.local/share/dotfiles/live; run bin/dot update in the repo' >&2; fi
 # <<< dotfiles
 ```
+
+It loads `dot` from the
+[live copy](../02-get-started/05-stay-up-to-date.mdx#the-live-copy), your
+repo at main, never from your working copy; without it, it only says so.
 
 `dot check shell` lists every other line as a note, so you notice what tools
 added, and can move it into `config/shell/` or leave it. The note shows line
