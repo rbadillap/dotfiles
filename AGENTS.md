@@ -43,6 +43,12 @@ by its path, since the shell function only exists in interactive zsh.
   goes through `op` (shell plugins like `gh` and `vercel`, `dot auth status`,
   `dot fork`, `dot secret`, `dot conf`) asks for Touch ID again in a new one.
   Batch those commands into one shell call instead of one call each.
+- This checkout is live: `~/.zshrc`, the `gh` and `vercel` shims and every
+  file under `config/home/` run or read it in place, so whatever is checked
+  out here runs on every shell and every `gh` call, unreviewed. Keep it on
+  `main`, and work on a branch only in a separate `git worktree` (outside
+  this folder, e.g. `git worktree add ../dotfiles-worktrees/<branch>
+  <branch>`), never by switching branches here.
 - Commits are signed through 1Password (Touch ID). Never bypass signing
   (`--no-gpg-sign`, `-c commit.gpgsign=false`); if signing fails, stop and ask.
 - The repo is public. Ask before `git push`, and never rewrite pushed
