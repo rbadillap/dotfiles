@@ -83,6 +83,7 @@ by its path, since the shell function only exists in interactive zsh.
 | `src/commands/`          | one file per command                                    |
 | `src/settings/<topic>.sh`| one function per setting                                |
 | `src/lib/`               | shared code; the only code that changes the system      |
+| `src/shims/`             | executables linked first on PATH (`op-plugin`: a CLI through its 1Password plugin, for every process) |
 | `config/*.conf`          | the owner's declarations (data, never executed)         |
 | `config/home/`           | files linked into `~`, mirroring their path             |
 | `config/shell/`          | the owner's zsh files, loaded by `dot init zsh`         |
@@ -116,6 +117,7 @@ always writes its own `dot.toml`.
 | Teach agents elsewhere how to use dot | `skills/dot/SKILL.md`; docs/06-agents/index.mdx |
 | Change a language or tool version | `config/home/.config/mise/config.toml` (global); docs/03-your-mac/06-languages.mdx |
 | Add something to the shell         | `config/shell/<topic>.zsh`                            |
+| Give every process a CLI's 1Password token | `op shim <cli>` in `config/shell.conf`; a new CLI also needs its case (token variables, login commands) in `src/shims/op-plugin` and in `op_shim` |
 | Add a personal value (names, …)    | `dot.toml` (real) and `dot.toml.example` (placeholder) |
 | Add a personal collection (identities, organizations…) | one table each in `dot.toml`, commented out in `dot.toml.example`, and a setting that takes `$<path>.*` |
 | Show what a line refers to in `dot explain` | `explain_<topic>_<setting>` in `src/lib/<tool>.sh` |

@@ -4,7 +4,7 @@
 # lives. May ask for Touch ID.
 ghx() {
   # `op plugin inspect` needs a terminal, so detect the plugin by its config file.
-  if [ -f "$HOME/.config/op/plugins/gh.json" ]; then op plugin run -- gh "$@"; else gh "$@"; fi
+  if [ -f "$HOME/.config/op/plugins/gh.json" ]; then DOT_OP_SHIM=gh op plugin run -- gh "$@"; else gh "$@"; fi
 }
 
 # gh_ssh_key <user> <authentication|signing> <public key> <title>

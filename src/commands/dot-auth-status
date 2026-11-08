@@ -38,7 +38,7 @@ else
 fi
 # Vercel, through 1Password's shell plugin when that's where its token lives.
 if command -v vercel >/dev/null; then
-  if [ -f "$HOME/.config/op/plugins/vercel.json" ]; then vercelx() { op plugin run -- vercel "$@"; }; else vercelx() { vercel "$@"; }; fi
+  if [ -f "$HOME/.config/op/plugins/vercel.json" ]; then vercelx() { DOT_OP_SHIM=vercel op plugin run -- vercel "$@"; }; else vercelx() { vercel "$@"; }; fi
   if user=$(vercelx whoami 2>/dev/null | tail -1) && [ -n "$user" ]; then
     ok "Vercel CLI ($user)"
   else
