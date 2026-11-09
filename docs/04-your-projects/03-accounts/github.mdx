@@ -222,13 +222,38 @@ When a repo's remotes belong to different owners, none of them is marked
 or named as above, and any of those owners has a token, the command fails
 and asks for `-R` or `gh repo set-default`: it never guesses between tokens.
 
+### An owner that uses your own token
+
+Some organizations require an admin to approve fine-grained tokens. For an
+owner like that, agents can use your own token instead of an agent token:
+
+```toml
+[github.agent_tokens]
+example-org = "personal"
+```
+
+A `gh` command aimed at that owner then runs as it does in your terminal:
+through the 1Password plugin, which asks for your approval on each call,
+even when an agent runs it without a terminal. If the approval doesn't come
+(denied, timed out, nobody there), the command fails; it never falls back
+to an agent token. Other owners keep their agent tokens.
+
+Your token isn't limited to that owner: it reaches everything you can, and
+an agent can aim at any of it with `-R`. Your approval is the only guard,
+so read what each prompt is for, and expect one per call. `dot check` notes
+each owner set to `personal`.
+
+### What routing doesn't do
+
 Choosing a token is routing, not a boundary: an agent can pass `-R` to use
 any of them. Put only tokens you'd give any agent under
-`[github.agent_tokens]`; what each one can do is what you set when creating
+`[github.agent_tokens]`, and `personal` only where you'll read each
+approval prompt; what each token can do is what you set when creating
 it on GitHub. A `gh` started by another `gh` (an extension) keeps its
 parent's token.
 
-Once an agent token exists, an agent never gets your token from any shim: a
+Once an agent token exists, an agent never gets your token from any shim,
+except for an owner you set to `personal`, and then only with your approval: a
 CLI without an agent token of its own, such as `vercel`, fails for agents
 and works only from your terminal.
 

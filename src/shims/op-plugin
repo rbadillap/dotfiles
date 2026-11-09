@@ -24,7 +24,9 @@
 # single owner), plus an optional one for everything else. The owner comes
 # from the command (-R/--repo, GH_REPO, the repo it names) or the current
 # folder's remote; see gh_owner. Picking a token is routing, not a boundary:
-# every one of them is a token agents may use.
+# every one of them is a token agents may use. An owner mapped to "personal"
+# gets the person's own token through the plugin, with 1Password's approval
+# prompt on each call, as at a terminal; that token isn't limited to the owner.
 set -euf
 # Only this shim decides which 1Password account op uses.
 unset OP_SERVICE_ACCOUNT_TOKEN OP_CONNECT_HOST OP_CONNECT_TOKEN
@@ -110,9 +112,10 @@ repo_owner() {
   printf %s "$o" | tr '[:upper:]' '[:lower:]'
 }
 
-# The agent token reference for a GitHub owner, from the agent tokens file.
+# The agent token reference for a GitHub owner, from the agent tokens file,
+# or "personal" for an owner that uses the person's own token.
 owner_ref() {
-  awk -v o="$1" '$1 == o && $2 ~ /^op:\/\// { sub(/^[^ ]+ /, ""); print; exit }' "$tokens"
+  awk -v o="$1" '$1 == o && ($2 ~ /^op:\/\// || ($2 == "personal" && NF == 2)) { sub(/^[^ ]+ /, ""); print; exit }' "$tokens"
 }
 
 # The owner of the repo in the current folder, chosen as gh chooses it: the
@@ -209,10 +212,16 @@ if [ -d "${tokens%/*}" ]; then
       exit 1
     }
     ref=
-    if [ "$name" = gh ] && grep -q '^[A-Za-z0-9-]* op://' "$tokens" 2>/dev/null; then
+    if [ "$name" = gh ] && grep -Eq '^[A-Za-z0-9-]+ (op://|personal$)' "$tokens" 2>/dev/null; then
       # One token per GitHub owner: the owner this command targets picks it.
       owner=$(gh_owner "$@") || exit 1
       [ -z "$owner" ] || ref=$(owner_ref "$owner")
+    fi
+    if [ "$ref" = personal ]; then
+      # This owner uses the person's own token, through the plugin and its
+      # approval prompt, as at a terminal. No approval, no command: op fails
+      # and nothing falls back to an agent token.
+      exec op plugin run -- "$name" "$@"
     fi
     [ -n "$ref" ] || ref=$(grep -m 1 '^op://' "$tokens" 2>/dev/null) || {
       if [ -n "${owner:-}" ]; then

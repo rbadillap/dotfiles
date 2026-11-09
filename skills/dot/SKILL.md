@@ -89,7 +89,10 @@ A preference with no setting yet means adding one to the repo: follow its
   GitHub owner, chosen by the repo the command targets: `-R`, `GH_REPO`, the
   repo or URL the command names, or the current folder's remote. Outside the
   repo you mean, pass `-R owner/repo`. If the shim says it can't tell which
-  remote you mean, pass `-R`. A 403 or 404 on a repo outside the token's
+  remote you mean, pass `-R`. For some owners the human may have chosen their
+  own token: then each `gh` call waits for their 1Password approval, so
+  batch those calls, and if the approval is denied or doesn't come, the
+  command fails; don't retry it in a loop or aim it elsewhere. A 403 or 404 on a repo outside the token's
   repos is that limit working: tell the human and let them run it from their
   terminal. Never reach for their token (`op plugin run`,
   `op read`) to get past it.

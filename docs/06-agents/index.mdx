@@ -43,8 +43,10 @@ as; and `gh auth login` or `vercel login` answers
 that the login lives in 1Password.
 
 With an agent token set up ([GitHub](../04-your-projects/03-accounts/github.mdx)),
-an agent's `gh` gets a token limited to the repos it works on, never yours:
-one per GitHub owner, picked by the repo the command targets.
+an agent's `gh` gets a token limited to the repos it works on, one per
+GitHub owner, picked by the repo the command targets. It never gets yours,
+unless you set an owner to `personal`: then each of the agent's calls for
+that owner uses your token and asks for your approval.
 A 1Password service account that can only read the Agents vault fetches it,
 so the agent's calls ask you nothing; if that fails, the command fails.
 `vercel`, which has no agent token, fails for agents and works only from
