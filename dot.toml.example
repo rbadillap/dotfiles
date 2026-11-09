@@ -26,6 +26,9 @@ user = "your-username"
 # the repo a gh command targets. agent_token covers any other owner.
 # [github.agent_tokens]
 # example-org = "op://Agents/example-org Agent Token/token"
+# "personal" instead of a reference uses your own token for that owner, with
+# 1Password's approval on each call; it isn't limited to that owner.
+# another-org = "personal"
 
 [varlock]
 # Varlock's anonymous usage analytics: enable or disable.

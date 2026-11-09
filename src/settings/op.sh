@@ -20,13 +20,15 @@ op_shim() {
 # approval prompt. A fine-grained GitHub token has a single owner (a user or an
 # organization), so there is one per owner: under [github.agent_tokens] in
 # dot.toml, <owner> = "op://Agents/<item>/<field>", plus agent_token under
-# [github] for any other owner or no repo at all. gh uses the token of the
+# [github] for any other owner or no repo at all. <owner> = "personal" uses
+# your own token for that owner instead, through the 1Password plugin and its
+# approval prompt on every call. gh uses the token of the
 # owner it targets: -R/--repo, GH_REPO, the repo the command names, or the
 # current folder's git remote. A 1Password service account that can only read
 # the Agents vault fetches it; its credential is in the macOS keychain (service
 # dotfiles-op-agents, account $USER), stored by you. The references are kept in
 # ~/.local/share/dotfiles/agent-tokens/gh, which the shim reads; if anything
-# fails, the command fails, never falling back to the personal token.
+# fails, the command fails, never falling back to another token.
 op_agent_token() {
   [ "$1" = gh ] || { fail "op agent-token: only gh is supported, got '$1'"; return; }
   file=$HOME/.local/share/dotfiles/agent-tokens/$1
@@ -52,7 +54,11 @@ op_agent_token() {
     case $seen in *" $lower "*) fail "op agent-token: '$owner' appears twice under [$2.agent_tokens] (names ignore case)"; return ;; esac
     seen="$seen$lower "
     oref=$(conf_get "$2.agent_tokens.$owner")
-    op_agent_ref "$2.agent_tokens.$owner" "$oref" || return 0
+    if [ "$oref" = personal ]; then
+      note "$owner uses your own token: an agent's gh for it asks for 1Password's approval on each call, and with -R it reaches any repo your token does"
+    else
+      op_agent_ref "$2.agent_tokens.$owner" "$oref" || return 0
+    fi
     lines="${lines:+$lines
 }$lower $oref"
   done
