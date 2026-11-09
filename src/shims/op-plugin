@@ -101,8 +101,8 @@ repo_owner() {
   host=${host%%:*}
   case $host in
     github.com|www.github.com) ;;
-    *[!A-Za-z0-9._-]*|'') return 0 ;;
-    *) [ "$(ssh -G "$host" 2>/dev/null | awk '$1 == "hostname" { print $2; exit }')" = github.com ] || return 0 ;;
+    -*|*[!A-Za-z0-9._-]*|'') return 0 ;;
+    *) [ "$(ssh -G -- "$host" 2>/dev/null | awk '$1 == "hostname" { print $2; exit }')" = github.com ] || return 0 ;;
   esac
   case $r in */?*) ;; *) return 0 ;; esac
   o=${r%%/*}
