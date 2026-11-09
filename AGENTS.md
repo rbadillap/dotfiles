@@ -133,7 +133,7 @@ always writes its own `dot.toml`.
 | Change a language or tool version | `config/home/.config/mise/config.toml` (global); docs/03-your-mac/06-languages.mdx |
 | Add something to the shell         | `config/shell/<topic>.zsh`                            |
 | Give every process a CLI's 1Password token | `op shim <cli>` in `config/shell.conf`; a new CLI also needs its case (token variables, login commands) in `src/shims/op-plugin` and in `op_shim` |
-| Limit what agents can do on GitHub | `agent_token` under `[github]` in `dot.toml` (a reference in the Agents vault), applied by `op agent-token gh $github.*`; the service account's credential is in the keychain (`dotfiles-op-agents`), stored by the human; docs/04-your-projects/03-accounts/github.mdx |
+| Limit what agents can do on GitHub | `agent_token` under `[github]` in `dot.toml`, and one token per GitHub owner under `[github.agent_tokens]` (`<owner> = "op://…"`; the shim picks it by the repo a command targets), references in the Agents vault, which holds only agent tokens; applied by `op agent-token gh $github.*`; the service account's credential is in the keychain (`dotfiles-op-agents`), stored by the human; docs/04-your-projects/03-accounts/github.mdx |
 | Add a personal value (names, …)    | `dot.toml` (real) and `dot.toml.example` (placeholder) |
 | Add a personal collection (identities, organizations…) | one table each in `dot.toml`, commented out in `dot.toml.example`, and a setting that takes `$<path>.*` |
 | Show what a line refers to in `dot explain` | `explain_<topic>_<setting>` in `src/lib/<tool>.sh` |
@@ -271,8 +271,9 @@ tables.
     1Password's agent by item title, no Touch ID), `key_combo` in keys.sh
     (`cmd+opt+left` to a key code and modifier flags), `shquote` in
     shquote.sh (a value as a single-quoted literal for generated shell code),
+    `op_agent_ref` in op.sh (validates an agent token's 1Password reference),
     and `conf_parse`,
-    `conf_get` and `conf_tables` in conf.sh (dot.toml; `run.sh` keeps the
+    `conf_get`, `conf_tables` and `conf_keys` in conf.sh (dot.toml; `run.sh` keeps the
     parsed values in `DOT_CONF`)
   - For `dot secret`: `op_secret_ref`, `op_secret_exists`, `op_secret_add`,
     `op_secret_update` and `op_secret_list` in op.sh (API Credential items

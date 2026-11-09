@@ -19,6 +19,12 @@
 # credential lives in the macOS keychain (service dotfiles-op-agents), so it
 # asks no one. If any of that fails, the command fails: it never falls back
 # to the personal token or to an approval prompt.
+#
+# gh's agent tokens are one per GitHub owner (a fine-grained token has a
+# single owner), plus an optional one for everything else. The owner comes
+# from the command (-R/--repo, GH_REPO, the repo it names) or the current
+# folder's remote; see gh_owner. Picking a token is routing, not a boundary:
+# every one of them is a token agents may use.
 set -euf
 # Only this shim decides which 1Password account op uses.
 unset OP_SERVICE_ACCOUNT_TOKEN OP_CONNECT_HOST OP_CONNECT_TOKEN
@@ -77,6 +83,114 @@ for login in $logins; do
 done
 unset IFS
 
+# The GitHub owner (lowercase) in a repo name or URL: OWNER/REPO,
+# github.com/OWNER/REPO, https://github.com/OWNER/REPO/..., or a remote's URL
+# (git@HOST:OWNER/REPO.git, ssh://git@HOST/OWNER/REPO, where HOST may be an
+# alias in ~/.ssh/config). Nothing for another host or anything else.
+repo_owner() {
+  r=$1 host=github.com
+  case $r in
+    *://*) r=${r#*://}; r=${r#*@}; host=${r%%/*}; r=${r#*/} ;;
+    *:*) r=${r#*@}; host=${r%%:*}; r=${r#*:}
+         case $host in */*) return 0 ;; esac ;;
+    github.com/*) r=${r#github.com/} ;;
+    */*/*) return 0 ;;
+    */*) ;;
+    *) return 0 ;;
+  esac
+  host=${host%%:*}
+  case $host in
+    github.com|www.github.com) ;;
+    *[!A-Za-z0-9._-]*|'') return 0 ;;
+    *) [ "$(ssh -G "$host" 2>/dev/null | awk '$1 == "hostname" { print $2; exit }')" = github.com ] || return 0 ;;
+  esac
+  case $r in */?*) ;; *) return 0 ;; esac
+  o=${r%%/*}
+  case $o in ''|*[!A-Za-z0-9-]*) return 0 ;; esac
+  printf %s "$o" | tr '[:upper:]' '[:lower:]'
+}
+
+# The agent token reference for a GitHub owner, from the agent tokens file.
+owner_ref() {
+  awk -v o="$1" '$1 == o && $2 ~ /^op:\/\// { sub(/^[^ ]+ /, ""); print; exit }' "$tokens"
+}
+
+# The owner of the repo in the current folder, chosen as gh chooses it: the
+# remote `gh repo set-default` marked, then upstream, github, origin, then the
+# owner every github.com remote shares. Remotes with different owners and none
+# of those: it fails when any of them has an agent token, so it never guesses
+# between two tokens; otherwise nothing.
+cwd_owner() {
+  git rev-parse --git-dir >/dev/null 2>&1 || return 0
+  remotes=$(git remote 2>/dev/null) || return 0
+  [ -n "$remotes" ] || return 0
+  for r in $remotes; do
+    v=$(git config --get "remote.$r.gh-resolved" 2>/dev/null) || continue
+    case $v in */*) repo_owner "$v" ;; *) repo_owner "$(git remote get-url "$r")" ;; esac
+    return 0
+  done
+  for want in upstream github origin; do
+    for r in $remotes; do
+      [ "$r" = "$want" ] && { repo_owner "$(git remote get-url "$r")"; return 0; }
+    done
+  done
+  owners=
+  for r in $remotes; do
+    o=$(repo_owner "$(git remote get-url "$r")")
+    [ -z "$o" ] || case " $owners " in *" $o "*) ;; *) owners="${owners:+$owners }$o" ;; esac
+  done
+  case $owners in
+    *' '*)
+      for o in $owners; do
+        [ -z "$(owner_ref "$o")" ] && continue
+        echo "dot shim: this repo's remotes belong to $owners, and gh can't tell which one you mean." >&2
+        echo "dot shim: pass -R owner/repo, or run gh repo set-default." >&2
+        return 1
+      done ;;
+    *) printf %s "$owners" ;;
+  esac
+}
+
+# The owner a gh command targets, lowercase, or nothing: -R/--repo, then
+# GH_REPO, then the repo the command names right after its subcommand (gh
+# repo <command> OWNER/REPO or URL, gh pr|issue <command> URL) or the path of
+# gh api (repos|orgs|users/OWNER/...), then the current folder's repo. Only
+# those positions count, so a URL in a flag's value (--body) never does.
+gh_owner() {
+  prev=
+  for a in "$@"; do
+    [ "$a" != -- ] || break
+    case $prev in -R|--repo) repo_owner "$a"; return 0 ;; esac
+    case $a in
+      --repo=*) repo_owner "${a#--repo=}"; return 0 ;;
+      -R?*) repo_owner "${a#-R}"; return 0 ;;
+    esac
+    prev=$a
+  done
+  [ -z "${GH_REPO:-}" ] || { repo_owner "$GH_REPO"; return 0; }
+  cmd=${1:-}
+  [ $# -eq 0 ] || shift
+  case $cmd in
+    repo|pr|issue)
+      a=${2:-}
+      case $a in
+        https://*|http://*) repo_owner "$a"; return 0 ;;
+        -*|'') ;;
+        *) [ "$cmd" != repo ] || { repo_owner "$a"; return 0; } ;;
+      esac ;;
+    api)
+      for a in "$@"; do
+        case $a in
+          repos/*|/repos/*|orgs/*|/orgs/*|users/*|/users/*)
+            o=${a#/}; o=${o#*/}; o=${o%%/*}; o=${o%%\?*}
+            case $o in ''|*[!A-Za-z0-9-]*) ;; *) printf %s "$o" | tr '[:upper:]' '[:lower:]'; return 0 ;; esac
+            break ;;
+        esac
+      done ;;
+  esac
+  cwd_owner
+}
+
 DOT_OP_SHIM=$name
 export DOT_OP_SHIM
 
@@ -94,8 +208,19 @@ if [ -d "${tokens%/*}" ]; then
       echo "dot shim: no agent token for $name; agents never get your personal one. Run it from your terminal." >&2
       exit 1
     }
-    ref=$(grep -m 1 '^op://' "$tokens" 2>/dev/null) || {
-      echo "dot shim: no agent token reference in $tokens; not falling back to your personal token." >&2
+    ref=
+    if [ "$name" = gh ] && grep -q '^[A-Za-z0-9-]* op://' "$tokens" 2>/dev/null; then
+      # One token per GitHub owner: the owner this command targets picks it.
+      owner=$(gh_owner "$@") || exit 1
+      [ -z "$owner" ] || ref=$(owner_ref "$owner")
+    fi
+    [ -n "$ref" ] || ref=$(grep -m 1 '^op://' "$tokens" 2>/dev/null) || {
+      if [ -n "${owner:-}" ]; then
+        echo "dot shim: no agent token for $owner and no agent_token to fall back on; not falling back to your personal token." >&2
+        echo "dot shim: add $owner under [github.agent_tokens] in dot.toml, or pass -R owner/repo." >&2
+      else
+        echo "dot shim: no agent token reference in $tokens; not falling back to your personal token." >&2
+      fi
       exit 1
     }
     # The service account's credential goes only into op run's environment;

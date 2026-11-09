@@ -16,29 +16,49 @@ op_shim() {
 }
 
 # op agent-token <gh> $github.*   an agent, or any process without a person at
-# a terminal, runs gh with this token instead of the personal one, with no
-# approval prompt: agent_token under [github] in dot.toml, a 1Password
-# reference (op://Agents/<item>/<field>) to a token limited to the repos
-# agents work on. A 1Password service account that can only read that vault
-# fetches it; its credential is in the macOS keychain (service
-# dotfiles-op-agents, account $USER), stored by you. The reference is kept in
+# a terminal, runs gh with an agent token instead of the personal one, with no
+# approval prompt. A fine-grained GitHub token has a single owner (a user or an
+# organization), so there is one per owner: under [github.agent_tokens] in
+# dot.toml, <owner> = "op://Agents/<item>/<field>", plus agent_token under
+# [github] for any other owner or no repo at all. gh uses the token of the
+# owner it targets: -R/--repo, GH_REPO, the repo the command names, or the
+# current folder's git remote. A 1Password service account that can only read
+# the Agents vault fetches it; its credential is in the macOS keychain (service
+# dotfiles-op-agents, account $USER), stored by you. The references are kept in
 # ~/.local/share/dotfiles/agent-tokens/gh, which the shim reads; if anything
 # fails, the command fails, never falling back to the personal token.
 op_agent_token() {
   [ "$1" = gh ] || { fail "op agent-token: only gh is supported, got '$1'"; return; }
   file=$HOME/.local/share/dotfiles/agent-tokens/$1
-  if ! ref=$(conf_get "$2.agent_token"); then
-    note "no agent_token under [$2] in dot.toml: agents use your personal token"
+  ref=$(conf_get "$2.agent_token") || ref=
+  owners=$(conf_keys "$2.agent_tokens")
+  if [ -z "$ref$owners" ]; then
+    note "no agent_token under [$2] or [$2.agent_tokens] in dot.toml: agents use your personal token"
     [ ! -e "$file" ] || note "$(printf %s "$file" | sed "s#^$HOME#~#") still sets one; delete it to stop using it"
     return 0
   fi
-  case $ref in
-    *[!A-Za-z0-9\ ._/:-]*) fail "op agent-token: $2.agent_token has characters a 1Password reference doesn't, got '$ref'"; return ;;
-    op://?*/?*/?*) ;;
-    *) fail "op agent-token: $2.agent_token must be op://<vault>/<item>/<field>, got '$ref'"; return ;;
-  esac
+  lines=
+  if [ -n "$ref" ]; then
+    op_agent_ref "$2.agent_token" "$ref" || return 0
+    lines=$ref
+  fi
+  seen=" "
+  for owner in $owners; do
+    case $owner in
+      *[!A-Za-z0-9-]*|-*|*-) fail "op agent-token: '$owner' under [$2.agent_tokens] isn't a GitHub user or organization name"; return ;;
+    esac
+    [ ${#owner} -le 39 ] || { fail "op agent-token: '$owner' under [$2.agent_tokens] is longer than a GitHub name can be"; return; }
+    lower=$(printf %s "$owner" | tr '[:upper:]' '[:lower:]')
+    case $seen in *" $lower "*) fail "op agent-token: '$owner' appears twice under [$2.agent_tokens] (names ignore case)"; return ;; esac
+    seen="$seen$lower "
+    oref=$(conf_get "$2.agent_tokens.$owner")
+    op_agent_ref "$2.agent_tokens.$owner" "$oref" || return 0
+    lines="${lines:+$lines
+}$lower $oref"
+  done
+  [ -n "$ref" ] || note "no agent_token under [$2]: gh fails for agents on owners not under [$2.agent_tokens]"
   file_managed_block "$file" 600 "# >>> $1 agent token: managed by dot apply op
-$ref
+$lines
 # <<< $1 agent token"
   # Attributes only, never the secret: no prompt, no Touch ID.
   /usr/bin/security find-generic-password -s dotfiles-op-agents -a "${USER:-$(id -un)}" >/dev/null 2>&1 ||

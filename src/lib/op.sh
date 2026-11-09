@@ -83,3 +83,14 @@ op_secret_list() {
   list=$(op item list --vault "$1" --tags dotfiles --categories "API Credential" --format json) || return
   printf '%s' "$list" | /usr/bin/jq -r 'sort_by(.title)[] | [.title, .updated_at[:10]] | @tsv'
 }
+
+# op_agent_ref <key> <ref>: returns 0 when <ref> is a 1Password reference
+# (op://<vault>/<item>/<field>) made only of characters such references use;
+# otherwise calls fail naming <key> (a dot.toml path) and returns 1.
+op_agent_ref() {
+  case $2 in
+    *[!A-Za-z0-9\ ._/:-]*) fail "op agent-token: $1 has characters a 1Password reference doesn't, got '$2'"; return 1 ;;
+    op://?*/?*/?*) ;;
+    *) fail "op agent-token: $1 must be op://<vault>/<item>/<field>, got '$2'"; return 1 ;;
+  esac
+}

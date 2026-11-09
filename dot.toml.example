@@ -21,6 +21,12 @@ user = "your-username"
 # service account (op agent-token).
 # agent_token = "op://Agents/GitHub Agent Token/token"
 
+# A fine-grained token has a single owner: agents that work on repos of
+# several owners get one per owner (a GitHub user or organization), picked by
+# the repo a gh command targets. agent_token covers any other owner.
+# [github.agent_tokens]
+# example-org = "op://Agents/example-org Agent Token/token"
+
 [varlock]
 # Varlock's anonymous usage analytics: enable or disable.
 telemetry = "disable"

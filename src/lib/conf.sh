@@ -80,3 +80,15 @@ conf_tables() {
       if (dot) { name = substr(key, 1, dot - 1); if (!(name in seen)) { seen[name] = 1; print name } }
     }'
 }
+
+# conf_keys <path>: prints the keys set directly in table <path>, in file
+# order: for [github.agent_tokens] with example-org = "…", conf_keys
+# github.agent_tokens prints example-org.
+conf_keys() {
+  printf '%s\n' "$DOT_CONF" | awk -v p="$1." '
+    index($0, p) == 1 {
+      rest = substr($0, length(p) + 1)
+      key = substr(rest, 1, index(rest, "=") - 1)
+      if (key != "" && !index(key, ".")) print key
+    }'
+}
